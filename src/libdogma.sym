@@ -1,0 +1,5 @@
+dogma_init
+dogma_init_context
+dogma_free_context
+dogma_set_ship
+dogma_get_ship_attribute
