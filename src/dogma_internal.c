@@ -20,6 +20,48 @@
 #include "dogma_internal.h"
 #include "modifier.h"
 
+int dogma_free_env(dogma_env_t* env) {
+	int ret;
+	key_t index = 0, index2, index3;
+	dogma_env_t** child;
+	array_t* modifiers;
+	array_t* modifiers2;
+	dogma_modifier_t** modifier;
+
+	JLF(child, env->children, index);
+	while(child != NULL) {
+		dogma_free_env(*child);
+		JLN(child, env->children, index);
+	}
+	JLFA(ret, env->children);
+
+	index = 0;
+	JLF(modifiers, env->modifiers, index);
+	while(modifiers != NULL) {
+		index2 = 0;
+		JLF(modifiers2, *modifiers, index2);
+		while(modifiers2 != NULL) {
+			index3 = 0;
+			JLF(modifier, *modifiers2, index3);
+			while(modifier != NULL) {
+				free(*modifier);
+				JLN(modifier, *modifiers2, index3);
+			}
+
+			JLFA(ret, *modifiers2);
+			JLN(modifiers2, *modifiers, index2);
+		}
+
+		JLFA(ret, *modifiers);
+		JLN(modifiers, env->modifiers, index);
+	}
+	JLFA(ret, env->modifiers);
+
+	free(env);
+
+	return DOGMA_OK;
+}
+
 int dogma_dump_modifiers(dogma_env_t* env) {
 	key_t index = 0, index2, index3;
 	array_t* modifiers_by_assoctype;

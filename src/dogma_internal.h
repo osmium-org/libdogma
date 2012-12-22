@@ -140,8 +140,13 @@ struct dogma_env_s {
 typedef struct dogma_env_s dogma_env_t;
 
 struct dogma_context_s {
-	dogma_env_t character;
+	dogma_env_t* character;
+
+	/* The ship is actually a child of character, and it has index
+	 * 0. This pointer is just an alias, for convenience. */
 	dogma_env_t* ship;
+
+	/* These two are unused for now and should always be NULL. */
 	dogma_env_t* target;
 	dogma_env_t* area;
 
@@ -150,6 +155,11 @@ struct dogma_context_s {
 };
 
 /* -------- Internal functions -------- */
+
+/* Free an environment, including its modifiers and children,
+ * recursively. This function is not smart and will not remove
+ * obsolete modifiers on parents! */
+int dogma_free_env(dogma_env_t*);
 
 /* Dump the modifiers of an environment to stdout. */
 int dogma_dump_modifiers(dogma_env_t*);

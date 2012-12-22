@@ -29,25 +29,26 @@ int dogma_init(void) {
 
 int dogma_init_context(dogma_context_t** ctx) {
 	dogma_context_t* new_ctx = malloc(sizeof(dogma_context_t));
-	dogma_env_t* new_env = malloc(sizeof(dogma_env_t));
 	dogma_env_t** value;
 
-	new_ctx->character.id = 0;
-	new_ctx->character.parent = NULL;
-	new_ctx->character.index = 0;
-	new_ctx->character.children = (array_t)NULL;
-	new_ctx->character.modifiers = (array_t)NULL;
+	new_ctx->character = malloc(sizeof(dogma_env_t));
+	new_ctx->ship = malloc(sizeof(dogma_env_t));
 
-	new_env->id = 0;
-	new_env->parent = &(new_ctx->character);
-	new_env->index = 0;
-	new_env->children = (array_t)NULL;
-	new_env->modifiers = (array_t)NULL;
+	new_ctx->character->id = 0;
+	new_ctx->character->parent = NULL;
+	new_ctx->character->index = 0;
+	new_ctx->character->children = (array_t)NULL;
+	new_ctx->character->modifiers = (array_t)NULL;
 
-	JLI(value, (new_ctx->character).children, 0);
-	*value = new_env;
+	JLI(value, new_ctx->character->children, 0);
+	*value = new_ctx->ship;
 
-	new_ctx->ship = new_env;
+	new_ctx->ship->id = 0;
+	new_ctx->ship->parent = new_ctx->character;
+	new_ctx->ship->index = 0;
+	new_ctx->ship->children = (array_t)NULL;
+	new_ctx->ship->modifiers = (array_t)NULL;
+
 	new_ctx->target = NULL;
 	new_ctx->area = NULL;
 
@@ -59,7 +60,7 @@ int dogma_init_context(dogma_context_t** ctx) {
 }
 
 int dogma_free_context(dogma_context_t* ctx) {
-	free(ctx->ship);
+	dogma_free_env(ctx->character);
 	free(ctx);
 
 	return DOGMA_OK;

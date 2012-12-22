@@ -415,7 +415,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 			result->env_value = self;
 			break;
 		case DOGMA_Char:
-			result->env_value = &(ctx->character);
+			result->env_value = ctx->character;
 			break;
 		case DOGMA_Ship:
 			result->env_value = ctx->ship;

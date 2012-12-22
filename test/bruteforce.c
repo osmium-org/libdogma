@@ -22,23 +22,18 @@
 
 int main(void) {
 	dogma_context_t* ctx;
-	typeid_t firstship = 0;
 
 	assert(dogma_init() == DOGMA_OK);
 	assert(dogma_init_context(&ctx) == DOGMA_OK);
 
-	dogma_set_ship(ctx, 648);
-	dogma_set_ship(ctx, 0);
-
 	for(int i = 0; dogma_table_types[i].id != 0; ++i) {
 		if(dogma_table_types[i].categoryid != 6) continue;
-		if(firstship == 0) firstship = dogma_table_types[i].id;
 
 		assert(dogma_set_ship(ctx, dogma_table_types[i].id) == DOGMA_OK);
 	}
 
 	/* Also test postexpressions of the first ship */
-	assert(dogma_set_ship(ctx, firstship) == DOGMA_OK);
+	dogma_set_ship(ctx, 0);
 
 	assert(dogma_free_context(ctx) == DOGMA_OK);
 	return 0;
