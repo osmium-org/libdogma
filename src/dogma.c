@@ -20,6 +20,7 @@
 #include "dogma_internal.h"
 #include "tables.h"
 #include "eval.h"
+#include "attribute.h"
 
 int dogma_init(void) {
 	dogma_init_tables();
@@ -105,4 +106,8 @@ int dogma_set_ship(dogma_context_t* ctx, typeid_t ship_typeid) {
 	}
 
 	return DOGMA_OK;
+}
+
+int dogma_get_ship_attribute(dogma_context_t* ctx, attributeid_t attributeid, double* out) {
+	return dogma_get_env_attribute(ctx->ship, attributeid, out);
 }

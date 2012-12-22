@@ -102,9 +102,19 @@ int dogma_get_type_attribute(typeid_t tid, attributeid_t aid, double* out) {
 	dogma_get_type_attributes(tid, &type_attributes);
 
 	JLG(ta, type_attributes, aid);
-	if(ta == NULL) return DOGMA_NOT_FOUND;
+	if(ta == NULL) {
+		/* Use the default attribute value */
 
-	*out = (*ta)->value;
+		const dogma_attribute_t** a;
+
+		JLG(a, attributes_by_id, aid);
+		if(a == NULL) return DOGMA_NOT_FOUND;
+
+		*out = (*a)->defaultvalue;
+	} else {
+		*out = (*ta)->value;
+	}
+
 	return DOGMA_OK;
 }
 

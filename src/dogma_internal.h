@@ -86,7 +86,10 @@ struct dogma_type_effect_s {
 typedef struct dogma_type_effect_s dogma_type_effect_t;
 
 /* Different association types, sorted by evaluation order (sort of
- * like operator precedence) */
+ * like operator precedence).
+ *
+ * WARNING: if you change this, take a look in attribute.c, the enum
+ * is traversed sequentially: make sure the new bounds match! */
 enum dogma_association_e {
 	DOGMA_PreAssignment,
 	DOGMA_PreMul,

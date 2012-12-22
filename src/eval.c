@@ -19,6 +19,7 @@
 #include <assert.h>
 #include "eval.h"
 #include "tables.h"
+#include "attribute.h"
 
 int dogma_eval_expression(dogma_context_t* ctx,
                           dogma_env_t* self,
@@ -210,7 +211,14 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_RS:
-		assert(false);
+		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		assert(resarg1.type == DOGMA_CTXTYPE_ENV);
+		assert(resarg2.type == DOGMA_CTXTYPE_TYPEID);
+		result->type = DOGMA_CTXTYPE_BOOL;
+		assert(dogma_env_requires_skill(resarg1.env_value,
+		                                resarg2.typeid_value,
+		                                &(result->bool_value)) == DOGMA_OK);
 		break;
 
 		/* Attribute manipulation */
@@ -411,24 +419,31 @@ int dogma_eval_expression(dogma_context_t* ctx,
 	case DOGMA_DEFENVIDX:
 		result->type = DOGMA_CTXTYPE_ENV;
 		switch(exp->envidx) {
+
 		case DOGMA_Self:
 			result->env_value = self;
 			break;
+
 		case DOGMA_Char:
 			result->env_value = ctx->character;
 			break;
+
 		case DOGMA_Ship:
 			result->env_value = ctx->ship;
 			break;
+
 		case DOGMA_Target:
 			result->env_value = ctx->target;
 			break;
+
 		case DOGMA_Area:
 			result->env_value = ctx->area;
 			break;
+
 		case DOGMA_Other:
 			result->env_value = other;
 			break;
+
 		default:
 			return DOGMA_NOT_FOUND;
 		}

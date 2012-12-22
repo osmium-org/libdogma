@@ -86,15 +86,19 @@ int dogma_dump_modifiers(dogma_env_t* env) {
 				printf("        ");
 
 				switch((*modifier)->filter.type) {
+
 				case DOGMA_FILTERTYPE_PASS:
 					printf("(filter: all)");
 					break;
+
 				case DOGMA_FILTERTYPE_GROUP:
 					printf("(filter: group %i)", (*modifier)->filter.groupid);
 					break;
+
 				case DOGMA_FILTERTYPE_SKILL_REQUIRED:
 					printf("(filter: requires skill %i)", (*modifier)->filter.typeid);
 					break;
+
 				}
 
 				printf(" source attribute %hi of env %p, type %i\n",
