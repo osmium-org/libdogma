@@ -53,7 +53,8 @@ int dogma_init_context(dogma_context_t**);
 /* Free a dogma context previously created by dogma_init_context(). */
 int dogma_free_context(dogma_context_t*);
 
-/* Set the ship of a dogma context. */
+/* Set the ship of a dogma context. Use ID 0 to remove the current
+ * ship (but not its fitted modules or anything else). */
 int dogma_set_ship(dogma_context_t*, typeid_t);
 
 /* -------- Attribute getters -------- */

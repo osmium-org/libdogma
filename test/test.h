@@ -16,16 +16,8 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "test.h"
+#include <assert.h>
+#include <dogma.h>
 
-int main(void) {
-	dogma_context_t* ctx;
-
-	assert(dogma_init() == DOGMA_OK);
-	assert(dogma_init_context(&ctx) == DOGMA_OK);
-
-	/* Interesting stuff goes here... */
-
-	assert(dogma_free_context(ctx) == DOGMA_OK);
-	return 0;
-}
+#define assertf(expected, result, epsilon) \
+	assert((expected - result <= epsilon) && (result - expected <= epsilon))

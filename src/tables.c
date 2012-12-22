@@ -31,7 +31,7 @@ static array_t type_effects_by_typeid = NULL;
 #define DOGMA_INIT_GENERIC(NAME, TYPE, TABLE, INDEX, ARRAY) \
 	static void dogma_init_ ## NAME(void) { \
 		const TYPE ** value; \
-		for(int i = 0; TABLE[i].INDEX > 0; ++i) { \
+		for(int i = 0; TABLE[i].INDEX != 0; ++i) { \
 			JLI(value, ARRAY, TABLE[i].INDEX); \
 			*value = &TABLE[i]; \
 		} \
@@ -47,7 +47,7 @@ DOGMA_INIT_GENERIC(expressions, dogma_expression_t, dogma_table_expressions, id,
 		KEYTYPE1 id = 0; \
 		array_t* nested; \
 		const TYPE** value; \
-		for(int i = 0; TABLE[i].INDEX1 > 0; ++i) { \
+		for(int i = 0; TABLE[i].INDEX1 != 0; ++i) { \
 			if(TABLE[i].INDEX1 != id) { \
 				JLI(nested, ARRAY, TABLE[i].INDEX1); \
 				*nested = NULL; \

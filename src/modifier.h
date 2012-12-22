@@ -16,16 +16,37 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "test.h"
+#ifndef _DOGMA_MODIFIER_H
+#define _DOGMA_MODIFIER_H 1
 
-int main(void) {
-	dogma_context_t* ctx;
+#include "dogma.h"
+#include "dogma_internal.h"
 
-	assert(dogma_init() == DOGMA_OK);
-	assert(dogma_init_context(&ctx) == DOGMA_OK);
+#define DOGMA_FILTERTYPE_PASS 0
+#define DOGMA_FILTERTYPE_GROUP 1
+#define DOGMA_FILTERTYPE_SKILL_REQUIRED 2
 
-	/* Interesting stuff goes here... */
+struct dogma_filter_s {
+	uint8_t type;
 
-	assert(dogma_free_context(ctx) == DOGMA_OK);
-	return 0;
-}
+	union {
+		groupid_t groupid;
+		typeid_t typeid;
+	};
+};
+typedef struct dogma_filter_s dogma_filter_t;
+
+struct dogma_modifier_s {
+	attributeid_t targetattribute;
+	dogma_env_t* targetenv;
+	dogma_association_t assoctype;
+	attributeid_t sourceattribute;
+	dogma_env_t* sourceenv;
+	dogma_filter_t filter;
+};
+typedef struct dogma_modifier_s dogma_modifier_t;
+
+int dogma_add_modifier(dogma_modifier_t*);
+int dogma_remove_modifier(dogma_modifier_t*);
+
+#endif

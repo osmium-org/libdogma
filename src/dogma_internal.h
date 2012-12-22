@@ -20,17 +20,24 @@
 #define _DOGMA_INTERNAL_H 1
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <Judy.h>
+
+#include "operands.h"
+
+/* -------- Debug macros -------- */
+
+#define DOGMA_WARN(format, ...) fprintf(stderr, "%s: %s:%i: " format "\n", \
+                                        PACKAGE_NAME, __FILE__, __LINE__, __VA_ARGS__)
 
 /* -------- Data types -------- */
 
 typedef uint16_t groupid_t;
 typedef uint8_t  categoryid_t;
 typedef uint16_t effectid_t;
-typedef uint16_t expressionid_t;
-typedef uint8_t  operandid_t;
+typedef int32_t expressionid_t;
 typedef Pvoid_t array_t;
 typedef Word_t key_t;
 
@@ -78,9 +85,34 @@ struct dogma_type_effect_s {
 };
 typedef struct dogma_type_effect_s dogma_type_effect_t;
 
+/* Different association types, sorted by evaluation order (sort of
+ * like operator precedence) */
+enum dogma_association_e {
+	DOGMA_PreAssignment,
+	DOGMA_PreMul,
+	DOGMA_PreDiv,
+	DOGMA_ModAdd,
+	DOGMA_ModSub,
+	DOGMA_PostMul,
+	DOGMA_PostDiv,
+	DOGMA_PostPercent,
+	DOGMA_PostAssignment,
+};
+typedef enum dogma_association_e dogma_association_t;
+
+enum dogma_env_index_e {
+	DOGMA_Self,
+	DOGMA_Char,
+	DOGMA_Ship,
+	DOGMA_Target,
+	DOGMA_Area,
+	DOGMA_Other,
+};
+typedef enum dogma_env_index_e dogma_env_index_t;
+
 struct dogma_expression_s {
 	expressionid_t id;
-	operandid_t operandid;
+	dogma_operand_t operand;
 	expressionid_t arg1;
 	expressionid_t arg2;
 
@@ -88,6 +120,11 @@ struct dogma_expression_s {
 		groupid_t groupid;
 		attributeid_t attributeid;
 		typeid_t typeid;
+		dogma_association_t assoctype;
+		dogma_env_index_t envidx;
+		double floatv;
+		int intv;
+		bool boolv;
 		char* value;
 	};
 };
@@ -95,6 +132,8 @@ typedef struct dogma_expression_s dogma_expression_t;
 
 struct dogma_env_s {
 	typeid_t id;
+	struct dogma_env_s* parent;
+	key_t index;
 	array_t children;
 	array_t modifiers;
 };
@@ -102,14 +141,17 @@ typedef struct dogma_env_s dogma_env_t;
 
 struct dogma_context_s {
 	dogma_env_t character;
-	dogma_env_t ship;
-	dogma_env_t* self;
-	dogma_env_t* other;
+	dogma_env_t* ship;
 	dogma_env_t* target;
 	dogma_env_t* area;
 
 	uint8_t default_skill_level;
 	array_t skillpoints;
 };
+
+/* -------- Internal functions -------- */
+
+/* Dump the modifiers of an environment to stdout. */
+int dogma_dump_modifiers(dogma_env_t*);
 
 #endif

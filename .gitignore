@@ -20,4 +20,5 @@ missing
 *.lo
 test/*
 !test/*.[ch]
+src/operands.h
 src/tables-data.c
