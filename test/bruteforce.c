@@ -17,19 +17,28 @@
  */
 
 #include "test.h"
-#include "../src/dogma_internal.h"
-#include "../src/tables-data.c"
+
+/* This is dirty, but we need the data. Don't do this in real
+ * applications! */
+#include "../src/tables.h"
+#include "../src/tables.c"
+
+#define CAT_Ship 6
 
 int main(void) {
 	dogma_context_t* ctx;
+	const dogma_type_t** type;
+	key_t index = 0;
 
 	assert(dogma_init() == DOGMA_OK);
 	assert(dogma_init_context(&ctx) == DOGMA_OK);
 
-	for(int i = 0; dogma_table_types[i].id != 0; ++i) {
-		if(dogma_table_types[i].categoryid != 6) continue;
+	JLF(type, types_by_id, index);
+	while(type != NULL) {
+		if((*type)->categoryid != CAT_Ship) continue;
+		assert(dogma_set_ship(ctx, (*type)->id) == DOGMA_OK);
 
-		assert(dogma_set_ship(ctx, dogma_table_types[i].id) == DOGMA_OK);
+		JLN(type, types_by_id, index);
 	}
 
 	/* Also test postexpressions of the first ship */

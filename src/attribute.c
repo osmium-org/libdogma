@@ -19,6 +19,8 @@
 #include "attribute.h"
 #include "tables.h"
 
+#define ATT_SkillLevel 280
+
 #define ATT_RequiredSkill1 182
 #define ATT_RequiredSkill2 183
 #define ATT_RequiredSkill3 184
@@ -26,18 +28,30 @@
 #define ATT_RequiredSkill5 1289
 #define ATT_RequiredSkill6 1290
 
-static int dogma_apply_modifier(dogma_env_t*, dogma_modifier_t*, double*);
+static int dogma_apply_modifier(dogma_context_t*, dogma_env_t*, dogma_modifier_t*, double*);
 
 /* FIXME: this does not take stacking penalties into account */
-int dogma_get_env_attribute(dogma_env_t* env, attributeid_t attributeid, double* out) {
-	int ret;
+int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_t attributeid, double* out) {
 	dogma_env_t* current_env;
 	array_t* modifiers;
 	dogma_modifier_t** modifier;
 	key_t index;
 
-	ret = dogma_get_type_attribute(env->id, attributeid, out);
-	if(ret != DOGMA_OK) return ret;
+	if(attributeid == ATT_SkillLevel) {
+		/* Special case: assume we want the skill level of a skill */
+		uint8_t* level;
+
+		JLG(level, ctx->skill_levels, env->id);
+		if(level == NULL) {
+			*out = (double)ctx->default_skill_level;
+		} else {
+			*out = (double)(*level);
+		}
+
+		return DOGMA_OK;
+	}
+
+	DOGMA_ASSUME_OK(dogma_get_type_attribute(env->id, attributeid, out));
 
 	for(dogma_association_t assoctype = DOGMA_PreAssignment; assoctype <= DOGMA_PostAssignment; ++assoctype) {
 		current_env = env;
@@ -49,8 +63,7 @@ int dogma_get_env_attribute(dogma_env_t* env, attributeid_t attributeid, double*
 					index = 0;
 					JLF(modifier, *modifiers, index);
 					while(modifier != NULL) {
-						ret = dogma_apply_modifier(env, *modifier, out);
-						if(ret != DOGMA_OK) return ret;
+						DOGMA_ASSUME_OK(dogma_apply_modifier(ctx, env, *modifier, out));
 
 						JLN(modifier, *modifiers, index);
 					}
@@ -65,13 +78,11 @@ int dogma_get_env_attribute(dogma_env_t* env, attributeid_t attributeid, double*
 }
 
 #define DOGMA_CHECK_SKILL_ATTRIBUTE(attid) \
-	ret = dogma_get_env_attribute(env, attid, &value); \
-	if(ret != DOGMA_OK) return ret; \
+	DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, env, attid, &value)); \
 	if(value == skillid) { *out = true; return DOGMA_OK; }
 
-int dogma_env_requires_skill(dogma_env_t* env, typeid_t skillid, bool* out) {
+int dogma_env_requires_skill(dogma_context_t* ctx, dogma_env_t* env, typeid_t skillid, bool* out) {
 	double value;
-	int ret;
 
 	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill1)
 	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill2)
@@ -84,9 +95,8 @@ int dogma_env_requires_skill(dogma_env_t* env, typeid_t skillid, bool* out) {
 	return DOGMA_OK;
 }
 
-static int dogma_apply_modifier(dogma_env_t* env, dogma_modifier_t* modifier, double* out) {
+static int dogma_apply_modifier(dogma_context_t* ctx, dogma_env_t* env, dogma_modifier_t* modifier, double* out) {
 	const dogma_type_t* t;
-	int ret;
 	bool required;
 	double value;
 
@@ -96,21 +106,18 @@ static int dogma_apply_modifier(dogma_env_t* env, dogma_modifier_t* modifier, do
 		break;
 
 	case DOGMA_FILTERTYPE_GROUP:
-		ret = dogma_get_type(env->id, &t);
-		if(ret != DOGMA_OK) return ret;
+		DOGMA_ASSUME_OK(dogma_get_type(env->id, &t));
 		if(t->groupid != modifier->filter.groupid) return DOGMA_OK;
 		break;
 
 	case DOGMA_FILTERTYPE_SKILL_REQUIRED:
-		ret = dogma_env_requires_skill(env, modifier->filter.typeid, &required);
-		if(ret != DOGMA_OK) return ret;
+		DOGMA_ASSUME_OK(dogma_env_requires_skill(ctx, env, modifier->filter.typeid, &required));
 		if(!required) return DOGMA_OK;
 		break;
 
 	}
 
-	ret = dogma_get_env_attribute(modifier->sourceenv, modifier->sourceattribute, &value);
-	if(ret != DOGMA_OK) return ret;
+	DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, modifier->sourceenv, modifier->sourceattribute, &value));
 
 	switch(modifier->assoctype) {
 

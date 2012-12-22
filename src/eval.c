@@ -216,7 +216,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		assert(resarg1.type == DOGMA_CTXTYPE_ENV);
 		assert(resarg2.type == DOGMA_CTXTYPE_TYPEID);
 		result->type = DOGMA_CTXTYPE_BOOL;
-		assert(dogma_env_requires_skill(resarg1.env_value,
+		assert(dogma_env_requires_skill(ctx,
+		                                resarg1.env_value,
 		                                resarg2.typeid_value,
 		                                &(result->bool_value)) == DOGMA_OK);
 		break;

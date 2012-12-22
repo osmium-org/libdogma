@@ -1,5 +1,8 @@
 dogma_init
 dogma_init_context
 dogma_free_context
+dogma_set_default_skill_level
+dogma_set_skill_level
+dogma_reset_skill_levels
 dogma_set_ship
 dogma_get_ship_attribute

@@ -16,9 +16,12 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include "dogma.h"
 #include "dogma_internal.h"
 #include "modifier.h"
+#include "tables.h"
+#include "eval.h"
 
 int dogma_free_env(dogma_env_t* env) {
 	int ret;
@@ -113,6 +116,37 @@ int dogma_dump_modifiers(dogma_env_t* env) {
 		}
 
 		JLN(modifiers_by_assoctype, env->modifiers, index);
+	}
+
+	return DOGMA_OK;
+}
+
+int dogma_inject_skill(dogma_context_t* ctx, typeid_t skillid) {
+	array_t type_effects;
+	const dogma_type_effect_t** te;
+	const dogma_effect_t* e;
+	dogma_expctx_t result;
+	dogma_env_t* skill_env = malloc(sizeof(dogma_env_t));
+	dogma_env_t** value;
+	key_t index = 0;
+
+	JLI(value, ctx->character->children, skillid);
+	*value = skill_env;
+
+	skill_env->id = skillid;
+	skill_env->parent = ctx->character;
+	skill_env->index = skillid;
+	skill_env->children = NULL;
+	skill_env->modifiers = NULL;
+
+	assert(skillid < DOGMA_SAFE_CHAR_INDEXES);
+
+	DOGMA_ASSUME_OK(dogma_get_type_effects(skillid, &type_effects));
+	JLF(te, type_effects, index);
+	while(te != NULL) {
+		DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
+		DOGMA_ASSUME_OK(dogma_eval_expression(ctx, skill_env, NULL, e->preexpressionid, &result));
+		JLN(te, type_effects, index);
 	}
 
 	return DOGMA_OK;

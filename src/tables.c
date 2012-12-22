@@ -21,12 +21,15 @@
 #include "tables.h"
 #include "tables-data.c"
 
-static array_t types_by_id = NULL;
-static array_t attributes_by_id = NULL;
-static array_t effects_by_id = NULL;
-static array_t expressions_by_id = NULL;
-static array_t type_attributes_by_typeid = NULL;
-static array_t type_effects_by_typeid = NULL;
+#define ATT_Mass 4
+#define ATT_Volume 161
+
+array_t types_by_id = NULL;
+array_t attributes_by_id = NULL;
+array_t effects_by_id = NULL;
+array_t expressions_by_id = NULL;
+array_t type_attributes_by_typeid = NULL;
+array_t type_effects_by_typeid = NULL;
 
 #define DOGMA_INIT_GENERIC(NAME, TYPE, TABLE, INDEX, ARRAY) \
 	static void dogma_init_ ## NAME(void) { \
@@ -99,7 +102,21 @@ int dogma_get_type_attribute(typeid_t tid, attributeid_t aid, double* out) {
 	array_t type_attributes;
 	const dogma_type_attribute_t** ta;
 
-	dogma_get_type_attributes(tid, &type_attributes);
+	if(aid == ATT_Mass) {
+		const dogma_type_t* t;
+		DOGMA_ASSUME_OK(dogma_get_type(tid, &t));
+
+		*out = t->mass;
+		return DOGMA_OK;
+	} else if(aid == ATT_Volume) {
+		const dogma_type_t* t;
+		DOGMA_ASSUME_OK(dogma_get_type(tid, &t));
+
+		*out = t->volume;
+		return DOGMA_OK;
+	}
+
+	DOGMA_ASSUME_OK(dogma_get_type_attributes(tid, &type_attributes));
 
 	JLG(ta, type_attributes, aid);
 	if(ta == NULL) {
@@ -122,7 +139,11 @@ int dogma_get_type_effects(typeid_t id, array_t* out) {
 	array_t* value;
 
 	JLG(value, type_effects_by_typeid, id);
+	if(value != NULL) {
+		*out = *value;
+	} else {
+		*out = NULL;
+	}
 
-	*out = *value;
 	return DOGMA_OK;
 }

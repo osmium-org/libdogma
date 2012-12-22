@@ -47,11 +47,22 @@ int dogma_init(void);
 /* -------- Context manipulation functions -------- */
 
 /* Create a dogma context. A dogma context consists of a character and
- * his skills, a ship, its fitted modules, etc. */
+ * his skills, a ship, its fitted modules, etc. By default the
+ * character has all skills to level V. */
 int dogma_init_context(dogma_context_t**);
 
 /* Free a dogma context previously created by dogma_init_context(). */
 int dogma_free_context(dogma_context_t*);
+
+/* Set the default skill level of a context. */
+int dogma_set_default_skill_level(dogma_context_t*, uint8_t);
+
+/* Override the skill level of a particular skill. */
+int dogma_set_skill_level(dogma_context_t*, typeid_t, uint8_t);
+
+/* Forgets all overriden skill levels. This does not reset the default
+ * skill level that was set with dogma_set_default_skill_level(). */
+int dogma_reset_skill_levels(dogma_context_t*);
 
 /* Set the ship of a dogma context. Use ID 0 to remove the current
  * ship (but not its fitted modules or anything else). */

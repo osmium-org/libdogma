@@ -23,7 +23,7 @@
 #include "dogma_internal.h"
 #include "modifier.h"
 
-int dogma_get_env_attribute(dogma_env_t*, attributeid_t, double*);
-int dogma_env_requires_skill(dogma_env_t*, typeid_t, bool*);
+int dogma_get_env_attribute(dogma_context_t*, dogma_env_t*, attributeid_t, double*);
+int dogma_env_requires_skill(dogma_context_t*, dogma_env_t*, typeid_t, bool*);
 
 #endif

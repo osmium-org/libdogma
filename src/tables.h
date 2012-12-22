@@ -22,6 +22,13 @@
 #include "dogma.h"
 #include "dogma_internal.h"
 
+extern array_t types_by_id;
+extern array_t attributes_by_id;
+extern array_t effects_by_id;
+extern array_t expressions_by_id;
+extern array_t type_attributes_by_typeid;
+extern array_t type_effects_by_typeid;
+
 void dogma_init_tables(void);
 
 int dogma_get_type(typeid_t, const dogma_type_t**);

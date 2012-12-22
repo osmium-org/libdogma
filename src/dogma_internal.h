@@ -27,10 +27,17 @@
 
 #include "operands.h"
 
-/* -------- Debug macros -------- */
+/* -------- General -------- */
 
 #define DOGMA_WARN(format, ...) fprintf(stderr, "%s: %s:%i: " format "\n", \
                                         PACKAGE_NAME, __FILE__, __LINE__, __VA_ARGS__)
+
+#define DOGMA_ASSUME_OK(RESULT) \
+	{ int call_result__ = RESULT; if(call_result__ != DOGMA_OK) return call_result__; }
+
+/* Start assigning IDs for misc. children environments of character
+ * from this index. */
+#define DOGMA_SAFE_CHAR_INDEXES 50000
 
 /* -------- Data types -------- */
 
@@ -154,7 +161,7 @@ struct dogma_context_s {
 	dogma_env_t* area;
 
 	uint8_t default_skill_level;
-	array_t skillpoints;
+	array_t skill_levels;
 };
 
 /* -------- Internal functions -------- */
@@ -166,5 +173,8 @@ int dogma_free_env(dogma_env_t*);
 
 /* Dump the modifiers of an environment to stdout. */
 int dogma_dump_modifiers(dogma_env_t*);
+
+/* Inject a skill in character. */
+int dogma_inject_skill(dogma_context_t*, typeid_t);
 
 #endif

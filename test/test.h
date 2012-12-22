@@ -20,4 +20,4 @@
 #include <dogma.h>
 
 #define assertf(expected, result, epsilon) \
-	assert((expected - result <= epsilon) && (result - expected <= epsilon))
+	assert(((expected) - (result) <= (epsilon)) && ((result) - (expected) <= (epsilon)))
