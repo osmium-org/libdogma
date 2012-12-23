@@ -70,7 +70,10 @@ int dogma_set_ship(dogma_context_t*, typeid_t);
 
 /* -------- Attribute getters -------- */
 
-/* Get an attribute of the ship of a dogma context. */
+/* Get an attribute of the character. */
+int dogma_get_character_attribute(dogma_context_t*, attributeid_t, double*);
+
+/* Get an attribute of the ship. */
 int dogma_get_ship_attribute(dogma_context_t*, attributeid_t, double*);
 
 #endif
