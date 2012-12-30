@@ -35,6 +35,16 @@
 typedef uint32_t typeid_t;
 typedef uint16_t attributeid_t;
 
+enum state_s {
+	/* These values are actually bitmasks: if bit of index i is set,
+	 * it means effects with category i should be evaluated. */
+	DOGMA_Offline = 1,     /* 0b00000001 */
+	DOGMA_Online = 17,     /* 0b00010001 */
+	DOGMA_Active = 31,     /* 0b00011111 */
+	DOGMA_Overloaded = 63, /* 0b00111111 */
+};
+typedef enum state_s state_t;
+
 struct dogma_context_s;
 typedef struct dogma_context_s dogma_context_t;
 

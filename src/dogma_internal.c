@@ -65,6 +65,44 @@ int dogma_free_env(dogma_env_t* env) {
 	return DOGMA_OK;
 }
 
+int dogma_set_env_state(dogma_context_t* ctx, dogma_env_t* env, dogma_env_t* other, state_t newstate) {
+	array_t enveffects;
+	key_t index = 0;
+	const dogma_type_effect_t** te;
+	const dogma_effect_t* e;
+	dogma_expctx_t result;
+
+	if(env->state == newstate) return DOGMA_OK;
+
+	DOGMA_ASSUME_OK(dogma_get_type_effects(env->id, &enveffects));
+	JLF(te, enveffects, index);
+	while(te != NULL) {
+		DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
+
+		if((newstate >> e->category) & 1) {
+			if(!((env->state >> e->category) & 1)) {
+				DOGMA_ASSUME_OK(dogma_eval_expression(ctx,
+				                                      env,
+				                                      other,
+				                                      e->preexpressionid,
+				                                      &result));
+			}
+		} else {
+			if((env->state >> e->category) & 1) {
+				DOGMA_ASSUME_OK(dogma_eval_expression(ctx,
+				                                      env,
+				                                      other,
+				                                      e->postexpressionid,
+				                                      &result));
+			}
+		}
+
+		JLN(te, enveffects, index);
+	}
+
+	return DOGMA_OK;
+}
+
 int dogma_dump_modifiers(dogma_env_t* env) {
 	key_t index = 0, index2, index3;
 	array_t* modifiers_by_assoctype;
@@ -122,13 +160,8 @@ int dogma_dump_modifiers(dogma_env_t* env) {
 }
 
 int dogma_inject_skill(dogma_context_t* ctx, typeid_t skillid) {
-	array_t type_effects;
-	const dogma_type_effect_t** te;
-	const dogma_effect_t* e;
-	dogma_expctx_t result;
 	dogma_env_t* skill_env = malloc(sizeof(dogma_env_t));
 	dogma_env_t** value;
-	key_t index = 0;
 
 	JLI(value, ctx->character->children, skillid);
 	*value = skill_env;
@@ -136,18 +169,13 @@ int dogma_inject_skill(dogma_context_t* ctx, typeid_t skillid) {
 	skill_env->id = skillid;
 	skill_env->parent = ctx->character;
 	skill_env->index = skillid;
+	skill_env->state = 0;
 	skill_env->children = NULL;
 	skill_env->modifiers = NULL;
 
 	assert(skillid < DOGMA_SAFE_CHAR_INDEXES);
 
-	DOGMA_ASSUME_OK(dogma_get_type_effects(skillid, &type_effects));
-	JLF(te, type_effects, index);
-	while(te != NULL) {
-		DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
-		DOGMA_ASSUME_OK(dogma_eval_expression(ctx, skill_env, NULL, e->preexpressionid, &result));
-		JLN(te, type_effects, index);
-	}
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, skill_env, NULL, DOGMA_Online));
 
 	return DOGMA_OK;
 }

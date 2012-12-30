@@ -48,6 +48,7 @@ int dogma_init_context(dogma_context_t** ctx) {
 	new_ctx->character->id = 0;
 	new_ctx->character->parent = NULL;
 	new_ctx->character->index = 0;
+	new_ctx->character->state = 0;
 	new_ctx->character->children = (array_t)NULL;
 	new_ctx->character->modifiers = (array_t)NULL;
 
@@ -57,6 +58,7 @@ int dogma_init_context(dogma_context_t** ctx) {
 	new_ctx->ship->id = 0;
 	new_ctx->ship->parent = new_ctx->character;
 	new_ctx->ship->index = 0;
+	new_ctx->ship->state = 0;
 	new_ctx->ship->children = (array_t)NULL;
 	new_ctx->ship->modifiers = (array_t)NULL;
 
@@ -118,42 +120,14 @@ int dogma_reset_skill_levels(dogma_context_t* ctx) {
 }
 
 int dogma_set_ship(dogma_context_t* ctx, typeid_t ship_typeid) {
-	array_t shipeffects;
-	key_t index;
-	const dogma_type_effect_t** te;
-	const dogma_effect_t* e;
-	dogma_expctx_t result;
-
 	if(ship_typeid == ctx->ship->id) {
 		/* Be lazy */
 		return DOGMA_OK;
 	}
 
-	if(ctx->ship->id != 0) {
-		/* Eval (old) ship postExpressions */
-		DOGMA_ASSUME_OK(dogma_get_type_effects(ctx->ship->id, &shipeffects));
-		index = 0;
-		JLF(te, shipeffects, index);
-		while(te != NULL) {
-			DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
-			DOGMA_ASSUME_OK(dogma_eval_expression(ctx, ctx->ship, NULL, e->postexpressionid, &result));
-			JLN(te, shipeffects, index);
-		}
-	}
-
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, ctx->ship, NULL, 0));
 	ctx->ship->id = ship_typeid;
-
-	if(ctx->ship->id != 0) {
-		/* Eval (new) ship preExpressions */
-		DOGMA_ASSUME_OK(dogma_get_type_effects(ctx->ship->id, &shipeffects));
-		index = 0;
-		JLF(te, shipeffects, index);
-		while(te != NULL) {
-			DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
-			DOGMA_ASSUME_OK(dogma_eval_expression(ctx, ctx->ship, NULL, e->preexpressionid, &result));
-			JLN(te, shipeffects, index);
-		}
-	}
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, ctx->ship, NULL, DOGMA_Online));
 
 	return DOGMA_OK;
 }

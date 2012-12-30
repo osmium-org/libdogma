@@ -144,6 +144,7 @@ struct dogma_env_s {
 	typeid_t id;
 	struct dogma_env_s* parent;
 	key_t index;
+	state_t state;
 	array_t children;
 	array_t modifiers;
 };
@@ -170,6 +171,10 @@ struct dogma_context_s {
  * recursively. This function is not smart and will not remove
  * obsolete modifiers on parents! */
 int dogma_free_env(dogma_env_t*);
+
+/* Set state of an environment and evaluate needed expressions based
+ * on effect categories. */
+int dogma_set_env_state(dogma_context_t*, dogma_env_t*, dogma_env_t*, state_t);
 
 /* Dump the modifiers of an environment to stdout. */
 int dogma_dump_modifiers(dogma_env_t*);
