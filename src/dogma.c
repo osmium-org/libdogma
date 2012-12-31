@@ -17,6 +17,7 @@
  */
 
 #include <assert.h>
+#include <stdbool.h>
 #include "dogma.h"
 #include "dogma_internal.h"
 #include "tables.h"
@@ -29,6 +30,10 @@
 #define CAT_Skill 16
 
 int dogma_init(void) {
+	static bool initialized = false;
+	if(initialized) return DOGMA_OK;
+	initialized = true;
+
 	dogma_init_tables();
 
 	assert(DOGMA_MIN_SKILL_LEVEL <= DOGMA_MAX_SKILL_LEVEL);
