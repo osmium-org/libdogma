@@ -5,5 +5,9 @@ dogma_set_default_skill_level
 dogma_set_skill_level
 dogma_reset_skill_levels
 dogma_set_ship
+dogma_add_module
+dogma_remove_module
+dogma_set_module_state
 dogma_get_character_attribute
 dogma_get_ship_attribute
+dogma_get_module_attribute

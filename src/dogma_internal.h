@@ -35,9 +35,8 @@
 #define DOGMA_ASSUME_OK(RESULT) \
 	{ int call_result__ = RESULT; if(call_result__ != DOGMA_OK) return call_result__; }
 
-/* Start assigning IDs for misc. children environments of character
- * from this index. */
 #define DOGMA_SAFE_CHAR_INDEXES 50000
+#define DOGMA_SAFE_SHIP_INDEXES 0
 
 /* -------- Data types -------- */
 
@@ -45,8 +44,6 @@ typedef uint16_t groupid_t;
 typedef uint8_t  categoryid_t;
 typedef uint16_t effectid_t;
 typedef int32_t expressionid_t;
-typedef Pvoid_t array_t;
-typedef Word_t key_t;
 
 struct dogma_type_s {
 	typeid_t id;

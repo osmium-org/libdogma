@@ -44,13 +44,15 @@ int dogma_init_context(dogma_context_t** ctx) {
 
 	new_ctx->character = malloc(sizeof(dogma_env_t));
 	new_ctx->ship = malloc(sizeof(dogma_env_t));
+	new_ctx->target = malloc(sizeof(dogma_env_t));
+	new_ctx->area = malloc(sizeof(dogma_env_t));
 
 	new_ctx->character->id = 0;
 	new_ctx->character->parent = NULL;
 	new_ctx->character->index = 0;
 	new_ctx->character->state = 0;
-	new_ctx->character->children = (array_t)NULL;
-	new_ctx->character->modifiers = (array_t)NULL;
+	new_ctx->character->children = NULL;
+	new_ctx->character->modifiers = NULL;
 
 	JLI(value, new_ctx->character->children, 0);
 	*value = new_ctx->ship;
@@ -59,11 +61,22 @@ int dogma_init_context(dogma_context_t** ctx) {
 	new_ctx->ship->parent = new_ctx->character;
 	new_ctx->ship->index = 0;
 	new_ctx->ship->state = 0;
-	new_ctx->ship->children = (array_t)NULL;
-	new_ctx->ship->modifiers = (array_t)NULL;
+	new_ctx->ship->children = NULL;
+	new_ctx->ship->modifiers = NULL;
 
-	new_ctx->target = NULL;
-	new_ctx->area = NULL;
+	new_ctx->target->id = 0;
+	new_ctx->target->parent = NULL;
+	new_ctx->target->index = 0;
+	new_ctx->target->state = 0;
+	new_ctx->target->children = NULL;
+	new_ctx->target->modifiers = NULL;
+
+	new_ctx->area->id = 0;
+	new_ctx->area->parent = NULL;
+	new_ctx->area->index = 0;
+	new_ctx->area->state = 0;
+	new_ctx->area->children = NULL;
+	new_ctx->area->modifiers = NULL;
 
 	new_ctx->default_skill_level = DOGMA_MAX_SKILL_LEVEL;
 	new_ctx->skill_levels = (array_t)NULL;
@@ -85,6 +98,8 @@ int dogma_init_context(dogma_context_t** ctx) {
 
 int dogma_free_context(dogma_context_t* ctx) {
 	dogma_free_env(ctx->character);
+	dogma_free_env(ctx->target);
+	dogma_free_env(ctx->area);
 	dogma_reset_skill_levels(ctx);
 	free(ctx);
 
@@ -132,10 +147,64 @@ int dogma_set_ship(dogma_context_t* ctx, typeid_t ship_typeid) {
 	return DOGMA_OK;
 }
 
+int dogma_add_module(dogma_context_t* ctx, typeid_t module_typeid, key_t* out_index) {
+	dogma_env_t* module_env = malloc(sizeof(dogma_env_t));
+	dogma_env_t** value;
+	key_t index = DOGMA_SAFE_CHAR_INDEXES;
+	int result;
+
+	JLFE(result, ctx->ship->children, index);
+	JLI(value, ctx->ship->children, index);
+	*value = module_env;
+	*out_index = index;
+
+	module_env->id = module_typeid;
+	module_env->parent = ctx->ship;
+	module_env->index = index;
+	module_env->state = 0;
+	module_env->children = NULL;
+	module_env->modifiers = NULL;
+
+	return DOGMA_OK;
+}
+
+int dogma_remove_module(dogma_context_t* ctx, key_t index) {
+	dogma_env_t** module_env;
+	int result;
+
+	JLG(module_env, ctx->ship->children, index);
+	if(module_env == NULL) return DOGMA_NOT_FOUND;
+
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, *module_env, NULL, 0));
+
+	dogma_free_env(*module_env);
+
+	JLD(result, ctx->ship->children, index);
+	return DOGMA_OK;
+}
+
+int dogma_set_module_state(dogma_context_t* ctx, key_t index, state_t new_state) {
+	dogma_env_t** module_env;
+
+	JLG(module_env, ctx->ship->children, index);
+	if(module_env == NULL) return DOGMA_NOT_FOUND;
+
+	return dogma_set_env_state(ctx, *module_env, NULL, new_state);
+}
+
 int dogma_get_character_attribute(dogma_context_t* ctx, attributeid_t attributeid, double* out) {
 	return dogma_get_env_attribute(ctx, ctx->character, attributeid, out);
 }
 
 int dogma_get_ship_attribute(dogma_context_t* ctx, attributeid_t attributeid, double* out) {
 	return dogma_get_env_attribute(ctx, ctx->ship, attributeid, out);
+}
+
+int dogma_get_module_attribute(dogma_context_t* ctx, key_t index, attributeid_t attributeid, double* out) {
+	dogma_env_t** module_env;
+
+	JLG(module_env, ctx->ship->children, index);
+	if(module_env == NULL) return DOGMA_NOT_FOUND;
+
+	return dogma_get_env_attribute(ctx, *module_env, attributeid, out);
 }

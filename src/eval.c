@@ -108,6 +108,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		assert(exp->arg1 != 0);
 		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
 		assert(resarg1.type == DOGMA_CTXTYPE_BOOL);
+		result->type = DOGMA_CTXTYPE_BOOL;
+		result->bool_value = resarg1.bool_value;
 		if(resarg1.bool_value) {
 			dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
 		}
@@ -118,7 +120,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
 		assert(resarg1.type == DOGMA_CTXTYPE_BOOL);
 		if(!resarg1.bool_value) {
-			/* FIXME: assuming AND is lazy */
+			/* Note: AND seems to be lazy, see the untainted expression for the online effect (id 633) */
 			result->type = DOGMA_CTXTYPE_BOOL;
 			result->bool_value = false;
 		} else {
@@ -225,11 +227,11 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		/* Attribute manipulation */
 
 	case DOGMA_INC:
-		assert(false);
+		/* TODO */
 		break;
 
 	case DOGMA_DEC:
-		assert(false);
+		/* TODO */
 		break;
 
 	case DOGMA_INCN:
@@ -479,11 +481,15 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		/* Checks */
 
 	case DOGMA_SKILLCHECK:
+		assert(false);
+		break;
 
 	case DOGMA_TOOLTARGETSKILLS:
+		/* TODO / Dummy ? */
+		break;
 
 	case DOGMA_VERIFYTARGETGROUP:
-		assert(false);
+		/* TODO / Dummy ? */
 		break;
 
 		/* Misc. stuff */
@@ -518,6 +524,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_UE:
+		assert(false);
+		break;
 
 	default:
 		return DOGMA_NOT_FOUND;

@@ -20,29 +20,37 @@
 
 /* This is dirty, but we need the data. Don't do this in real
  * applications! */
-#include "../src/tables.h"
 #include "../src/tables.c"
 
+#include <stdio.h>
+
 #define CAT_Ship 6
+#define CAT_Module 7
+#define CAT_Subsystem 32
 
 int main(void) {
 	dogma_context_t* ctx;
-	const dogma_type_t** type;
-	key_t index = 0;
+	key_t module_index;
+	int i;
 
 	assert(dogma_init() == DOGMA_OK);
 	assert(dogma_init_context(&ctx) == DOGMA_OK);
 
-	JLF(type, types_by_id, index);
-	while(type != NULL) {
-		if((*type)->categoryid != CAT_Ship) continue;
-		assert(dogma_set_ship(ctx, (*type)->id) == DOGMA_OK);
-
-		JLN(type, types_by_id, index);
+	for(i = 0; dogma_table_types[i].id != 0; ++i) {
+		if(dogma_table_types[i].categoryid != CAT_Ship) continue;
+		assert(dogma_set_ship(ctx, dogma_table_types[i].id) == DOGMA_OK);
 	}
 
-	/* Also test postexpressions of the first ship */
-	dogma_set_ship(ctx, 0);
+	/* Select a dummy ship to test modules */
+	dogma_set_ship(ctx, 587);
+
+	for(i = 0; dogma_table_types[i].id != 0; ++i) {
+		if(dogma_table_types[i].categoryid != CAT_Module
+		   && dogma_table_types[i].categoryid != CAT_Subsystem) continue;
+		assert(dogma_add_module(ctx, dogma_table_types[i].id, &module_index) == DOGMA_OK);
+		assert(dogma_set_module_state(ctx, module_index, DOGMA_Overloaded) == DOGMA_OK);
+		assert(dogma_remove_module(ctx, module_index) == DOGMA_OK);
+	}
 
 	assert(dogma_free_context(ctx) == DOGMA_OK);
 	return 0;

@@ -201,6 +201,28 @@ $usedeffectsbyid[132]['postExpression'] = -1;
 /* online: inconsistent category, WTF? */
 $usedeffectsbyid[16]['categoryID'] = 4;
 
+/* online: skip all the CPU/Power/Skill checks, they only make sense
+ * in game */
+$usedeffectsbyid[16]['preExpression'] = 178;
+$usedeffectsbyid[16]['postExpression'] = 180;
+
+/* turretFitted: skip the hardpoint check */
+$usedeffectsbyid[42]['preExpression'] = 304;
+$usedeffectsbyid[42]['postExpression'] = 305;
+
+/* launcherFitted: skip the hardpoint check */
+$usedeffectsbyid[40]['preExpression'] = 318;
+$usedeffectsbyid[40]['postExpression'] = 319;
+
+/* TODO: penalties (AB/MWD, agility/sigradius) of warpDisruptSphere */
+
+/* maxRangeHiddenPreAssignmentWarpScrambleRange: not sure what this is or what it does, get rid of it */
+$usedeffectsbyid[4894]['preExpression'] = -1;
+$usedeffectsbyid[4894]['postExpression'] = -1;
+/* scriptWarpDisruptionFieldGeneratorSetScriptCapacitorNeedHidden: same */
+$usedeffectsbyid[3615]['preExpression'] = -1;
+$usedeffectsbyid[3615]['postExpression'] = -1;
+
 
 fwrite($c, "static const dogma_effect_t dogma_table_effects[] = {\n");
 foreach($usedeffectsbyid as $e) {
