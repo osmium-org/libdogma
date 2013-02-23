@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -382,9 +382,14 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
 		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_MODIFIER);
-		assert(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID);
-		resarg1.modifier_value.sourceattribute = resarg2.attributeid_value;
-		resarg1.modifier_value.sourceenv = self;
+		assert(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID || resarg2.type == DOGMA_CTXTYPE_MODIFIER);
+		if(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID) {
+			resarg1.modifier_value.sourceattribute = resarg2.attributeid_value;
+			resarg1.modifier_value.sourceenv = self;
+		} else {
+			resarg1.modifier_value.sourceattribute = resarg2.modifier_value.targetattribute;
+			resarg1.modifier_value.sourceenv = resarg2.modifier_value.targetenv;
+		}
 		assert(dogma_add_modifier(&(resarg1.modifier_value)) == DOGMA_OK);
 		break;
 
@@ -396,9 +401,14 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
 		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_MODIFIER);
-		assert(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID);
-		resarg1.modifier_value.sourceattribute = resarg2.attributeid_value;
-		resarg1.modifier_value.sourceenv = self;
+		assert(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID || resarg2.type == DOGMA_CTXTYPE_MODIFIER);
+		if(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID) {
+			resarg1.modifier_value.sourceattribute = resarg2.attributeid_value;
+			resarg1.modifier_value.sourceenv = self;
+		} else {
+			resarg1.modifier_value.sourceattribute = resarg2.modifier_value.targetattribute;
+			resarg1.modifier_value.sourceenv = resarg2.modifier_value.targetenv;
+		}
 		assert(dogma_remove_modifier(&(resarg1.modifier_value)) == DOGMA_OK);
 		break;
 
