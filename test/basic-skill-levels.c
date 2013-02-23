@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -25,6 +25,10 @@
 #define ATT_CpuOutput 48
 #define ATT_PowerOutput 11
 
+/* Osmium 0.6.4 (Retribution 1.1) */
+#define HARB_BaseCPU 375.00
+#define HARB_BasePG 1425.00
+
 #define EPS 1e-10
 
 int main(void) {
@@ -36,35 +40,33 @@ int main(void) {
 
 	assert(dogma_set_ship(ctx, TYPE_Harbinger) == DOGMA_OK);
 
-	/* Pyfa 1.1.12 (Retribution 1.0) */
-
 	assert(dogma_get_ship_attribute(ctx, ATT_PowerOutput, &value) == DOGMA_OK);
-	assertf(value, 1875.00, EPS);
+	assertf(value, HARB_BasePG * 1.25, EPS);
 	assert(dogma_get_ship_attribute(ctx, ATT_CpuOutput, &value) == DOGMA_OK);
-	assertf(value, 468.75, EPS);
+	assertf(value, HARB_BaseCPU * 1.25, EPS);
 
 	assert(dogma_set_default_skill_level(ctx, 1) == DOGMA_OK);
 
 	assert(dogma_get_ship_attribute(ctx, ATT_PowerOutput, &value) == DOGMA_OK);
-	assertf(value, 1500.00 * 1.05, EPS);
+	assertf(value, HARB_BasePG * 1.05, EPS);
 	assert(dogma_get_ship_attribute(ctx, ATT_CpuOutput, &value) == DOGMA_OK);
-	assertf(value, 375.00 * 1.05, EPS);
+	assertf(value, HARB_BaseCPU * 1.05, EPS);
 
 	assert(dogma_set_skill_level(ctx, TYPE_Electronics, 4) == DOGMA_OK);
 	assert(dogma_set_skill_level(ctx, TYPE_Engineering, 0) == DOGMA_OK);
 
 	assert(dogma_get_ship_attribute(ctx, ATT_PowerOutput, &value) == DOGMA_OK);
-	assertf(value, 1500.00, EPS);
+	assertf(value, HARB_BasePG, EPS);
 	assert(dogma_get_ship_attribute(ctx, ATT_CpuOutput, &value) == DOGMA_OK);
-	assertf(value, 375.00 * 1.20, EPS);
+	assertf(value, HARB_BaseCPU * 1.20, EPS);
 
 	assert(dogma_set_default_skill_level(ctx, 5) == DOGMA_OK);
 	assert(dogma_reset_skill_levels(ctx) == DOGMA_OK);
 
 	assert(dogma_get_ship_attribute(ctx, ATT_PowerOutput, &value) == DOGMA_OK);
-	assertf(value, 1875.00, EPS);
+	assertf(value, HARB_BasePG * 1.25, EPS);
 	assert(dogma_get_ship_attribute(ctx, ATT_CpuOutput, &value) == DOGMA_OK);
-	assertf(value, 468.75, EPS);
+	assertf(value, HARB_BaseCPU * 1.25, EPS);
 
 	assert(dogma_free_context(ctx) == DOGMA_OK);
 	return 0;

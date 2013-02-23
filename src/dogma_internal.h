@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -42,7 +42,7 @@
 
 typedef uint16_t groupid_t;
 typedef uint8_t  categoryid_t;
-typedef uint16_t effectid_t;
+typedef int32_t effectid_t;
 typedef int32_t expressionid_t;
 
 struct dogma_type_s {

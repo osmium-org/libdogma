@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -183,6 +183,12 @@ foreach($json['typeeffects'] as $te) {
 	$usedtypeeffects[] = $te;
 }
 
+/* Add the custom effect to the Nanite Repair Paste */
+$usedtypeeffects[] = array(
+	'effectID' => -10,
+	'typeID' => 28668
+);
+
 foreach($json['effects'] as $e) {
 	if(!isset($usedeffectsbyid[$e['effectID']])) {
 		continue;
@@ -190,6 +196,20 @@ foreach($json['effects'] as $e) {
 
 	$usedeffectsbyid[$e['effectID']] = $e;
 }
+
+/* Effect for the Nanite Repair Paste when used in an Ancillary Armor Repairer */
+$usedeffectsbyid[-10] = array(
+	'effectID' => -10,
+	'effectCategory' => 0,
+	'preExpression' => -10,
+	'postExpression' => -9,
+	'durationAttributeID' => null,
+	'trackingSpeedAttributeID' => null,
+	'dischargeAttributeID' => null,
+	'rangeAttributeID' => null,
+	'falloffAttributeID' => null
+);
+
 ksort($usedeffectsbyid);
 
 
@@ -224,10 +244,11 @@ $usedeffectsbyid[3615]['preExpression'] = -1;
 $usedeffectsbyid[3615]['postExpression'] = -1;
 
 
+
 fwrite($c, "static const dogma_effect_t dogma_table_effects[] = {\n");
 foreach($usedeffectsbyid as $e) {
 	fwrite($c, "\t{ "
-	       .$e['effectID'].'U'
+	       .$e['effectID']
 	       .", ".$e['effectCategory'].'U'
 	       .", ".$e['preExpression'].'U'
 	       .", ".$e['postExpression'].'U'
@@ -238,7 +259,7 @@ foreach($usedeffectsbyid as $e) {
 	       .", ".(int)$e['falloffAttributeID'].'U'
 	       ." },\n");
 }
-fwrite($c, "\t{ 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U }\n");
+fwrite($c, "\t{ 0, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U }\n");
 fwrite($c, "};\n");
 
 /* -------- Type attributes / Type effects -------- */
@@ -271,10 +292,10 @@ fwrite($c, "static const dogma_type_effect_t dogma_table_type_effects[] = {\n");
 foreach($usedtypeeffects as $te) {
 	fwrite($c, "\t{ "
 	       .$te['typeID'].'U'
-	       .", ".$te['effectID'].'U'
+	       .", ".$te['effectID']
 	       ." },\n");
 }
-fwrite($c, "\t{ 0U, 0U }\n");
+fwrite($c, "\t{ 0U, 0 }\n");
 fwrite($c, "};\n");
 
 /* -------- Operands -------- */
@@ -317,6 +338,70 @@ $expressionsbyid[-1] = array(
 	'operandID' => 23, /* DEFBOOL */
 	'expressionValue' => '0',
 	'expressionAttributeID' => null,
+	'expressionGroupID' => null,
+	'expressionTypeID' => null,
+	'arg1' => null,
+	'arg2' => null,
+	);
+
+/* Ancillary Armor Repairer charge expression:
+ * ((CurrentOther->armorDamageAmount).(PostMul)).AddItemModifier (CurrentOther->chargedArmorDamageMultiplier)
+ */
+$expressionsbyid[-10] = array(
+	'expressionID' => -10,
+	'operandID' => 6, /* AIM */
+	'expressionValue' => null,
+	'expressionAttributeID' => null,
+	'expressionGroupID' => null,
+	'expressionTypeID' => null,
+	'arg1' => -7, /* (CurrentOther->armorDamageAmount).(PostMul) */
+	'arg2' => -6, /* CurrentOther->chargedArmorDamageMultiplier */ 
+	);
+$expressionsbyid[-9] = array(
+	'expressionID' => -9,
+	'operandID' => 58, /* RIM */
+	'expressionValue' => null,
+	'expressionAttributeID' => null,
+	'expressionGroupID' => null,
+	'expressionTypeID' => null,
+	'arg1' => -7, /* (CurrentOther->armorDamageAmount).(PostMul) */
+	'arg2' => -6, /* CurrentOther->chargedArmorDamageMultiplier */ 
+	);
+$expressionsbyid[-8] = array(
+	'expressionID' => -8,
+	'operandID' => 12, /* ATT */
+	'expressionValue' => null,
+	'expressionAttributeID' => null,
+	'expressionGroupID' => null,
+	'expressionTypeID' => null,
+	'arg1' => 3043, /* CurrentOther */
+	'arg2' => 234, /* armorDamageAmount */
+	);
+$expressionsbyid[-7] = array(
+	'expressionID' => -7,
+	'operandID' => 31, /* EFF */
+	'expressionValue' => null,
+	'expressionAttributeID' => null,
+	'expressionGroupID' => null,
+	'expressionTypeID' => null,
+	'arg1' => 5, /* PreMul */
+	'arg2' => -8, /* CurrentOther->armorDamageAmount */
+	);
+$expressionsbyid[-6] = array(
+	'expressionID' => -6,
+	'operandID' => 12, /* ATT */
+	'expressionValue' => null,
+	'expressionAttributeID' => null,
+	'expressionGroupID' => null,
+	'expressionTypeID' => null,
+	'arg1' => 3043, /* CurrentOther */
+	'arg2' => -5, /* chargedArmorDamageMultiplier */
+	);
+$expressionsbyid[-5] = array(
+	'expressionID' => -5,
+	'operandID' => 22, /* DEFATTRIBUTE */
+	'expressionValue' => null,
+	'expressionAttributeID' => 1886,
 	'expressionGroupID' => null,
 	'expressionTypeID' => null,
 	'arg1' => null,
@@ -460,10 +545,10 @@ foreach($usedexpressionsbyid as $e) {
 	fwrite($c, "\t{ "
 	       .".id = ".$e['expressionID'].'U'
 	       .", .operand = DOGMA_".$operandsbyid[$e['operandID']]['operandKey']
-	       .", .arg1 = ".(int)$e['arg1'].'U'
-	       .", .arg2 = ".(int)$e['arg2'].'U'
+	       .", .arg1 = ".(int)$e['arg1']
+	       .", .arg2 = ".(int)$e['arg2']
 	       .", .".$dataname." = ".$data
 	       ." },\n");
 }
-fwrite($c, "\t{ .id = 0U, .operand = 0, .arg1 = 0U, .arg2 = 0U, .value = NULL }\n");
+fwrite($c, "\t{ .id = 0U, .operand = 0, .arg1 = 0, .arg2 = 0, .value = NULL }\n");
 fwrite($c, "};\n");
