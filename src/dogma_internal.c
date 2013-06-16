@@ -81,24 +81,30 @@ int dogma_set_env_state(dogma_context_t* ctx, dogma_env_t* env, dogma_env_t* oth
 
 		if((newstate >> e->category) & 1) {
 			if(!((env->state >> e->category) & 1)) {
-				DOGMA_ASSUME_OK(dogma_eval_expression(ctx,
-				                                      env,
-				                                      other,
-				                                      e->preexpressionid,
-				                                      &result));
+				DOGMA_ASSUME_OK(
+					dogma_eval_expression(
+						ctx, env, other,
+						e->preexpressionid,
+						&result
+					)
+				);
 			}
 		} else {
 			if((env->state >> e->category) & 1) {
-				DOGMA_ASSUME_OK(dogma_eval_expression(ctx,
-				                                      env,
-				                                      other,
-				                                      e->postexpressionid,
-				                                      &result));
+				DOGMA_ASSUME_OK(
+					dogma_eval_expression(
+						ctx, env, other,
+						e->postexpressionid,
+						&result
+					)
+				);
 			}
 		}
 
 		JLN(te, enveffects, index);
 	}
+
+	env->state = newstate;
 
 	return DOGMA_OK;
 }
