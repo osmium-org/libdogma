@@ -8,6 +8,9 @@ dogma_set_ship
 dogma_add_module
 dogma_remove_module
 dogma_set_module_state
+dogma_add_charge
+dogma_remove_charge
 dogma_get_character_attribute
 dogma_get_ship_attribute
 dogma_get_module_attribute
+dogma_get_charge_attribute

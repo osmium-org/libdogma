@@ -197,6 +197,58 @@ int dogma_set_module_state(dogma_context_t* ctx, key_t index, state_t new_state)
 	return dogma_set_env_state(ctx, *module_env, NULL, new_state);
 }
 
+int dogma_add_charge(dogma_context_t* ctx, key_t index, typeid_t chargeid) {
+	dogma_env_t** module_env;
+	dogma_env_t* charge_env;
+	dogma_env_t** value;
+	int result;
+	key_t charge_index = 0;
+
+	JLG(module_env, ctx->ship->children, index);
+	if(module_env == NULL) return DOGMA_NOT_FOUND;
+
+	/* Maybe remove previous charge */
+	dogma_remove_charge(ctx, index);
+
+	charge_env = malloc(sizeof(dogma_env_t));
+	charge_env->id = chargeid;
+	charge_env->parent = *module_env;
+	charge_env->state = 0;
+	charge_env->children = NULL;
+	charge_env->modifiers = NULL;
+
+	JLFE(result, (*module_env)->children, charge_index);
+	JLI(value, (*module_env)->children, charge_index);
+	*value = charge_env;
+
+	return dogma_set_env_state(ctx, charge_env, *module_env, DOGMA_Active);
+}
+
+int dogma_remove_charge(dogma_context_t* ctx, key_t index) {
+	dogma_env_t** module_env;
+	dogma_env_t** charge_env;
+	int count;
+	key_t charge_index = 0;
+
+	JLG(module_env, ctx->ship->children, index);
+	if(module_env == NULL) return DOGMA_NOT_FOUND;
+
+	if((*module_env)->children == NULL) return DOGMA_OK; /* No charge */
+	JLC(count, (*module_env)->children, 0, -1);
+	assert(count == 1); /* If there's more than one charge in this
+						 * module, something is wrong */
+
+	JLF(charge_env, (*module_env)->children, charge_index);
+	assert(charge_env != NULL);
+
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, *charge_env, *module_env, 0));
+
+	dogma_free_env(*charge_env);
+	JLFA(count, (*module_env)->children);
+
+	return DOGMA_OK;
+}
+
 int dogma_get_character_attribute(dogma_context_t* ctx, attributeid_t attributeid, double* out) {
 	return dogma_get_env_attribute(ctx, ctx->character, attributeid, out);
 }
@@ -212,4 +264,18 @@ int dogma_get_module_attribute(dogma_context_t* ctx, key_t index, attributeid_t 
 	if(module_env == NULL) return DOGMA_NOT_FOUND;
 
 	return dogma_get_env_attribute(ctx, *module_env, attributeid, out);
+}
+
+int dogma_get_charge_attribute(dogma_context_t* ctx, key_t index, attributeid_t attributeid, double* out) {
+	dogma_env_t** module_env;
+	dogma_env_t** charge_env;
+	key_t charge_index = 0;
+
+	JLG(module_env, ctx->ship->children, index);
+	if(module_env == NULL) return DOGMA_NOT_FOUND;
+
+	JLF(charge_env, (*module_env)->children, charge_index);
+	if(charge_env == NULL) return DOGMA_NOT_FOUND;
+
+	return dogma_get_env_attribute(ctx, *charge_env, attributeid, out);
 }

@@ -88,6 +88,10 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 
 		current_env = env;
 		while(current_env != NULL) {
+			if(current_env->id == 33103 && assoctype == 0 && attributeid == 84) {
+				dogma_dump_modifiers(current_env);
+			}
+
 			JLG(modifiers, current_env->modifiers, attributeid);
 			if(modifiers != NULL) {
 				JLG(modifiers, *modifiers, assoctype);

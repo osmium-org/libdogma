@@ -305,6 +305,12 @@ $json['effects'][-10] = array(
 	'falloffAttributeID' => null
 );
 
+/* Add effect -10 to Nanite Repair Paste */
+$json['typeeffects'][] = array(
+	'typeID' => 28668,
+	'effectID' => -10,
+);
+
 /* skillEffect: bogus/unknown DEFASSOCIATION, skills are handled
  * correctly without it anyway */
 $json['effects'][132]['preExpression'] = -1;
@@ -421,6 +427,8 @@ $json['expressions'][-10] = array(
 	'expressionGroupID' => null,
 	'expressionTypeID' => null,
 	'arg1' => -7, /* (CurrentOther->armorDamageAmount).(PostMul) */
+	/* NOTE: "real" dogma would not expect ATT here, it would probably
+	 * assume a DEFATTRIBUTE */
 	'arg2' => -6, /* CurrentOther->chargedArmorDamageMultiplier */ 
 	);
 $json['expressions'][-9] = array(

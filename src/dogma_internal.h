@@ -171,7 +171,7 @@ int dogma_free_env(dogma_env_t*);
 
 /* Set state of an environment and evaluate needed expressions based
  * on effect categories. */
-int dogma_set_env_state(dogma_context_t*, dogma_env_t*, dogma_env_t*, state_t);
+int dogma_set_env_state(dogma_context_t*, dogma_env_t* env, dogma_env_t* other, state_t);
 
 /* Dump the modifiers of an environment to stdout. */
 int dogma_dump_modifiers(dogma_env_t*);
