@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -26,6 +26,20 @@
 #define DOGMA_FILTERTYPE_GROUP 1
 #define DOGMA_FILTERTYPE_SKILL_REQUIRED 2
 
+#define DOGMA_PENALIZABLE_ASSOCTYPES			\
+	(1 << DOGMA_PreMul) |						\
+	(1 << DOGMA_PostMul) |						\
+	(1 << DOGMA_PostPercent) |					\
+	(1 << DOGMA_PreDiv) |						\
+	(1 << DOGMA_PostDiv)
+
+enum dogma_scope_e {
+	DOGMA_Item,
+	DOGMA_Location,
+	DOGMA_Owner,
+};
+typedef enum dogma_scope_e dogma_scope_t;
+
 struct dogma_filter_s {
 	uint8_t type;
 
@@ -40,9 +54,11 @@ struct dogma_modifier_s {
 	attributeid_t targetattribute;
 	dogma_env_t* targetenv;
 	dogma_association_t assoctype;
+	bool penalized;
 	attributeid_t sourceattribute;
 	dogma_env_t* sourceenv;
 	dogma_filter_t filter;
+	dogma_scope_t scope;
 };
 typedef struct dogma_modifier_s dogma_modifier_t;
 

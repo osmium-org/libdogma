@@ -335,6 +335,10 @@ $json['effects'][4894]['postExpression'] = -1;
 $json['effects'][3615]['preExpression'] = -1;
 $json['effects'][3615]['postExpression'] = -1;
 
+/* adaptiveArmorHardener: use fallback expression from damage control */
+$json['effects'][4928]['preExpression'] = 7561;
+$json['effects'][4928]['postExpression'] = 7562;
+
 fwrite($c, "static const dogma_effect_t dogma_table_effects[] = {\n");
 foreach($json['effects'] as $e) {
 	fwrite($c, "\t{ "

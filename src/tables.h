@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -40,5 +40,6 @@ int dogma_get_type_attributes(typeid_t, array_t*);
 int dogma_get_type_attribute(typeid_t, attributeid_t, double*);
 
 int dogma_get_type_effects(typeid_t, array_t*);
+int dogma_get_type_effect(typeid_t, effectid_t, const dogma_type_effect_t**);
 
 #endif

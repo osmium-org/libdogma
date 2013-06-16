@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -30,6 +30,9 @@
 /* Used when the requested object (type, expression, etc.) does not
  * exist. */
 #define DOGMA_NOT_FOUND 1
+
+/* @internal */
+#define DOGMA_SKIPPED 2
 
 /* -------- Data types -------- */
 
@@ -81,7 +84,7 @@ int dogma_reset_skill_levels(dogma_context_t*);
  * ship (but not its fitted modules or anything else). */
 int dogma_set_ship(dogma_context_t*, typeid_t);
 
-/* Add a module to a ship. By default the module will have not even be
+/* Add a module to a ship. By default the module will not even be
  * offline, it will have state 0 (which means that none of its effects
  * are evaluated). */
 int dogma_add_module(dogma_context_t*, typeid_t, key_t*);

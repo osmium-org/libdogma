@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,6 +22,7 @@
 #include "tables-data.c"
 
 #define ATT_Mass 4
+#define ATT_Capacity 38
 #define ATT_Volume 161
 
 array_t types_by_id = NULL;
@@ -108,6 +109,12 @@ int dogma_get_type_attribute(typeid_t tid, attributeid_t aid, double* out) {
 
 		*out = t->mass;
 		return DOGMA_OK;
+	} else if(aid == ATT_Capacity) {
+		const dogma_type_t* t;
+		DOGMA_ASSUME_OK(dogma_get_type(tid, &t));
+
+		*out = t->capacity;
+		return DOGMA_OK;
 	} else if(aid == ATT_Volume) {
 		const dogma_type_t* t;
 		DOGMA_ASSUME_OK(dogma_get_type(tid, &t));
@@ -145,5 +152,20 @@ int dogma_get_type_effects(typeid_t id, array_t* out) {
 		*out = NULL;
 	}
 
+	return DOGMA_OK;
+}
+
+int dogma_get_type_effect(typeid_t tid, effectid_t eid, const dogma_type_effect_t** out) {
+	array_t type_effects;
+	const dogma_type_effect_t** te;
+
+	DOGMA_ASSUME_OK(dogma_get_type_effects(tid, &type_effects));
+
+	JLG(te, type_effects, eid);
+	if(te == NULL) {
+		return DOGMA_NOT_FOUND;
+	}
+
+	*out = *te;
 	return DOGMA_OK;
 }

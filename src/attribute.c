@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -18,6 +18,7 @@
 
 #include "attribute.h"
 #include "tables.h"
+#include <assert.h>
 
 #define ATT_SkillLevel 280
 
@@ -28,10 +29,36 @@
 #define ATT_RequiredSkill5 1289
 #define ATT_RequiredSkill6 1290
 
+#define MAX_PENALIZED_MODIFIERS 16
+
+/* Values taken from Aenigma's guide:
+ * http://eve.battleclinic.com/guide/9196-Aenigma-s-Stacking-Penalty-Guide.html */
+static double penalized_coefficients[] = {
+	1.000000000000,
+	0.869119980800,
+	0.570583143511,
+	0.282955154023,
+	0.105992649743,
+	0.029991166533,
+	0.006410183118,
+	0.001034920483,
+	0.000126212683,
+	0.000011626754,
+	0.000000809046,
+	0.0,
+};
+
 static int dogma_apply_modifier(dogma_context_t*, dogma_env_t*, dogma_modifier_t*, double*);
 
-/* FIXME: this does not take stacking penalties into account */
+static int compare(const void* left, const void* right) {
+	return *(double*)left < *(double*)right ? -1 : 1;
+}
+static int rcompare(const void* left, const void* right) {
+	return *(double*)left < *(double*)right ? 1 : -1;
+}
+
 int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_t attributeid, double* out) {
+	const dogma_attribute_t* attr;
 	dogma_env_t* current_env;
 	array_t* modifiers;
 	dogma_modifier_t** modifier;
@@ -51,9 +78,14 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 		return DOGMA_OK;
 	}
 
+	DOGMA_ASSUME_OK(dogma_get_attribute(attributeid, &attr));
 	DOGMA_ASSUME_OK(dogma_get_type_attribute(env->id, attributeid, out));
 
 	for(dogma_association_t assoctype = DOGMA_PreAssignment; assoctype <= DOGMA_PostAssignment; ++assoctype) {
+		double penalized_positive[MAX_PENALIZED_MODIFIERS];
+		double penalized_negative[MAX_PENALIZED_MODIFIERS];
+		size_t penalized_pos_count = 0, penalized_neg_count = 0;
+
 		current_env = env;
 		while(current_env != NULL) {
 			JLG(modifiers, current_env->modifiers, attributeid);
@@ -63,7 +95,46 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 					index = 0;
 					JLF(modifier, *modifiers, index);
 					while(modifier != NULL) {
-						DOGMA_ASSUME_OK(dogma_apply_modifier(ctx, env, *modifier, out));
+						int ret;
+
+						if((*modifier)->penalized) {
+							/* NB: assumed here that all penalized
+							 * modifiers are for multiplicative
+							 * operations. This is currently the case
+							 * (ModAdd/ModSub are never penalized),
+							 * but if this changes in the future this
+							 * could become a serious problem. */
+							double v = 1.0;
+							ret = dogma_apply_modifier(ctx, env, *modifier, &v);
+							if(ret == DOGMA_OK) {
+								v -= 1.0;
+
+								if(v >= 0) {
+									if(penalized_pos_count >= MAX_PENALIZED_MODIFIERS) {
+										DOGMA_WARN(
+											"reached maximum amount of + penalized modifiers, ignoring %f",
+											v
+										);
+									} else {
+										penalized_positive[penalized_pos_count++] = v;
+									}
+								} else {
+									if(penalized_neg_count >= MAX_PENALIZED_MODIFIERS) {
+										DOGMA_WARN(
+											"reached maximum amount of - penalized modifiers, ignoring %f",
+											v
+										);
+									} else {
+										penalized_negative[penalized_neg_count++] = v;
+									}
+								}
+							} else {
+								assert(ret == DOGMA_SKIPPED);
+							}
+						} else {
+						    ret = dogma_apply_modifier(ctx, env, *modifier, out);
+							assert(ret == DOGMA_OK || ret == DOGMA_SKIPPED);
+						}
 
 						JLN(modifier, *modifiers, index);
 					}
@@ -72,24 +143,51 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 
 			current_env = current_env->parent;
 		}
+
+		if(penalized_pos_count == 0 && penalized_neg_count == 0) continue;
+
+		if(attr->highisgood) {
+			qsort(penalized_positive, penalized_pos_count, sizeof(double), rcompare);
+			qsort(penalized_negative, penalized_neg_count, sizeof(double), rcompare);
+		} else {
+			qsort(penalized_positive, penalized_pos_count, sizeof(double), compare);
+			qsort(penalized_negative, penalized_neg_count, sizeof(double), compare);
+		}
+
+		for(size_t i = 0; i < penalized_pos_count; ++i) {
+			double p = penalized_coefficients[i];
+			if(p == 0.0) break;
+
+			*out *= (1 + p * penalized_positive[i]);
+		}
+
+		for(size_t i = 0; i < penalized_neg_count; ++i) {
+			double p = penalized_coefficients[i];
+			if(p == 0.0) break;
+
+			*out *= (1 + p * penalized_negative[i]);
+		}
 	}
 
 	return DOGMA_OK;
 }
 
-#define DOGMA_CHECK_SKILL_ATTRIBUTE(attid) \
-	DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, env, attid, &value)); \
-	if(value == skillid) { *out = true; return DOGMA_OK; }
+#define DOGMA_CHECK_SKILL_ATTRIBUTE(attid) do {						   \
+		double value;												   \
+		DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, env, attid, &value)); \
+		if(value == skillid) {											\
+			*out = true;												\
+			return DOGMA_OK;											\
+		}																\
+	} while(0)
 
 int dogma_env_requires_skill(dogma_context_t* ctx, dogma_env_t* env, typeid_t skillid, bool* out) {
-	double value;
-
-	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill1)
-	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill2)
-	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill3)
-	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill4)
-	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill5)
-	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill6)	
+	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill1);
+	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill2);
+	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill3);
+	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill4);
+	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill5);
+	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill6);
 
 	*out = false;
 	return DOGMA_OK;
@@ -100,6 +198,21 @@ static int dogma_apply_modifier(dogma_context_t* ctx, dogma_env_t* env, dogma_mo
 	bool required;
 	double value;
 
+	/* XXX: definitely not sure about this */
+	switch(modifier->scope) {
+
+	case DOGMA_Item:
+		if(env != modifier->targetenv) return DOGMA_SKIPPED;
+		break;
+
+	case DOGMA_Location:
+		break;
+
+	case DOGMA_Owner:
+		break;
+
+	}
+
 	switch(modifier->filter.type) {
 
 	case DOGMA_FILTERTYPE_PASS:
@@ -107,12 +220,12 @@ static int dogma_apply_modifier(dogma_context_t* ctx, dogma_env_t* env, dogma_mo
 
 	case DOGMA_FILTERTYPE_GROUP:
 		DOGMA_ASSUME_OK(dogma_get_type(env->id, &t));
-		if(t->groupid != modifier->filter.groupid) return DOGMA_OK;
+		if(t->groupid != modifier->filter.groupid) return DOGMA_SKIPPED;
 		break;
 
 	case DOGMA_FILTERTYPE_SKILL_REQUIRED:
 		DOGMA_ASSUME_OK(dogma_env_requires_skill(ctx, env, modifier->filter.typeid, &required));
-		if(!required) return DOGMA_OK;
+		if(!required) return DOGMA_SKIPPED;
 		break;
 
 	}

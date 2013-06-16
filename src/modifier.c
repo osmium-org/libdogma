@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -18,6 +18,40 @@
 
 #include <assert.h>
 #include "modifier.h"
+#include "tables.h"
+
+#define EFF_LoPower 11
+#define EFF_HiPower 12
+#define EFF_MedPower 13
+#define EFF_RigSlot 2663
+
+static bool dogma_modifier_is_penalized(dogma_modifier_t*);
+
+static bool dogma_modifier_is_penalized(dogma_modifier_t* modifier) {
+	const dogma_attribute_t* attribute;
+	const dogma_type_effect_t* te;
+
+	if(!((1 << modifier->assoctype) & DOGMA_PENALIZABLE_ASSOCTYPES)) {
+		/* Assoctype is not penalizable */
+		return false;
+	}
+
+	assert(dogma_get_attribute(modifier->targetattribute, &attribute) == DOGMA_OK);
+
+	if(attribute->stackable) {
+		/* Attribute is not penalized */
+		return false;
+	}
+
+	if(dogma_get_type_effect(modifier->sourceenv->id, EFF_LoPower, &te) == DOGMA_OK
+	|| dogma_get_type_effect(modifier->sourceenv->id, EFF_HiPower, &te) == DOGMA_OK
+	|| dogma_get_type_effect(modifier->sourceenv->id, EFF_MedPower, &te) == DOGMA_OK
+	|| dogma_get_type_effect(modifier->sourceenv->id, EFF_RigSlot, &te) == DOGMA_OK) {
+		return true;
+	}
+
+	return false;
+}
 
 int dogma_add_modifier(dogma_modifier_t* modifier) {
 	key_t index = 0;
@@ -26,6 +60,8 @@ int dogma_add_modifier(dogma_modifier_t* modifier) {
 	array_t* modifiers;
 	dogma_modifier_t** modifier_value;
 	dogma_modifier_t* copy;
+
+	modifier->penalized = dogma_modifier_is_penalized(modifier);
 
 	copy = malloc(sizeof(dogma_modifier_t));
 	*copy = *modifier;
@@ -64,6 +100,7 @@ int dogma_remove_modifier(dogma_modifier_t* modifier) {
 	while(modifier_value != NULL) {
 		if((*modifier_value)->sourceattribute == modifier->sourceattribute
 		   && (*modifier_value)->sourceenv == modifier->sourceenv
+		   && (*modifier_value)->scope == modifier->scope
 			&&(*modifier_value)->filter.type == modifier->filter.type
 		   && (modifier->filter.type != DOGMA_FILTERTYPE_GROUP
 		       || (*modifier_value)->filter.groupid == modifier->filter.groupid)

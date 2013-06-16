@@ -22,3 +22,5 @@ test/*
 !test/*.[ch]
 src/operands.h
 src/tables-data.c
+test-driver
+test-suite.log

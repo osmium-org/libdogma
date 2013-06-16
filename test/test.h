@@ -18,6 +18,18 @@
 
 #include <assert.h>
 #include <dogma.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#define assertf(expected, result, epsilon) \
-	assert(((expected) - (result) <= (epsilon)) && ((result) - (expected) <= (epsilon)))
+#define failf(expected, result) do {										\
+		fprintf(stderr, "Expected: %f, Got: %f\n",						\
+				(expected), (result));									\
+		exit(1);														\
+	} while(0)
+
+#define assertf(expected, result, epsilon)  do {						\
+		if(!(((expected) - (result) <= (epsilon))						\
+			 && ((result) - (expected) <= (epsilon)))) {				\
+			failf((expected), (result));									\
+		}																\
+	} while(0)

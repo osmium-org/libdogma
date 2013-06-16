@@ -390,6 +390,28 @@ int dogma_eval_expression(dogma_context_t* ctx,
 			resarg1.modifier_value.sourceattribute = resarg2.modifier_value.targetattribute;
 			resarg1.modifier_value.sourceenv = resarg2.modifier_value.targetenv;
 		}
+
+		switch(exp->operand) {
+
+		case DOGMA_AIM:
+			resarg1.modifier_value.scope = DOGMA_Item;
+			break;
+
+		case DOGMA_ALM:
+		case DOGMA_ALGM:
+		case DOGMA_ALRSM:
+			resarg1.modifier_value.scope = DOGMA_Location;
+			break;
+
+		case DOGMA_AORSM:
+			resarg1.modifier_value.scope = DOGMA_Owner;
+			break;
+
+		default:
+			break;
+
+		}
+
 		assert(dogma_add_modifier(&(resarg1.modifier_value)) == DOGMA_OK);
 		break;
 
@@ -409,6 +431,28 @@ int dogma_eval_expression(dogma_context_t* ctx,
 			resarg1.modifier_value.sourceattribute = resarg2.modifier_value.targetattribute;
 			resarg1.modifier_value.sourceenv = resarg2.modifier_value.targetenv;
 		}
+
+		switch(exp->operand) {
+
+		case DOGMA_RIM:
+			resarg1.modifier_value.scope = DOGMA_Item;
+			break;
+
+		case DOGMA_RLM:
+		case DOGMA_RLGM:
+		case DOGMA_RLRSM:
+			resarg1.modifier_value.scope = DOGMA_Location;
+			break;
+
+		case DOGMA_RORSM:
+			resarg1.modifier_value.scope = DOGMA_Owner;
+			break;
+
+		default:
+			break;
+
+		}
+
 		assert(dogma_remove_modifier(&(resarg1.modifier_value)) == DOGMA_OK);
 		break;
 
