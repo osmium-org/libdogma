@@ -10,7 +10,12 @@ dogma_remove_module
 dogma_set_module_state
 dogma_add_charge
 dogma_remove_charge
+dogma_add_drone
+dogma_remove_drone_partial
+dogma_remove_drone
+dogma_get_location_attribute
 dogma_get_character_attribute
 dogma_get_ship_attribute
 dogma_get_module_attribute
 dogma_get_charge_attribute
+dogma_get_drone_attribute

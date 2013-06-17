@@ -35,6 +35,15 @@
 #define DOGMA_ASSUME_OK(RESULT) \
 	{ int call_result__ = RESULT; if(call_result__ != DOGMA_OK) return call_result__; }
 
+#define DOGMA_INIT_ENV(envptr, _typeid, _parent, _index) do {	\
+		(envptr)->id = (_typeid);								\
+		(envptr)->parent = (_parent);							\
+		(envptr)->index = (_index);								\
+		(envptr)->state = 0;									\
+		(envptr)->children = NULL;								\
+		(envptr)->modifiers = NULL;								\
+	} while(0)
+
 #define DOGMA_SAFE_CHAR_INDEXES 50000
 #define DOGMA_SAFE_SHIP_INDEXES 0
 
@@ -144,12 +153,18 @@ typedef struct dogma_expression_s dogma_expression_t;
 struct dogma_env_s {
 	typeid_t id;
 	struct dogma_env_s* parent;
-	key_t index;
+	key_t index; /* Index in parent->children array */
 	state_t state;
 	array_t children;
 	array_t modifiers;
 };
 typedef struct dogma_env_s dogma_env_t;
+
+struct dogma_drone_context_s {
+	dogma_env_t* drone;
+	unsigned int quantity;
+};
+typedef struct dogma_drone_context_s dogma_drone_context_t;
 
 struct dogma_context_s {
 	dogma_env_t* character;
@@ -164,6 +179,11 @@ struct dogma_context_s {
 
 	uint8_t default_skill_level;
 	array_t skill_levels;
+
+	/* Drones are children of character, with unpredictable
+	 * indexes. This is a map where keys are drone typeids, and the
+	 * values are pointers to dogma_drone_context_t. */
+	array_t drone_map;
 };
 
 /* -------- Internal functions -------- */

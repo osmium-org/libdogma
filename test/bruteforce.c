@@ -27,7 +27,10 @@
 #define CAT_Ship 6
 #define CAT_Module 7
 #define CAT_Charge 8
+#define CAT_Drone 18
 #define CAT_Subsystem 32
+
+#define TYPE_Drone 2488
 
 dogma_context_t* ctx;
 key_t slot;
@@ -36,6 +39,7 @@ static void try_all_char_attribs(void);
 static void try_all_ship_attribs(void);
 static void try_all_module_attribs(void);
 static void try_all_charge_attribs(void);
+static void try_all_drone_attribs(typeid_t);
 
 int main(void) {
 	int i;
@@ -45,8 +49,18 @@ int main(void) {
 
 	try_all_char_attribs();
 
-	/* To be perfectly thorough, these three for loops should be
+	/* To be perfectly thorough, some of these for loops should be
 	 * nested in one another. Try it if you have spare time! */
+
+	for(i = 0; dogma_table_types[i].id != 0; ++i) {
+		if(dogma_table_types[i].categoryid != CAT_Drone) continue;
+
+		dogma_add_drone(ctx, dogma_table_types[i].id, 1);
+		try_all_drone_attribs(dogma_table_types[i].id);
+		dogma_remove_drone(ctx, dogma_table_types[i].id);
+	}
+
+	dogma_add_drone(ctx, TYPE_Drone, 1);
 
 	for(i = 0; dogma_table_types[i].id != 0; ++i) {
 		if(dogma_table_types[i].categoryid != CAT_Ship) continue;
@@ -66,6 +80,7 @@ int main(void) {
 		dogma_set_module_state(ctx, slot, DOGMA_Overloaded);
 		try_all_char_attribs();
 		try_all_ship_attribs();
+		try_all_drone_attribs(TYPE_Drone);
 		try_all_module_attribs();
 		dogma_remove_module(ctx, slot);
 	}
@@ -120,5 +135,14 @@ static void try_all_charge_attribs(void) {
 
 	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
 		dogma_get_charge_attribute(ctx, slot, dogma_table_attributes[i].id, &v);
+	}
+}
+
+static void try_all_drone_attribs(typeid_t drone) {
+	int i;
+	double v;
+
+	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
+		dogma_get_drone_attribute(ctx, drone, dogma_table_attributes[i].id, &v);
 	}
 }

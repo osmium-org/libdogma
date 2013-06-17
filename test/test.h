@@ -20,16 +20,17 @@
 #include <dogma.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
-#define failf(expected, result) do {										\
+#define failf(expected, result) do {									\
 		fprintf(stderr, "Expected: %f, Got: %f\n",						\
 				(expected), (result));									\
 		exit(1);														\
 	} while(0)
 
 #define assertf(expected, result, epsilon)  do {						\
-		if(!(((expected) - (result) <= (epsilon))						\
-			 && ((result) - (expected) <= (epsilon)))) {				\
-			failf((expected), (result));									\
+		double e = (expected), r = (result), eps = (epsilon);			\
+		if(!((e - r <= eps) && (r - e <= eps))) {						\
+			failf(e, r);												\
 		}																\
 	} while(0)

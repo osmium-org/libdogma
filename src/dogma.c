@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -52,39 +52,19 @@ int dogma_init_context(dogma_context_t** ctx) {
 	new_ctx->target = malloc(sizeof(dogma_env_t));
 	new_ctx->area = malloc(sizeof(dogma_env_t));
 
-	new_ctx->character->id = 0;
-	new_ctx->character->parent = NULL;
-	new_ctx->character->index = 0;
-	new_ctx->character->state = 0;
-	new_ctx->character->children = NULL;
-	new_ctx->character->modifiers = NULL;
+	DOGMA_INIT_ENV(new_ctx->character, 0, NULL, 0);
+	DOGMA_INIT_ENV(new_ctx->target, 0, NULL, 0);
+	DOGMA_INIT_ENV(new_ctx->area, 0, NULL, 0);
 
 	JLI(value, new_ctx->character->children, 0);
 	*value = new_ctx->ship;
 
-	new_ctx->ship->id = 0;
-	new_ctx->ship->parent = new_ctx->character;
-	new_ctx->ship->index = 0;
-	new_ctx->ship->state = 0;
-	new_ctx->ship->children = NULL;
-	new_ctx->ship->modifiers = NULL;
-
-	new_ctx->target->id = 0;
-	new_ctx->target->parent = NULL;
-	new_ctx->target->index = 0;
-	new_ctx->target->state = 0;
-	new_ctx->target->children = NULL;
-	new_ctx->target->modifiers = NULL;
-
-	new_ctx->area->id = 0;
-	new_ctx->area->parent = NULL;
-	new_ctx->area->index = 0;
-	new_ctx->area->state = 0;
-	new_ctx->area->children = NULL;
-	new_ctx->area->modifiers = NULL;
+	DOGMA_INIT_ENV(new_ctx->ship, 0, new_ctx->character, 0);
 
 	new_ctx->default_skill_level = DOGMA_MAX_SKILL_LEVEL;
 	new_ctx->skill_levels = (array_t)NULL;
+
+	new_ctx->drone_map = (array_t)NULL;
 
 	*ctx = new_ctx;
 
@@ -102,12 +82,25 @@ int dogma_init_context(dogma_context_t** ctx) {
 }
 
 int dogma_free_context(dogma_context_t* ctx) {
+	dogma_drone_context_t** value;
+	key_t index = 0;
+	int ret;
+
 	dogma_free_env(ctx->character);
 	dogma_free_env(ctx->target);
 	dogma_free_env(ctx->area);
 	dogma_reset_skill_levels(ctx);
-	free(ctx);
 
+	JLF(value, ctx->drone_map, index);
+	while(value != NULL) {
+		/* The drone environments were freed when char was freed */
+		free(*value);
+		JLN(value, ctx->drone_map, index);
+	}
+	JLFA(ret, ctx->drone_map);
+
+
+	free(ctx);
 	return DOGMA_OK;
 }
 
@@ -163,12 +156,7 @@ int dogma_add_module(dogma_context_t* ctx, typeid_t module_typeid, key_t* out_in
 	*value = module_env;
 	*out_index = index;
 
-	module_env->id = module_typeid;
-	module_env->parent = ctx->ship;
-	module_env->index = index;
-	module_env->state = 0;
-	module_env->children = NULL;
-	module_env->modifiers = NULL;
+	DOGMA_INIT_ENV(module_env, module_typeid, ctx->ship, index);
 
 	return DOGMA_OK;
 }
@@ -198,8 +186,8 @@ int dogma_set_module_state(dogma_context_t* ctx, key_t index, state_t new_state)
 }
 
 int dogma_add_charge(dogma_context_t* ctx, key_t index, typeid_t chargeid) {
+	dogma_env_t* charge_env = malloc(sizeof(dogma_env_t));
 	dogma_env_t** module_env;
-	dogma_env_t* charge_env;
 	dogma_env_t** value;
 	int result;
 	key_t charge_index = 0;
@@ -210,16 +198,11 @@ int dogma_add_charge(dogma_context_t* ctx, key_t index, typeid_t chargeid) {
 	/* Maybe remove previous charge */
 	dogma_remove_charge(ctx, index);
 
-	charge_env = malloc(sizeof(dogma_env_t));
-	charge_env->id = chargeid;
-	charge_env->parent = *module_env;
-	charge_env->state = 0;
-	charge_env->children = NULL;
-	charge_env->modifiers = NULL;
-
 	JLFE(result, (*module_env)->children, charge_index);
 	JLI(value, (*module_env)->children, charge_index);
 	*value = charge_env;
+
+	DOGMA_INIT_ENV(charge_env, chargeid, *module_env, charge_index);
 
 	return dogma_set_env_state(ctx, charge_env, *module_env, DOGMA_Active);
 }
@@ -249,10 +232,84 @@ int dogma_remove_charge(dogma_context_t* ctx, key_t index) {
 	return DOGMA_OK;
 }
 
+int dogma_add_drone(dogma_context_t* ctx, typeid_t droneid, unsigned int quantity) {
+	dogma_env_t** value1;
+	dogma_drone_context_t** value2;
+	dogma_drone_context_t* drone_ctx;
+	dogma_env_t* drone_env;
+	key_t index = DOGMA_SAFE_CHAR_INDEXES;
+	int ret;
+
+	if(quantity == 0) return DOGMA_OK;
+
+	JLG(value2, ctx->drone_map, droneid);
+	if(value2 != NULL) {
+		/* Already have drones of the same type, just add the quantity */
+		drone_ctx = *value2;
+		drone_ctx->quantity += quantity;
+		return DOGMA_OK;
+	}
+
+	drone_ctx = malloc(sizeof(dogma_drone_context_t));
+	drone_env = malloc(sizeof(dogma_env_t)); /* Two calls to malloc
+											  * are necessary here,
+											  * since the env will be
+											  * freed in
+											  * dogma_free_env(). */
+	JLFE(ret, ctx->character->children, index);
+	JLI(value1, ctx->character->children, index);
+	*value1 = drone_env;
+
+	DOGMA_INIT_ENV(drone_env, droneid, ctx->character, index);
+
+	JLI(value2, ctx->drone_map, droneid);
+	*value2 = drone_ctx;
+
+	drone_ctx->drone = drone_env;
+	drone_ctx->quantity = quantity;
+
+	return dogma_set_env_state(ctx, drone_env, NULL, DOGMA_Active);
+}
+
+int dogma_remove_drone_partial(dogma_context_t* ctx, typeid_t droneid, unsigned int quantity) {
+	dogma_drone_context_t** value;
+
+	JLG(value, ctx->drone_map, droneid);
+	if(value == NULL) return DOGMA_OK;
+
+	if(quantity >= (*value)->quantity) {
+		return dogma_remove_drone(ctx, droneid);
+	} else {
+		/* At least one drone will remain */
+		(*value)->quantity -= quantity;
+		return DOGMA_OK;
+	}
+}
+
+int dogma_remove_drone(dogma_context_t* ctx, typeid_t droneid) {
+	dogma_drone_context_t** value;
+	dogma_env_t* drone_env;
+	int ret;
+
+	JLG(value, ctx->drone_map, droneid);
+	if(value == NULL) return DOGMA_OK; /* Nonexistent drone */
+
+	drone_env = (*value)->drone;
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, drone_env, NULL, 0));
+	JLD(ret, drone_env->parent->children, drone_env->index);
+	JLD(ret, ctx->drone_map, drone_env->id);
+
+	dogma_free_env(drone_env);
+	free(*value);
+
+	return DOGMA_OK;
+}
+
 static inline int dogma_get_location_env(dogma_context_t* ctx, location_t location, dogma_env_t** env) {
-	dogma_env_t** module_env;
-	dogma_env_t** charge_env;
-	key_t charge_index = 0;
+	dogma_env_t** env1;
+	dogma_env_t** env2;
+	dogma_drone_context_t** drone_env1;
+	key_t index = 0;
 
 	switch(location.type) {
 
@@ -265,17 +322,23 @@ static inline int dogma_get_location_env(dogma_context_t* ctx, location_t locati
 		return DOGMA_OK;
 
 	case DOGMA_LOC_Module:
-		JLG(module_env, ctx->ship->children, location.module_index);
-		if(module_env == NULL) return DOGMA_NOT_FOUND;
-		*env = *module_env;
+		JLG(env1, ctx->ship->children, location.module_index);
+		if(env1 == NULL) return DOGMA_NOT_FOUND;
+		*env = *env1;
 		return DOGMA_OK;
 
 	case DOGMA_LOC_Charge:
-		JLG(module_env, ctx->ship->children, location.module_index);
-		if(module_env == NULL) return DOGMA_NOT_FOUND;
-		JLF(charge_env, (*module_env)->children, charge_index);
-		if(charge_env == NULL) return DOGMA_NOT_FOUND;
-		*env = *charge_env;
+		JLG(env1, ctx->ship->children, location.module_index);
+		if(env1 == NULL) return DOGMA_NOT_FOUND;
+		JLF(env2, (*env1)->children, index);
+		if(env2 == NULL) return DOGMA_NOT_FOUND;
+		*env = *env1;
+		return DOGMA_OK;
+
+	case DOGMA_LOC_Drone:
+		JLG(drone_env1, ctx->drone_map, location.drone_typeid);
+		if(drone_env1 == NULL) return DOGMA_NOT_FOUND;
+		*env = (*drone_env1)->drone;
 		return DOGMA_OK;
 
 	default:
@@ -312,6 +375,15 @@ int dogma_get_charge_attribute(dogma_context_t* ctx, key_t index, attributeid_t 
 	return dogma_get_location_attribute(
 		ctx,
 		(location_t){ .type = DOGMA_LOC_Charge, .module_index = index },
+		attributeid,
+		out
+	);
+}
+
+int dogma_get_drone_attribute(dogma_context_t* ctx, typeid_t droneid, attributeid_t attributeid, double* out) {
+	return dogma_get_location_attribute(
+		ctx,
+		(location_t){ .type = DOGMA_LOC_Drone, .drone_typeid = droneid },
 		attributeid,
 		out
 	);
