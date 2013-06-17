@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -26,32 +26,99 @@
 
 #define CAT_Ship 6
 #define CAT_Module 7
+#define CAT_Charge 8
 #define CAT_Subsystem 32
 
+dogma_context_t* ctx;
+key_t slot;
+
+static void try_all_char_attribs(void);
+static void try_all_ship_attribs(void);
+static void try_all_module_attribs(void);
+static void try_all_charge_attribs(void);
+
 int main(void) {
-	dogma_context_t* ctx;
-	key_t module_index;
 	int i;
 
-	assert(dogma_init() == DOGMA_OK);
-	assert(dogma_init_context(&ctx) == DOGMA_OK);
+	dogma_init();
+	dogma_init_context(&ctx);
+
+	try_all_char_attribs();
+
+	/* To be perfectly thorough, these three for loops should be
+	 * nested in one another. Try it if you have spare time! */
 
 	for(i = 0; dogma_table_types[i].id != 0; ++i) {
 		if(dogma_table_types[i].categoryid != CAT_Ship) continue;
-		assert(dogma_set_ship(ctx, dogma_table_types[i].id) == DOGMA_OK);
+
+		dogma_set_ship(ctx, dogma_table_types[i].id);
+		try_all_char_attribs();
+		try_all_ship_attribs();
 	}
 
-	/* Select a dummy ship to test modules */
 	dogma_set_ship(ctx, 587);
 
 	for(i = 0; dogma_table_types[i].id != 0; ++i) {
 		if(dogma_table_types[i].categoryid != CAT_Module
 		   && dogma_table_types[i].categoryid != CAT_Subsystem) continue;
-		assert(dogma_add_module(ctx, dogma_table_types[i].id, &module_index) == DOGMA_OK);
-		assert(dogma_set_module_state(ctx, module_index, DOGMA_Overloaded) == DOGMA_OK);
-		assert(dogma_remove_module(ctx, module_index) == DOGMA_OK);
+
+		dogma_add_module(ctx, dogma_table_types[i].id, &slot);
+		dogma_set_module_state(ctx, slot, DOGMA_Overloaded);
+		try_all_char_attribs();
+		try_all_ship_attribs();
+		try_all_module_attribs();
+		dogma_remove_module(ctx, slot);
 	}
 
-	assert(dogma_free_context(ctx) == DOGMA_OK);
+	dogma_add_module(ctx, 2873, &slot);
+
+	for(i = 0; dogma_table_types[i].id != 0; ++i) {
+		if(dogma_table_types[i].categoryid != CAT_Charge) continue;
+
+		dogma_add_charge(ctx, slot, dogma_table_types[i].id);
+		try_all_char_attribs();
+		try_all_ship_attribs();
+		try_all_module_attribs();
+		try_all_charge_attribs();
+		dogma_remove_charge(ctx, slot);
+	}
+
+	dogma_free_context(ctx);
 	return 0;
+}
+
+static void try_all_char_attribs(void) {
+	int i;
+	double v;
+
+	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
+		dogma_get_character_attribute(ctx, dogma_table_attributes[i].id, &v);
+	}
+}
+
+static void try_all_ship_attribs(void) {
+	int i;
+	double v;
+
+	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
+		dogma_get_ship_attribute(ctx, dogma_table_attributes[i].id, &v);
+	}
+}
+
+static void try_all_module_attribs(void) {
+	int i;
+	double v;
+
+	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
+		dogma_get_module_attribute(ctx, slot, dogma_table_attributes[i].id, &v);
+	}
+}
+
+static void try_all_charge_attribs(void) {
+	int i;
+	double v;
+
+	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
+		dogma_get_charge_attribute(ctx, slot, dogma_table_attributes[i].id, &v);
+	}
 }

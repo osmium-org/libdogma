@@ -345,6 +345,30 @@ $json['effects'][3615]['postExpression'] = -1;
 $json['effects'][4928]['preExpression'] = 7561;
 $json['effects'][4928]['postExpression'] = 7562;
 
+/* shieldBoosting: ignore effect, not useful here */
+$json['effects'][4]['preExpression'] = -1;
+$json['effects'][4]['postExpression'] = -1;
+
+/* shieldTransfer: ignore effect, not useful here */
+$json['effects'][18]['preExpression'] = -1;
+$json['effects'][18]['postExpression'] = -1;
+
+/* armorRepair: ignore effect, not useful here */
+$json['effects'][27]['preExpression'] = -1;
+$json['effects'][27]['postExpression'] = -1;
+
+/* structureRepair: ignore effect, not useful here */
+$json['effects'][26]['preExpression'] = -1;
+$json['effects'][26]['postExpression'] = -1;
+
+/* energyTransfer: ignore effect, not useful here */
+$json['effects'][31]['preExpression'] = -1;
+$json['effects'][31]['postExpression'] = -1;
+
+/* targetArmorRepair: ignore effect, not useful here */
+$json['effects'][592]['preExpression'] = -1;
+$json['effects'][592]['postExpression'] = -1;
+
 fwrite($c, "static const dogma_effect_t dogma_table_effects[] = {\n");
 foreach($json['effects'] as $e) {
 	fwrite($c, "\t{ "

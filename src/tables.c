@@ -94,8 +94,12 @@ int dogma_get_type_attributes(typeid_t id, array_t* out) {
 	array_t* value;
 
 	JLG(value, type_attributes_by_typeid, id);
+	if(value != NULL) {
+		*out = *value;
+	} else {
+		*out = NULL;
+	}
 
-	*out = *value;
 	return DOGMA_OK;
 }
 

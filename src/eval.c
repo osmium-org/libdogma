@@ -227,27 +227,23 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		/* Attribute manipulation */
 
 	case DOGMA_INC:
-		/* TODO */
-		break;
-
 	case DOGMA_DEC:
-		/* TODO */
+		/* XXX: used by active reppers and such. Evil because of it
+		 * affects global state and the postExpression dosen't undo
+		 * the change (which makes sense in a game, because once your
+		 * shield is repaired, the end of the cycle dosen't take it
+		 * back! unfortunately in this context it's bad). */
+		DOGMA_WARN("Unsupported operand %i used on expression %i by type %i", exp->operand, exp->id, self->id);
 		break;
 
 	case DOGMA_INCN:
-		assert(false);
-		break;
-
 	case DOGMA_DECN:
-		assert(false);
-		break;
-
 	case DOGMA_GET:
-		assert(false);
-		break;
-
 	case DOGMA_SET:
-		assert(false);
+		/* XXX: no idea how these work, throw an error if they are
+		 * encountered. The bruteforce test should fail if these are
+		 * used. */
+		DOGMA_WARN("Unsupported operand %i used on expression %i by type %i", exp->operand, exp->id, self->id);
 		break;
 
 		/* Filters */
@@ -535,7 +531,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		/* Checks */
 
 	case DOGMA_SKILLCHECK:
-		assert(false);
+		/* TODO / Dummy ? */
 		break;
 
 	case DOGMA_TOOLTARGETSKILLS:
@@ -578,7 +574,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_UE:
-		assert(false);
+		/* Purposefully ignore this one. We want to be able to do
+		 * anything! */
 		break;
 
 	default:

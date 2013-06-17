@@ -13,9 +13,9 @@ libdogma_la_SOURCES=src/dogma.c include/dogma.h src/dogma_internal.c	\
 libdogma_la_LDFLAGS=-export-symbols src/libdogma.sym -version-info 0:0:0
 include_HEADERS=include/dogma.h
 
-check_PROGRAMS=test/trivial test/bruteforce test/basic-attributes	\
+check_PROGRAMS=test/trivial test/basic-attributes					\
 	test/basic-skill-levels test/basic-charges						\
-	test/stacking-penalties test/ancillary-modules
+	test/stacking-penalties test/ancillary-modules test/bruteforce
 
 LDADD=libdogma.la
 TESTS=$(check_PROGRAMS)
