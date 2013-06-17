@@ -490,7 +490,7 @@ foreach($json['expressions'] as $e) {
 		/* Incorrect values will produce compilation errors, so no
 		 * checks here */
 		$dataname = 'assoctype';
-		$data = "DOGMA_".$e['expressionValue'];
+		$data = "DOGMA_ASSOC_".$e['expressionValue'];
 	} else if($e['operandID'] === 22) { /* DEFATTRIBUTE */
 		if($e['expressionAttributeID'] === null) {
 			fatal('expression '.$e['expressionID'].' with operand DEFATTRIBUTE has no attributeID (value: "'
@@ -511,7 +511,7 @@ foreach($json['expressions'] as $e) {
 		/* Incorrect values will produce compilation errors, so no
 		 * checks here */
 		$dataname = 'envidx';
-		$data = 'DOGMA_'.$e['expressionValue'];
+		$data = 'DOGMA_ENVIDX_'.$e['expressionValue'];
 	} else if($e['operandID'] === 25) { /* DEFFLOAT */
 		$dataname = 'floatv';
 		$data = $e['expressionValue'];

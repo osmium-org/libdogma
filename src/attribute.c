@@ -81,7 +81,9 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 	DOGMA_ASSUME_OK(dogma_get_attribute(attributeid, &attr));
 	DOGMA_ASSUME_OK(dogma_get_type_attribute(env->id, attributeid, out));
 
-	for(dogma_association_t assoctype = DOGMA_PreAssignment; assoctype <= DOGMA_PostAssignment; ++assoctype) {
+	for(dogma_association_t assoctype = DOGMA_ASSOC_PreAssignment;
+		assoctype <= DOGMA_ASSOC_PostAssignment;
+		++assoctype) {
 		double penalized_positive[MAX_PENALIZED_MODIFIERS];
 		double penalized_negative[MAX_PENALIZED_MODIFIERS];
 		size_t penalized_pos_count = 0, penalized_neg_count = 0;
@@ -205,14 +207,14 @@ static int dogma_apply_modifier(dogma_context_t* ctx, dogma_env_t* env, dogma_mo
 	/* XXX: definitely not sure about this */
 	switch(modifier->scope) {
 
-	case DOGMA_Item:
+	case DOGMA_SCOPE_Item:
 		if(env != modifier->targetenv) return DOGMA_SKIPPED;
 		break;
 
-	case DOGMA_Location:
+	case DOGMA_SCOPE_Location:
 		break;
 
-	case DOGMA_Owner:
+	case DOGMA_SCOPE_Owner:
 		break;
 
 	}
@@ -238,30 +240,30 @@ static int dogma_apply_modifier(dogma_context_t* ctx, dogma_env_t* env, dogma_mo
 
 	switch(modifier->assoctype) {
 
-	case DOGMA_PreAssignment:
-	case DOGMA_PostAssignment:
+	case DOGMA_ASSOC_PreAssignment:
+	case DOGMA_ASSOC_PostAssignment:
 		*out = value;
 		break;
 
-	case DOGMA_PreMul:
-	case DOGMA_PostMul:
+	case DOGMA_ASSOC_PreMul:
+	case DOGMA_ASSOC_PostMul:
 		*out *= value;
 		break;
 
-	case DOGMA_PreDiv:
-	case DOGMA_PostDiv:
+	case DOGMA_ASSOC_PreDiv:
+	case DOGMA_ASSOC_PostDiv:
 		*out /= value;
 		break;
 
-	case DOGMA_ModAdd:
+	case DOGMA_ASSOC_ModAdd:
 		*out += value;
 		break;
 
-	case DOGMA_ModSub:
+	case DOGMA_ASSOC_ModSub:
 		*out -= value;
 		break;
 
-	case DOGMA_PostPercent:
+	case DOGMA_ASSOC_PostPercent:
 		*out *= (100 + value);
 		*out /= 100;
 		break;

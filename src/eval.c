@@ -394,17 +394,17 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		switch(exp->operand) {
 
 		case DOGMA_AIM:
-			resarg1.modifier_value.scope = DOGMA_Item;
+			resarg1.modifier_value.scope = DOGMA_SCOPE_Item;
 			break;
 
 		case DOGMA_ALM:
 		case DOGMA_ALGM:
 		case DOGMA_ALRSM:
-			resarg1.modifier_value.scope = DOGMA_Location;
+			resarg1.modifier_value.scope = DOGMA_SCOPE_Location;
 			break;
 
 		case DOGMA_AORSM:
-			resarg1.modifier_value.scope = DOGMA_Owner;
+			resarg1.modifier_value.scope = DOGMA_SCOPE_Owner;
 			break;
 
 		default:
@@ -435,17 +435,17 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		switch(exp->operand) {
 
 		case DOGMA_RIM:
-			resarg1.modifier_value.scope = DOGMA_Item;
+			resarg1.modifier_value.scope = DOGMA_SCOPE_Item;
 			break;
 
 		case DOGMA_RLM:
 		case DOGMA_RLGM:
 		case DOGMA_RLRSM:
-			resarg1.modifier_value.scope = DOGMA_Location;
+			resarg1.modifier_value.scope = DOGMA_SCOPE_Location;
 			break;
 
 		case DOGMA_RORSM:
-			resarg1.modifier_value.scope = DOGMA_Owner;
+			resarg1.modifier_value.scope = DOGMA_SCOPE_Owner;
 			break;
 
 		default:
@@ -477,27 +477,27 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		result->type = DOGMA_CTXTYPE_ENV;
 		switch(exp->envidx) {
 
-		case DOGMA_Self:
+		case DOGMA_ENVIDX_Self:
 			result->env_value = self;
 			break;
 
-		case DOGMA_Char:
+		case DOGMA_ENVIDX_Char:
 			result->env_value = ctx->character;
 			break;
 
-		case DOGMA_Ship:
+		case DOGMA_ENVIDX_Ship:
 			result->env_value = ctx->ship;
 			break;
 
-		case DOGMA_Target:
+		case DOGMA_ENVIDX_Target:
 			result->env_value = ctx->target;
 			break;
 
-		case DOGMA_Area:
+		case DOGMA_ENVIDX_Area:
 			result->env_value = ctx->area;
 			break;
 
-		case DOGMA_Other:
+		case DOGMA_ENVIDX_Other:
 			result->env_value = other;
 			break;
 

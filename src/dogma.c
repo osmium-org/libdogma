@@ -249,6 +249,48 @@ int dogma_remove_charge(dogma_context_t* ctx, key_t index) {
 	return DOGMA_OK;
 }
 
+static inline int dogma_get_location_env(dogma_context_t* ctx, location_t location, dogma_env_t** env) {
+	dogma_env_t** module_env;
+	dogma_env_t** charge_env;
+	key_t charge_index = 0;
+
+	switch(location.type) {
+
+	case DOGMA_LOC_Char:
+		*env = ctx->character;
+		return DOGMA_OK;
+
+	case DOGMA_LOC_Ship:
+		*env = ctx->ship;
+		return DOGMA_OK;
+
+	case DOGMA_LOC_Module:
+		JLG(module_env, ctx->ship->children, location.module_index);
+		if(module_env == NULL) return DOGMA_NOT_FOUND;
+		*env = *module_env;
+		return DOGMA_OK;
+
+	case DOGMA_LOC_Charge:
+		JLG(module_env, ctx->ship->children, location.module_index);
+		if(module_env == NULL) return DOGMA_NOT_FOUND;
+		JLF(charge_env, (*module_env)->children, charge_index);
+		if(charge_env == NULL) return DOGMA_NOT_FOUND;
+		*env = *charge_env;
+		return DOGMA_OK;
+
+	default:
+		return DOGMA_NOT_FOUND;
+
+	}
+}
+
+int dogma_get_location_attribute(dogma_context_t* ctx, location_t location,
+								 attributeid_t attributeid, double* out) {
+	dogma_env_t* loc_env;
+	DOGMA_ASSUME_OK(dogma_get_location_env(ctx, location, &loc_env));
+	return dogma_get_env_attribute(ctx, loc_env, attributeid, out);
+}
+
 int dogma_get_character_attribute(dogma_context_t* ctx, attributeid_t attributeid, double* out) {
 	return dogma_get_env_attribute(ctx, ctx->character, attributeid, out);
 }
@@ -258,24 +300,19 @@ int dogma_get_ship_attribute(dogma_context_t* ctx, attributeid_t attributeid, do
 }
 
 int dogma_get_module_attribute(dogma_context_t* ctx, key_t index, attributeid_t attributeid, double* out) {
-	dogma_env_t** module_env;
-
-	JLG(module_env, ctx->ship->children, index);
-	if(module_env == NULL) return DOGMA_NOT_FOUND;
-
-	return dogma_get_env_attribute(ctx, *module_env, attributeid, out);
+	return dogma_get_location_attribute(
+		ctx,
+		(location_t){ .type = DOGMA_LOC_Module, .module_index = index },
+		attributeid,
+		out
+	);
 }
 
 int dogma_get_charge_attribute(dogma_context_t* ctx, key_t index, attributeid_t attributeid, double* out) {
-	dogma_env_t** module_env;
-	dogma_env_t** charge_env;
-	key_t charge_index = 0;
-
-	JLG(module_env, ctx->ship->children, index);
-	if(module_env == NULL) return DOGMA_NOT_FOUND;
-
-	JLF(charge_env, (*module_env)->children, charge_index);
-	if(charge_env == NULL) return DOGMA_NOT_FOUND;
-
-	return dogma_get_env_attribute(ctx, *charge_env, attributeid, out);
+	return dogma_get_location_attribute(
+		ctx,
+		(location_t){ .type = DOGMA_LOC_Charge, .module_index = index },
+		attributeid,
+		out
+	);
 }

@@ -38,6 +38,10 @@
 #define DOGMA_SAFE_CHAR_INDEXES 50000
 #define DOGMA_SAFE_SHIP_INDEXES 0
 
+/* Used by dogma_apply_modifier() when the modifier was not applied
+ * because it did not match some filters. */
+#define DOGMA_SKIPPED 2
+
 /* -------- Data types -------- */
 
 typedef uint16_t groupid_t;
@@ -95,25 +99,25 @@ typedef struct dogma_type_effect_s dogma_type_effect_t;
  * WARNING: if you change this, take a look in attribute.c, the enum
  * is traversed sequentially: make sure the new bounds match! */
 enum dogma_association_e {
-	DOGMA_PreAssignment,
-	DOGMA_PreMul,
-	DOGMA_PreDiv,
-	DOGMA_ModAdd,
-	DOGMA_ModSub,
-	DOGMA_PostMul,
-	DOGMA_PostDiv,
-	DOGMA_PostPercent,
-	DOGMA_PostAssignment,
+	DOGMA_ASSOC_PreAssignment,
+	DOGMA_ASSOC_PreMul,
+	DOGMA_ASSOC_PreDiv,
+	DOGMA_ASSOC_ModAdd,
+	DOGMA_ASSOC_ModSub,
+	DOGMA_ASSOC_PostMul,
+	DOGMA_ASSOC_PostDiv,
+	DOGMA_ASSOC_PostPercent,
+	DOGMA_ASSOC_PostAssignment,
 };
 typedef enum dogma_association_e dogma_association_t;
 
 enum dogma_env_index_e {
-	DOGMA_Self,
-	DOGMA_Char,
-	DOGMA_Ship,
-	DOGMA_Target,
-	DOGMA_Area,
-	DOGMA_Other,
+	DOGMA_ENVIDX_Self,
+	DOGMA_ENVIDX_Char,
+	DOGMA_ENVIDX_Ship,
+	DOGMA_ENVIDX_Target,
+	DOGMA_ENVIDX_Area,
+	DOGMA_ENVIDX_Other,
 };
 typedef enum dogma_env_index_e dogma_env_index_t;
 
