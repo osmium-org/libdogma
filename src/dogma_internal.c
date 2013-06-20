@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -172,7 +172,7 @@ int dogma_inject_skill(dogma_context_t* ctx, typeid_t skillid) {
 	JLI(value, ctx->character->children, skillid);
 	*value = skill_env;
 
-	DOGMA_INIT_ENV(skill_env, skillid, ctx->character, skillid);
+	DOGMA_INIT_ENV(skill_env, skillid, ctx->character, skillid, ctx->character);
 
 	assert(skillid < DOGMA_SAFE_CHAR_INDEXES);
 

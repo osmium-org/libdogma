@@ -35,13 +35,14 @@
 #define DOGMA_ASSUME_OK(RESULT) \
 	{ int call_result__ = RESULT; if(call_result__ != DOGMA_OK) return call_result__; }
 
-#define DOGMA_INIT_ENV(envptr, _typeid, _parent, _index) do {	\
-		(envptr)->id = (_typeid);								\
-		(envptr)->parent = (_parent);							\
-		(envptr)->index = (_index);								\
-		(envptr)->state = 0;									\
-		(envptr)->children = NULL;								\
-		(envptr)->modifiers = NULL;								\
+#define DOGMA_INIT_ENV(envptr, _typeid, _parent, _index, _owner) do {	\
+		(envptr)->id = (_typeid);										\
+		(envptr)->parent = (_parent);									\
+		(envptr)->owner = (_owner);										\
+		(envptr)->index = (_index);										\
+		(envptr)->state = 0;											\
+		(envptr)->children = NULL;										\
+		(envptr)->modifiers = NULL;										\
 	} while(0)
 
 #define DOGMA_SAFE_CHAR_INDEXES 50000
@@ -152,7 +153,8 @@ typedef struct dogma_expression_s dogma_expression_t;
 
 struct dogma_env_s {
 	typeid_t id;
-	struct dogma_env_s* parent;
+	struct dogma_env_s* parent; /* Also known as location in dogma terminology */
+	struct dogma_env_s* owner;
 	key_t index; /* Index in parent->children array */
 	state_t state;
 	array_t children;

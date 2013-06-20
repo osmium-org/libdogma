@@ -52,14 +52,14 @@ int dogma_init_context(dogma_context_t** ctx) {
 	new_ctx->target = malloc(sizeof(dogma_env_t));
 	new_ctx->area = malloc(sizeof(dogma_env_t));
 
-	DOGMA_INIT_ENV(new_ctx->character, 0, NULL, 0);
-	DOGMA_INIT_ENV(new_ctx->target, 0, NULL, 0);
-	DOGMA_INIT_ENV(new_ctx->area, 0, NULL, 0);
+	DOGMA_INIT_ENV(new_ctx->character, 0, NULL, 0, new_ctx->character);
+	DOGMA_INIT_ENV(new_ctx->target, 0, NULL, 0, NULL);
+	DOGMA_INIT_ENV(new_ctx->area, 0, NULL, 0, NULL);
 
 	JLI(value, new_ctx->character->children, 0);
 	*value = new_ctx->ship;
 
-	DOGMA_INIT_ENV(new_ctx->ship, 0, new_ctx->character, 0);
+	DOGMA_INIT_ENV(new_ctx->ship, 0, new_ctx->character, 0, new_ctx->character);
 
 	new_ctx->default_skill_level = DOGMA_MAX_SKILL_LEVEL;
 	new_ctx->skill_levels = (array_t)NULL;
@@ -156,7 +156,7 @@ int dogma_add_module(dogma_context_t* ctx, typeid_t module_typeid, key_t* out_in
 	*value = module_env;
 	*out_index = index;
 
-	DOGMA_INIT_ENV(module_env, module_typeid, ctx->ship, index);
+	DOGMA_INIT_ENV(module_env, module_typeid, ctx->ship, index, ctx->character);
 
 	return DOGMA_OK;
 }
@@ -202,7 +202,7 @@ int dogma_add_charge(dogma_context_t* ctx, key_t index, typeid_t chargeid) {
 	JLI(value, (*module_env)->children, charge_index);
 	*value = charge_env;
 
-	DOGMA_INIT_ENV(charge_env, chargeid, *module_env, charge_index);
+	DOGMA_INIT_ENV(charge_env, chargeid, *module_env, charge_index, ctx->character);
 
 	return dogma_set_env_state(ctx, charge_env, *module_env, DOGMA_Active);
 }
@@ -260,7 +260,7 @@ int dogma_add_drone(dogma_context_t* ctx, typeid_t droneid, unsigned int quantit
 	JLI(value1, ctx->character->children, index);
 	*value1 = drone_env;
 
-	DOGMA_INIT_ENV(drone_env, droneid, ctx->character, index);
+	DOGMA_INIT_ENV(drone_env, droneid, ctx->character, index, ctx->character);
 
 	JLI(value2, ctx->drone_map, droneid);
 	*value2 = drone_ctx;

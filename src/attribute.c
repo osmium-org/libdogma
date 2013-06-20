@@ -200,17 +200,24 @@ static int dogma_apply_modifier(dogma_context_t* ctx, dogma_env_t* env, dogma_mo
 	bool required;
 	double value;
 
-	/* XXX: definitely not sure about this */
 	switch(modifier->scope) {
 
 	case DOGMA_SCOPE_Item:
+		/* Item modifiers (added with AIM and similar operands) only
+		 * affect the target environment, not its children */
 		if(env != modifier->targetenv) return DOGMA_SKIPPED;
 		break;
 
 	case DOGMA_SCOPE_Location:
+		/* Location modifiers only affect environments with a certain
+		 * location (parent) */
+		if(env->parent != modifier->targetenv) return DOGMA_SKIPPED;
 		break;
 
 	case DOGMA_SCOPE_Owner:
+		/* Owner modifiers (added with AORSM etc.) only affect
+		 * environments owned by the same character */
+		if(env->owner != modifier->sourceenv->owner) return DOGMA_SKIPPED;
 		break;
 
 	}
