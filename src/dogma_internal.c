@@ -65,7 +65,7 @@ int dogma_free_env(dogma_env_t* env) {
 	return DOGMA_OK;
 }
 
-int dogma_set_env_state(dogma_context_t* ctx, dogma_env_t* env, dogma_env_t* other, state_t newstate) {
+int dogma_set_env_state(dogma_context_t* ctx, dogma_env_t* env, state_t newstate) {
 	array_t enveffects;
 	key_t index = 0;
 	const dogma_type_effect_t** te;
@@ -81,24 +81,18 @@ int dogma_set_env_state(dogma_context_t* ctx, dogma_env_t* env, dogma_env_t* oth
 
 		if((newstate >> e->category) & 1) {
 			if(!((env->state >> e->category) & 1)) {
-				DOGMA_ASSUME_OK(
-					dogma_eval_expression(
-						ctx, env, other,
-						e->preexpressionid,
-						&result
-					)
-				);
+				DOGMA_ASSUME_OK(dogma_eval_expression(
+					ctx, env,
+					e->preexpressionid,
+					&result
+				));
 			}
-		} else {
-			if((env->state >> e->category) & 1) {
-				DOGMA_ASSUME_OK(
-					dogma_eval_expression(
-						ctx, env, other,
-						e->postexpressionid,
-						&result
-					)
-				);
-			}
+		} else if((env->state >> e->category) & 1) {
+			DOGMA_ASSUME_OK(dogma_eval_expression(
+				ctx, env,
+				e->postexpressionid,
+				&result
+			));
 		}
 
 		JLN(te, enveffects, index);
@@ -176,7 +170,7 @@ int dogma_inject_skill(dogma_context_t* ctx, typeid_t skillid) {
 
 	assert(skillid < DOGMA_SAFE_CHAR_INDEXES);
 
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, skill_env, NULL, DOGMA_Online));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, skill_env, DOGMA_Online));
 
 	return DOGMA_OK;
 }

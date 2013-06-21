@@ -23,7 +23,6 @@
 
 int dogma_eval_expression(dogma_context_t* ctx,
                           dogma_env_t* self,
-                          dogma_env_t* other,
                           expressionid_t id,
                           dogma_expctx_t* result) {
 	const dogma_expression_t* exp;
@@ -37,13 +36,13 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		/* Language constructs */
 
 	case DOGMA_COMBINE:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		break;
 
 	case DOGMA_ADD:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_FLOAT || resarg1.type == DOGMA_CTXTYPE_INT);
 		assert(resarg2.type == DOGMA_CTXTYPE_FLOAT || resarg2.type == DOGMA_CTXTYPE_INT);
 		result->type = DOGMA_CTXTYPE_FLOAT;
@@ -63,8 +62,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_SUB:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_FLOAT || resarg1.type == DOGMA_CTXTYPE_INT);
 		assert(resarg2.type == DOGMA_CTXTYPE_FLOAT || resarg2.type == DOGMA_CTXTYPE_INT);
 		result->type = DOGMA_CTXTYPE_FLOAT;
@@ -84,8 +83,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_MUL:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_FLOAT || resarg1.type == DOGMA_CTXTYPE_INT);
 		assert(resarg2.type == DOGMA_CTXTYPE_FLOAT || resarg2.type == DOGMA_CTXTYPE_INT);
 		result->type = DOGMA_CTXTYPE_FLOAT;
@@ -106,18 +105,18 @@ int dogma_eval_expression(dogma_context_t* ctx,
 
 	case DOGMA_IF:
 		assert(exp->arg1 != 0);
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
 		assert(resarg1.type == DOGMA_CTXTYPE_BOOL);
 		result->type = DOGMA_CTXTYPE_BOOL;
 		result->bool_value = resarg1.bool_value;
 		if(resarg1.bool_value) {
-			dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+			dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		}
 		break;
 
 	case DOGMA_AND:
 		assert(exp->arg1 != 0);
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
 		assert(resarg1.type == DOGMA_CTXTYPE_BOOL);
 		if(!resarg1.bool_value) {
 			/* Note: AND seems to be lazy, see the untainted expression for the online effect (id 633) */
@@ -125,7 +124,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 			result->bool_value = false;
 		} else {
 			assert(exp->arg2 != 0);
-			dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+			dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 			assert(resarg2.type == DOGMA_CTXTYPE_BOOL);
 			result->type = DOGMA_CTXTYPE_BOOL;
 			result->bool_value = resarg2.bool_value;
@@ -134,7 +133,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 
 	case DOGMA_OR:
 		assert(exp->arg1 != 0);
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
 		assert(resarg1.type == DOGMA_CTXTYPE_BOOL);
 		if(resarg1.bool_value) {
 			/* FIXME: assuming OR is lazy */
@@ -142,7 +141,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 			result->bool_value = true;
 		} else {
 			assert(exp->arg2 != 0);
-			dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+			dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 			assert(resarg2.type == DOGMA_CTXTYPE_BOOL);
 			result->type = DOGMA_CTXTYPE_BOOL;
 			result->bool_value = resarg2.bool_value;
@@ -150,8 +149,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_EQ:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_FLOAT || resarg1.type == DOGMA_CTXTYPE_INT);
 		assert(resarg2.type == DOGMA_CTXTYPE_FLOAT || resarg2.type == DOGMA_CTXTYPE_INT);
 		result->type = DOGMA_CTXTYPE_BOOL;
@@ -171,8 +170,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_GT:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_FLOAT || resarg1.type == DOGMA_CTXTYPE_INT);
 		assert(resarg2.type == DOGMA_CTXTYPE_FLOAT || resarg2.type == DOGMA_CTXTYPE_INT);
 		result->type = DOGMA_CTXTYPE_BOOL;
@@ -192,8 +191,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_GTE:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_FLOAT || resarg1.type == DOGMA_CTXTYPE_INT);
 		assert(resarg2.type == DOGMA_CTXTYPE_FLOAT || resarg2.type == DOGMA_CTXTYPE_INT);
 		result->type = DOGMA_CTXTYPE_BOOL;
@@ -213,8 +212,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_RS:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_ENV);
 		assert(resarg2.type == DOGMA_CTXTYPE_TYPEID);
 		result->type = DOGMA_CTXTYPE_BOOL;
@@ -249,8 +248,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		/* Filters */
 
 	case DOGMA_ATT:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_ENV || resarg1.type == DOGMA_CTXTYPE_MODIFIER);
 		assert(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID);
 		if(resarg1.type == DOGMA_CTXTYPE_ENV) {
@@ -264,8 +263,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_LG:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_ENV);
 		assert(resarg2.type == DOGMA_CTXTYPE_GROUPID);
 		result->type = DOGMA_CTXTYPE_MODIFIER;
@@ -275,8 +274,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_LS:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_ENV);
 		assert(resarg2.type == DOGMA_CTXTYPE_TYPEID);
 		result->type = DOGMA_CTXTYPE_MODIFIER;
@@ -286,8 +285,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_RSA:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_TYPEID);
 		assert(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID);
 		result->type = DOGMA_CTXTYPE_MODIFIER;
@@ -298,15 +297,15 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_IA:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
 		assert(resarg1.type == DOGMA_CTXTYPE_ATTRIBUTEID);
 		result->type = DOGMA_CTXTYPE_ATTRIBUTEID;
 		result->attributeid_value = resarg1.attributeid_value;
 		break;
 
 	case DOGMA_GA:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_GROUPID);
 		assert(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID);
 		result->type = DOGMA_CTXTYPE_MODIFIER;
@@ -317,8 +316,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_GM:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_ENV);
 		assert(resarg2.type == DOGMA_CTXTYPE_GROUPID);
 		result->type = DOGMA_CTXTYPE_MODIFIER;
@@ -328,8 +327,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		break;
 
 	case DOGMA_EFF:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_ASSOCIATION);
 		assert(resarg2.type == DOGMA_CTXTYPE_MODIFIER);
 		*result = resarg2;
@@ -375,8 +374,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 	case DOGMA_ALGM:
 	case DOGMA_ALRSM:
 	case DOGMA_AORSM:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_MODIFIER);
 		assert(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID || resarg2.type == DOGMA_CTXTYPE_MODIFIER);
 		if(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID) {
@@ -416,8 +415,8 @@ int dogma_eval_expression(dogma_context_t* ctx,
 	case DOGMA_RLGM:
 	case DOGMA_RLRSM:
 	case DOGMA_RORSM:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
-		dogma_eval_expression(ctx, self, other, exp->arg2, &resarg2);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_MODIFIER);
 		assert(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID || resarg2.type == DOGMA_CTXTYPE_MODIFIER);
 		if(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID) {
@@ -494,7 +493,9 @@ int dogma_eval_expression(dogma_context_t* ctx,
 			break;
 
 		case DOGMA_ENVIDX_Other:
-			result->env_value = other;
+			/* XXX: this doesn't feel right */
+			assert(self->parent != NULL);
+			result->env_value = self->parent;
 			break;
 
 		default:
@@ -545,7 +546,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		/* Misc. stuff */
 
 	case DOGMA_GETTYPE:
-		dogma_eval_expression(ctx, self, other, exp->arg1, &resarg1);
+		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
 		assert(exp->arg2 == 0);
 		assert(resarg1.type == DOGMA_CTXTYPE_ENV);
 		result->type = DOGMA_CTXTYPE_TYPEID;

@@ -56,6 +56,6 @@ struct dogma_expctx_s {
 };
 typedef struct dogma_expctx_s dogma_expctx_t;
 
-int dogma_eval_expression(dogma_context_t*, dogma_env_t*, dogma_env_t*, expressionid_t, dogma_expctx_t*);
+int dogma_eval_expression(dogma_context_t*, dogma_env_t*, expressionid_t, dogma_expctx_t*);
 
 #endif

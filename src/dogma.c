@@ -29,9 +29,9 @@
 
 #define CAT_Skill 16
 
-static int dogma_add_env_generic(dogma_context_t*, dogma_env_t*, dogma_env_t*, dogma_env_t*,
+static int dogma_add_env_generic(dogma_context_t*, dogma_env_t*, dogma_env_t*,
                                  typeid_t, key_t*, state_t);
-static int dogma_remove_env_generic(dogma_context_t*, dogma_env_t*, dogma_env_t*, key_t);
+static int dogma_remove_env_generic(dogma_context_t*, dogma_env_t*, key_t);
 
 
 
@@ -153,7 +153,7 @@ int dogma_reset_skill_levels(dogma_context_t* ctx) {
 
 
 static inline int dogma_add_env_generic(dogma_context_t* ctx,
-                                        dogma_env_t* location, dogma_env_t* owner, dogma_env_t* other,
+                                        dogma_env_t* location, dogma_env_t* owner,
                                         typeid_t id, key_t* index, state_t state) {
 	dogma_env_t* new_env = malloc(sizeof(dogma_env_t));
 	dogma_env_t** value;
@@ -164,13 +164,13 @@ static inline int dogma_add_env_generic(dogma_context_t* ctx,
 	*value = new_env;
 
 	DOGMA_INIT_ENV(new_env, id, location, *index, owner);
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, new_env, other, state));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, new_env, state));
 
 	return DOGMA_OK;
 }
 
 static inline int dogma_remove_env_generic(dogma_context_t* ctx,
-                                           dogma_env_t* location, dogma_env_t* other,
+                                           dogma_env_t* location,
                                            key_t index) {
 	dogma_env_t** env;
 	int result;
@@ -178,7 +178,7 @@ static inline int dogma_remove_env_generic(dogma_context_t* ctx,
 	JLG(env, location->children, index);
 	if(env == NULL) return DOGMA_NOT_FOUND;
 
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, *env, other, 0));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, *env, 0));
 
 	dogma_free_env(*env);
 
@@ -196,9 +196,9 @@ int dogma_set_ship(dogma_context_t* ctx, typeid_t ship_typeid) {
 		return DOGMA_OK;
 	}
 
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, ctx->ship, NULL, 0));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, ctx->ship, 0));
 	ctx->ship->id = ship_typeid;
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, ctx->ship, NULL, DOGMA_Online));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, ctx->ship, DOGMA_Online));
 
 	return DOGMA_OK;
 }
@@ -211,17 +211,13 @@ int dogma_add_module(dogma_context_t* ctx, typeid_t module_typeid, key_t* out_in
 	*out_index = DOGMA_SAFE_SHIP_INDEXES;
 	return dogma_add_env_generic(
 		ctx,
-		ctx->ship, ctx->character, NULL,
+		ctx->ship, ctx->character,
 		module_typeid, out_index, 0
 	);
 }
 
 int dogma_remove_module(dogma_context_t* ctx, key_t index) {
-	return dogma_remove_env_generic(
-		ctx,
-		ctx->ship, NULL,
-		index
-	);
+	return dogma_remove_env_generic(ctx, ctx->ship, index);
 }
 
 int dogma_set_module_state(dogma_context_t* ctx, key_t index, state_t new_state) {
@@ -230,7 +226,7 @@ int dogma_set_module_state(dogma_context_t* ctx, key_t index, state_t new_state)
 	JLG(module_env, ctx->ship->children, index);
 	if(module_env == NULL) return DOGMA_NOT_FOUND;
 
-	return dogma_set_env_state(ctx, *module_env, NULL, new_state);
+	return dogma_set_env_state(ctx, *module_env, new_state);
 }
 
 
@@ -249,7 +245,7 @@ int dogma_add_charge(dogma_context_t* ctx, key_t index, typeid_t chargeid) {
 
 	return dogma_add_env_generic(
 		ctx,
-		*module_env, ctx->character, *module_env,
+		*module_env, ctx->character,
 		chargeid, &charge_index, DOGMA_Active
 	);
 }
@@ -265,11 +261,7 @@ int dogma_remove_charge(dogma_context_t* ctx, key_t index) {
 	assert(count <= 1); /* If there's more than one charge in this
 	                     * module, something is wrong */
 
-	return dogma_remove_env_generic(
-		ctx,
-		*module_env, *module_env,
-		0
-	);
+	return dogma_remove_env_generic(ctx, *module_env, 0);
 }
 
 
@@ -312,7 +304,7 @@ int dogma_add_drone(dogma_context_t* ctx, typeid_t droneid, unsigned int quantit
 	drone_ctx->drone = drone_env;
 	drone_ctx->quantity = quantity;
 
-	return dogma_set_env_state(ctx, drone_env, NULL, DOGMA_Active);
+	return dogma_set_env_state(ctx, drone_env, DOGMA_Active);
 }
 
 int dogma_remove_drone_partial(dogma_context_t* ctx, typeid_t droneid, unsigned int quantity) {
@@ -339,7 +331,7 @@ int dogma_remove_drone(dogma_context_t* ctx, typeid_t droneid) {
 	if(value == NULL) return DOGMA_OK; /* Nonexistent drone */
 
 	drone_env = (*value)->drone;
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, drone_env, NULL, 0));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, drone_env, 0));
 	JLD(ret, drone_env->parent->children, drone_env->index);
 	JLD(ret, ctx->drone_map, drone_env->id);
 
@@ -357,17 +349,13 @@ int dogma_add_implant(dogma_context_t* ctx, typeid_t id, key_t* index) {
 	*index = DOGMA_SAFE_CHAR_INDEXES;
 	return dogma_add_env_generic(
 		ctx,
-		ctx->character, ctx->character, NULL,
+		ctx->character, ctx->character,
 		id, index, DOGMA_Online
 	);
 }
 
 int dogma_remove_implant(dogma_context_t* ctx, key_t index) {
-	return dogma_remove_env_generic(
-		ctx,
-		ctx->character, NULL,
-		index
-	);
+	return dogma_remove_env_generic(ctx, ctx->character, index);
 }
 
 
