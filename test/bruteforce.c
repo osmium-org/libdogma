@@ -32,12 +32,14 @@
 #define CAT_Subsystem 32
 
 #define TYPE_Drone 2488
+#define TYPE_Skillbook 3300
 
 dogma_context_t* ctx;
 key_t module_slot, implant_slot;
 
 static void try_all_char_attribs(void);
 static void try_all_implant_attribs(void);
+static void try_all_skill_attribs(typeid_t);
 static void try_all_ship_attribs(void);
 static void try_all_module_attribs(void);
 static void try_all_charge_attribs(void);
@@ -50,6 +52,7 @@ int main(void) {
 	dogma_init_context(&ctx);
 
 	try_all_char_attribs();
+	try_all_skill_attribs(TYPE_Skillbook);
 
 	/* To be perfectly thorough, some of these for loops should be
 	 * nested in one another. Try it if you have spare time! */
@@ -130,6 +133,16 @@ static void try_all_implant_attribs(void) {
 		dogma_get_implant_attribute(ctx, implant_slot, dogma_table_attributes[i].id, &v);
 	}
 }
+
+static void try_all_skill_attribs(typeid_t id) {
+	int i;
+	double v;
+
+	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
+		dogma_get_skill_attribute(ctx, id, dogma_table_attributes[i].id, &v);
+	}
+}
+
 
 static void try_all_ship_attribs(void) {
 	int i;

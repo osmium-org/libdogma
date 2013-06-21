@@ -18,6 +18,7 @@ dogma_remove_drone
 dogma_get_location_attribute
 dogma_get_character_attribute
 dogma_get_implant_attribute
+dogma_get_skill_attribute
 dogma_get_ship_attribute
 dogma_get_module_attribute
 dogma_get_charge_attribute

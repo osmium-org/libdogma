@@ -392,6 +392,12 @@ static inline int dogma_get_location_env(dogma_context_t* ctx, location_t locati
 		*env = *env1;
 		return DOGMA_OK;
 
+	case DOGMA_LOC_Skill:
+		JLG(env1, ctx->character->children, location.skill_typeid);
+		if(env1 == NULL) return DOGMA_NOT_FOUND;
+		*env = *env1;
+		return DOGMA_OK;
+
 	case DOGMA_LOC_Ship:
 		*env = ctx->ship;
 		return DOGMA_OK;
@@ -437,6 +443,15 @@ int dogma_get_implant_attribute(dogma_context_t* ctx, key_t index, attributeid_t
 	return dogma_get_location_attribute(
 		ctx,
 		(location_t){ .type = DOGMA_LOC_Implant, .implant_index = index },
+		attributeid,
+		out
+	);
+}
+
+int dogma_get_skill_attribute(dogma_context_t* ctx, typeid_t id, attributeid_t attributeid, double* out) {
+	return dogma_get_location_attribute(
+		ctx,
+		(location_t){ .type = DOGMA_LOC_Skill, .skill_typeid = id },
 		attributeid,
 		out
 	);

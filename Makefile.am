@@ -1,4 +1,4 @@
-AM_CFLAGS=-std=c11 -I./src -I./include
+AM_CFLAGS=-Wall -Wextra -pedantic -std=c11 -I./src -I./include
 
 lib_LTLIBRARIES=libdogma.la
 libdogma_ladir=.

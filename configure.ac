@@ -13,7 +13,7 @@ AC_ARG_ENABLE(debug, AS_HELP_STRING([--enable-debug], [enable debug flags (defau
 AS_IF([test "x$enable_debug" != "xyes"], [enable_debug=no])
 AC_MSG_RESULT($enable_debug)
 
-AS_IF([test "x$enable_debug" = "xyes"], [CFLAGS="-Wall -Wextra -Werror -pedantic -g -O0"])
+AS_IF([test "x$enable_debug" = "xyes"], [CFLAGS="-Werror -g -O0"])
 
 AC_PROG_CC([clang gcc cc])
 
