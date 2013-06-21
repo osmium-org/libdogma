@@ -219,7 +219,7 @@ if($argc !== 2) {
 $json = load_json(rtrim($argv[1], '/'));
 
 
-$targetsource = __DIR__.'/../src/tables-data.c';
+$targetsource = __DIR__.'/../src/tables-data.h';
 if(file_exists($targetsource)) fatal('cowardly refusing to overwrite '.$targetsource);
 
 $c = fopen($targetsource, 'xb');
@@ -381,9 +381,10 @@ foreach($json['effects'] as $e) {
 	       .", ".(int)$e['dischargeAttributeID'].'U'
 	       .", ".(int)$e['rangeAttributeID'].'U'
 	       .", ".(int)$e['falloffAttributeID'].'U'
+	       .", ".(int)$e['fittingUsageChanceAttributeID'].'U'
 	       ." },\n");
 }
-fwrite($c, "\t{ 0, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U }\n");
+fwrite($c, "\t{ 0, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U }\n");
 fwrite($c, "};\n");
 
 /* -------- Type attributes / Type effects -------- */

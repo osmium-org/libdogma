@@ -19,7 +19,7 @@
 #include "dogma.h"
 #include "dogma_internal.h"
 #include "tables.h"
-#include "tables-data.c"
+#include "tables-data.h"
 
 #define ATT_Mass 4
 #define ATT_Capacity 38

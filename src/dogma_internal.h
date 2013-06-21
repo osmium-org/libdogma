@@ -87,6 +87,7 @@ struct dogma_effect_s {
 	attributeid_t dischargeattributeid;
 	attributeid_t rangeattributeid;
 	attributeid_t falloffattributeid;
+	attributeid_t fittingusagechanceattributeid;
 };
 typedef struct dogma_effect_s dogma_effect_t;
 

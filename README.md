@@ -4,6 +4,32 @@ libdogma
 libdogma is an *ad hoc* fitting engine for the EVE Online multiplayer
 game.
 
+Features
+--------
+
+* Excellent accuracy (thanks to using the same expressions as the EVE
+  client)
+
+* Fast and low memory footprint (thanks to Judy arrays)
+
+* Stable, heavily tested code base
+
+* Customizable skill levels
+
+* Computes attributes of characters, skills, implants, ships, drones,
+  modules and charges
+
+Missing features / Known issues
+-------------------------------
+
+* Booster side effects are not yet customizable
+
+* Gang/fleet bonuses are not supported yet
+
+* Projected effects are not supported yet
+
+* Area effects (like wormhole effects) are not supported yet
+
 Credits
 -------
 
@@ -27,39 +53,59 @@ Compiling libdogma
 Dependencies
 ------------
 
-* A JSON cache dump of the game client (you can get one with
-  [`phobos`](http://jira.evefit.org/browse/PHOBOS));
-
 * A C11 compiler or, at least, a C99 compiler that supports anonymous
   unions (`clang >= 3.1` is good);
 
 * Judy arrays;
+
+* A JSON cache dump of the game client (only if you are building from
+  git, you can get one with
+  [`phobos`](http://jira.evefit.org/browse/PHOBOS));
 
 * The GNU Autotools suite (only if you are building from git).
 
 Compiling recipe
 ----------------
 
+If you are compiling from a tarball, you can directly jump to the
+`./configure` step.
+
 0. Generate the static data from the JSON dump:
 
-       ./tools/bootstrap_from_json <path_to_JSON_dump>
+   ~~~
+   ./tools/bootstrap_from_json <path_to_JSON_dump>
+   ~~~
 
 1. If you are bulding from git, generate the `configure` script:
 
-       ./bootstrap
+   ~~~
+   ./bootstrap
+   ~~~
 
 2. Generate the `Makefile` (you can omit the debug flags or the `CC=`
    if you want to use `gcc`):
 
-       CC=clang ./configure --enable-debug
+   ~~~
+   CC=clang ./configure --enable-debug
+   ~~~
 
 3. Compile the library:
 
-       make
+   ~~~
+   make
+   ~~~
 
 4. Optionally, run the test suite:
 
-       make check
+   ~~~
+   make check
+   ~~~
+
+5. Optionally, install the package:
+
+   ~~~
+   make install
+   ~~~
 
 Examples
 ========

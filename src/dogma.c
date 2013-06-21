@@ -208,7 +208,7 @@ int dogma_set_ship(dogma_context_t* ctx, typeid_t ship_typeid) {
 
 
 int dogma_add_module(dogma_context_t* ctx, typeid_t module_typeid, key_t* out_index) {
-	*out_index = DOGMA_SAFE_CHAR_INDEXES;
+	*out_index = DOGMA_SAFE_SHIP_INDEXES;
 	return dogma_add_env_generic(
 		ctx,
 		ctx->ship, ctx->character, NULL,

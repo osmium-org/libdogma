@@ -20,5 +20,5 @@ AC_PROG_CC([clang gcc cc])
 AC_SEARCH_LIBS([JudyLGet], [Judy], [], [AC_MSG_ERROR([unable to find Judy])])
 AC_CHECK_HEADERS([stdlib.h stdint.h stdbool.h assert.h Judy.h], [], [AC_MSG_ERROR([unable to find some headers])])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile libdogma.pc])
 AC_OUTPUT

@@ -21,6 +21,8 @@ missing
 test/*
 !test/*.[ch]
 src/operands.h
-src/tables-data.c
+src/tables-data.h
 test-driver
 test-suite.log
+libdogma-*.tar.xz
+libdogma.pc
