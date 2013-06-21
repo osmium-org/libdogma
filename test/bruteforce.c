@@ -28,14 +28,16 @@
 #define CAT_Module 7
 #define CAT_Charge 8
 #define CAT_Drone 18
+#define CAT_Implant 20
 #define CAT_Subsystem 32
 
 #define TYPE_Drone 2488
 
 dogma_context_t* ctx;
-key_t slot;
+key_t module_slot, implant_slot;
 
 static void try_all_char_attribs(void);
+static void try_all_implant_attribs(void);
 static void try_all_ship_attribs(void);
 static void try_all_module_attribs(void);
 static void try_all_charge_attribs(void);
@@ -51,6 +53,15 @@ int main(void) {
 
 	/* To be perfectly thorough, some of these for loops should be
 	 * nested in one another. Try it if you have spare time! */
+
+	for(i = 0; dogma_table_types[i].id != 0; ++i) {
+		if(dogma_table_types[i].categoryid != CAT_Implant) continue;
+
+		dogma_add_implant(ctx, dogma_table_types[i].id, &implant_slot);
+		try_all_char_attribs();
+		try_all_implant_attribs();
+		dogma_remove_implant(ctx, implant_slot);
+	}
 
 	for(i = 0; dogma_table_types[i].id != 0; ++i) {
 		if(dogma_table_types[i].categoryid != CAT_Drone) continue;
@@ -76,26 +87,26 @@ int main(void) {
 		if(dogma_table_types[i].categoryid != CAT_Module
 		   && dogma_table_types[i].categoryid != CAT_Subsystem) continue;
 
-		dogma_add_module(ctx, dogma_table_types[i].id, &slot);
-		dogma_set_module_state(ctx, slot, DOGMA_Overloaded);
+		dogma_add_module(ctx, dogma_table_types[i].id, &module_slot);
+		dogma_set_module_state(ctx, module_slot, DOGMA_Overloaded);
 		try_all_char_attribs();
 		try_all_ship_attribs();
 		try_all_drone_attribs(TYPE_Drone);
 		try_all_module_attribs();
-		dogma_remove_module(ctx, slot);
+		dogma_remove_module(ctx, module_slot);
 	}
 
-	dogma_add_module(ctx, 2873, &slot);
+	dogma_add_module(ctx, 2873, &module_slot);
 
 	for(i = 0; dogma_table_types[i].id != 0; ++i) {
 		if(dogma_table_types[i].categoryid != CAT_Charge) continue;
 
-		dogma_add_charge(ctx, slot, dogma_table_types[i].id);
+		dogma_add_charge(ctx, module_slot, dogma_table_types[i].id);
 		try_all_char_attribs();
 		try_all_ship_attribs();
 		try_all_module_attribs();
 		try_all_charge_attribs();
-		dogma_remove_charge(ctx, slot);
+		dogma_remove_charge(ctx, module_slot);
 	}
 
 	dogma_free_context(ctx);
@@ -108,6 +119,15 @@ static void try_all_char_attribs(void) {
 
 	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
 		dogma_get_character_attribute(ctx, dogma_table_attributes[i].id, &v);
+	}
+}
+
+static void try_all_implant_attribs(void) {
+	int i;
+	double v;
+
+	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
+		dogma_get_implant_attribute(ctx, implant_slot, dogma_table_attributes[i].id, &v);
 	}
 }
 
@@ -125,7 +145,7 @@ static void try_all_module_attribs(void) {
 	double v;
 
 	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
-		dogma_get_module_attribute(ctx, slot, dogma_table_attributes[i].id, &v);
+		dogma_get_module_attribute(ctx, module_slot, dogma_table_attributes[i].id, &v);
 	}
 }
 
@@ -134,7 +154,7 @@ static void try_all_charge_attribs(void) {
 	double v;
 
 	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
-		dogma_get_charge_attribute(ctx, slot, dogma_table_attributes[i].id, &v);
+		dogma_get_charge_attribute(ctx, module_slot, dogma_table_attributes[i].id, &v);
 	}
 }
 

@@ -16,7 +16,7 @@ include_HEADERS=include/dogma.h
 check_PROGRAMS=test/trivial test/basic-attributes				\
 	test/basic-skill-levels test/basic-charges					\
 	test/stacking-penalties test/ancillary-modules test/drones	\
-	test/bruteforce
+	test/implants test/bruteforce
 
 LDADD=libdogma.la
 TESTS=$(check_PROGRAMS)

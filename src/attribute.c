@@ -234,6 +234,7 @@ static int dogma_apply_modifier(dogma_context_t* ctx, dogma_env_t* env, dogma_mo
 		break;
 
 	case DOGMA_FILTERTYPE_SKILL_REQUIRED:
+		if(env->id == 0) return DOGMA_SKIPPED;
 		DOGMA_ASSUME_OK(dogma_env_requires_skill(ctx, env, modifier->filter.typeid, &required));
 		if(!required) return DOGMA_SKIPPED;
 		break;
