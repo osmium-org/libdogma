@@ -44,9 +44,9 @@ static bool dogma_modifier_is_penalized(dogma_modifier_t* modifier) {
 	}
 
 	if(dogma_get_type_effect(modifier->sourceenv->id, EFF_LoPower, &te) == DOGMA_OK
-	|| dogma_get_type_effect(modifier->sourceenv->id, EFF_HiPower, &te) == DOGMA_OK
-	|| dogma_get_type_effect(modifier->sourceenv->id, EFF_MedPower, &te) == DOGMA_OK
-	|| dogma_get_type_effect(modifier->sourceenv->id, EFF_RigSlot, &te) == DOGMA_OK) {
+	   || dogma_get_type_effect(modifier->sourceenv->id, EFF_HiPower, &te) == DOGMA_OK
+	   || dogma_get_type_effect(modifier->sourceenv->id, EFF_MedPower, &te) == DOGMA_OK
+	   || dogma_get_type_effect(modifier->sourceenv->id, EFF_RigSlot, &te) == DOGMA_OK) {
 		return true;
 	}
 
@@ -101,7 +101,7 @@ int dogma_remove_modifier(dogma_modifier_t* modifier) {
 		if((*modifier_value)->sourceattribute == modifier->sourceattribute
 		   && (*modifier_value)->sourceenv == modifier->sourceenv
 		   && (*modifier_value)->scope == modifier->scope
-			&&(*modifier_value)->filter.type == modifier->filter.type
+		   && (*modifier_value)->filter.type == modifier->filter.type
 		   && (modifier->filter.type != DOGMA_FILTERTYPE_GROUP
 		       || (*modifier_value)->filter.groupid == modifier->filter.groupid)
 		   && (modifier->filter.type != DOGMA_FILTERTYPE_SKILL_REQUIRED

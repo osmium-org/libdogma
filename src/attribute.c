@@ -82,8 +82,8 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 	DOGMA_ASSUME_OK(dogma_get_type_attribute(env->id, attributeid, out));
 
 	for(dogma_association_t assoctype = DOGMA_ASSOC_PreAssignment;
-		assoctype <= DOGMA_ASSOC_PostAssignment;
-		++assoctype) {
+	    assoctype <= DOGMA_ASSOC_PostAssignment;
+	    ++assoctype) {
 		double penalized_positive[MAX_PENALIZED_MODIFIERS];
 		double penalized_negative[MAX_PENALIZED_MODIFIERS];
 		size_t penalized_pos_count = 0, penalized_neg_count = 0;
@@ -134,7 +134,7 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 								assert(ret == DOGMA_SKIPPED);
 							}
 						} else {
-						    ret = dogma_apply_modifier(ctx, env, *modifier, out);
+							ret = dogma_apply_modifier(ctx, env, *modifier, out);
 							assert(ret == DOGMA_OK || ret == DOGMA_SKIPPED);
 						}
 
@@ -174,13 +174,13 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 	return DOGMA_OK;
 }
 
-#define DOGMA_CHECK_SKILL_ATTRIBUTE(attid) do {						   \
-		double value;												   \
+#define DOGMA_CHECK_SKILL_ATTRIBUTE(attid) do {	  \
+		double value; \
 		DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, env, attid, &value)); \
-		if(value == skillid) {											\
-			*out = true;												\
-			return DOGMA_OK;											\
-		}																\
+		if(value == skillid) { \
+			*out = true; \
+			return DOGMA_OK; \
+		} \
 	} while(0)
 
 int dogma_env_requires_skill(dogma_context_t* ctx, dogma_env_t* env, typeid_t skillid, bool* out) {
