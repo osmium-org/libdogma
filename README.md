@@ -16,13 +16,13 @@ Features
 
 * Customizable skill levels
 
+* Customizable chance-based effects (booster side effects)
+
 * Computes attributes of characters, skills, implants, ships, drones,
   modules and charges
 
 Missing features / Known issues
 -------------------------------
-
-* Booster side effects are not yet customizable
 
 * Gang/fleet bonuses are not supported yet
 
@@ -54,7 +54,7 @@ Dependencies
 ------------
 
 * A C11 compiler or, at least, a C99 compiler that supports anonymous
-  unions (`clang >= 3.1` is good);
+  unions and `_Static_assert` (`clang >= 3.1` is good);
 
 * Judy arrays;
 

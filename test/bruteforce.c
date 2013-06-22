@@ -20,6 +20,7 @@
 
 /* This is dirty, but we need the data. Don't do this in real
  * applications! */
+#include "../src/tables.h"
 #include "../src/tables.c"
 
 #include <stdio.h>
@@ -30,6 +31,8 @@
 #define CAT_Drone 18
 #define CAT_Implant 20
 #define CAT_Subsystem 32
+
+#define GROUP_Booster 303
 
 #define TYPE_Drone 2488
 #define TYPE_Skillbook 3300
@@ -63,6 +66,42 @@ int main(void) {
 		dogma_add_implant(ctx, dogma_table_types[i].id, &implant_slot);
 		try_all_char_attribs();
 		try_all_implant_attribs();
+		dogma_remove_implant(ctx, implant_slot);
+	}
+
+	for(i = 0; dogma_table_types[i].id != 0; ++i) {
+		if(dogma_table_types[i].categoryid != CAT_Implant
+		|| dogma_table_types[i].groupid != GROUP_Booster) continue;
+
+		dogma_add_implant(ctx, dogma_table_types[i].id, &implant_slot);
+		try_all_char_attribs();
+		try_all_implant_attribs();
+
+		/* Try all chance-based attributes (booster side effects) */
+		const dogma_type_effect_t** te;
+		const dogma_effect_t* e;
+		array_t effects;
+		key_t index = 0;
+
+		dogma_get_type_effects(dogma_table_types[i].id, &effects);
+		JLF(te, effects, index);
+		while(te != NULL) {
+			const location_t loc = {
+				.type = DOGMA_LOC_Implant,
+				.implant_index = implant_slot,
+			};
+			double out;
+
+			dogma_get_effect((*te)->effectid, &e);
+			if(e->fittingusagechanceattributeid == 0) continue;
+
+			dogma_get_chance_based_effect_chance(ctx, loc, e->id, &out);
+			dogma_toggle_chance_based_effect(ctx, loc, e->id, true);
+			dogma_toggle_chance_based_effect(ctx, loc, e->id, false);
+
+			JLN(te, effects, index);
+		}
+
 		dogma_remove_implant(ctx, implant_slot);
 	}
 

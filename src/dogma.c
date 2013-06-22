@@ -33,6 +33,8 @@ static int dogma_add_env_generic(dogma_context_t*, dogma_env_t*, dogma_env_t*,
                                  typeid_t, key_t*, state_t);
 static int dogma_remove_env_generic(dogma_context_t*, dogma_env_t*, key_t);
 
+static inline int dogma_get_location_env(dogma_context_t*, location_t, dogma_env_t**);
+
 
 
 
@@ -178,7 +180,7 @@ static inline int dogma_remove_env_generic(dogma_context_t* ctx,
 	JLG(env, location->children, index);
 	if(env == NULL) return DOGMA_NOT_FOUND;
 
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, *env, 0));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, *env, DOGMA_Unplugged));
 
 	dogma_free_env(*env);
 
@@ -196,7 +198,7 @@ int dogma_set_ship(dogma_context_t* ctx, typeid_t ship_typeid) {
 		return DOGMA_OK;
 	}
 
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, ctx->ship, 0));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, ctx->ship, DOGMA_Unplugged));
 	ctx->ship->id = ship_typeid;
 	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, ctx->ship, DOGMA_Online));
 
@@ -331,7 +333,7 @@ int dogma_remove_drone(dogma_context_t* ctx, typeid_t droneid) {
 	if(value == NULL) return DOGMA_OK; /* Nonexistent drone */
 
 	drone_env = (*value)->drone;
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, drone_env, 0));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, drone_env, DOGMA_Unplugged));
 	JLD(ret, drone_env->parent->children, drone_env->index);
 	JLD(ret, ctx->drone_map, drone_env->id);
 
@@ -356,6 +358,49 @@ int dogma_add_implant(dogma_context_t* ctx, typeid_t id, key_t* index) {
 
 int dogma_remove_implant(dogma_context_t* ctx, key_t index) {
 	return dogma_remove_env_generic(ctx, ctx->character, index);
+}
+
+
+
+
+
+int dogma_toggle_chance_based_effect(dogma_context_t* ctx, location_t loc, effectid_t id, bool on) {
+	const dogma_type_effect_t* te;
+	const dogma_effect_t* e;
+	dogma_env_t* loc_env;
+	bool* val;
+	int ret;
+	dogma_expctx_t result;
+
+	DOGMA_ASSUME_OK(dogma_get_location_env(ctx, loc, &loc_env));
+	DOGMA_ASSUME_OK(dogma_get_type_effect(loc_env->id, id, &te));
+	DOGMA_ASSUME_OK(dogma_get_effect(id, &e));
+
+	if(e->fittingusagechanceattributeid == 0) {
+		/* Effect is not chance-based */
+		return DOGMA_NOT_APPLICABLE;
+	}
+
+	JLG(val, loc_env->chance_effects, id);
+	if(val == NULL) {
+		/* Effect is off */
+		if(!on) return DOGMA_OK;
+
+		JLI(val, loc_env->chance_effects, id);
+		*val = true;
+
+		DOGMA_ASSUME_OK(dogma_eval_expression(ctx, loc_env, e->preexpressionid, &result));
+	} else {
+		/* Effect is on */
+		assert(*val == true);
+		if(on) return DOGMA_OK;
+
+		JLD(ret, loc_env->chance_effects, id);
+
+		DOGMA_ASSUME_OK(dogma_eval_expression(ctx, loc_env, e->postexpressionid, &result));
+	}
+
+	return DOGMA_OK;
 }
 
 
@@ -474,4 +519,24 @@ int dogma_get_drone_attribute(dogma_context_t* ctx, typeid_t droneid, attributei
 		attributeid,
 		out
 	);
+}
+
+int dogma_get_chance_based_effect_chance(dogma_context_t* ctx, location_t loc, effectid_t id, double* out) {
+	dogma_env_t* loc_env;
+	const dogma_type_effect_t* te;
+	const dogma_effect_t* e;
+
+	DOGMA_ASSUME_OK(dogma_get_location_env(ctx, loc, &loc_env));
+	DOGMA_ASSUME_OK(dogma_get_type_effect(loc_env->id, id, &te));
+	DOGMA_ASSUME_OK(dogma_get_effect(id, &e));
+
+	if(e->fittingusagechanceattributeid == 0) {
+		return DOGMA_NOT_APPLICABLE;
+	}
+
+	DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, loc_env, e->fittingusagechanceattributeid, out));
+	assert(*out >= 0.0 && *out <= 1.0); /* A probability of something
+	                                     * happening should be between
+	                                     * 0 and 1 */
+	return DOGMA_OK;
 }

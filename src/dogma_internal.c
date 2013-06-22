@@ -60,6 +60,11 @@ int dogma_free_env(dogma_env_t* env) {
 	}
 	JLFA(ret, env->modifiers);
 
+	if(env->chance_effects != NULL) {
+		DOGMA_WARN("env %p (type %i) still has chance effects toggled on, expect memory leaks!", env, env->id);
+		JLFA(ret, env->chance_effects);
+	}
+
 	free(env);
 
 	return DOGMA_OK;
@@ -78,6 +83,32 @@ int dogma_set_env_state(dogma_context_t* ctx, dogma_env_t* env, state_t newstate
 	JLF(te, enveffects, index);
 	while(te != NULL) {
 		DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
+		JLN(te, enveffects, index);
+
+		if(e->fittingusagechanceattributeid > 0) {
+			/* Effect is chance-based */
+
+			if(newstate > 0) {
+				continue;
+			}
+
+			/* When unplugging the environment, turn off all
+			 * chance-based effects as a precautionary measure */
+			bool* v;
+			int ret;
+			JLG(v, env->chance_effects, e->id);
+			if(v != NULL) {
+				assert(*v == true);
+				JLD(ret, env->chance_effects, e->id);
+				DOGMA_ASSUME_OK(dogma_eval_expression(
+					ctx, env,
+					e->postexpressionid,
+					&result
+				));
+			}
+
+			continue;
+		}
 
 		if((newstate >> e->category) & 1) {
 			if(!((env->state >> e->category) & 1)) {
@@ -94,8 +125,6 @@ int dogma_set_env_state(dogma_context_t* ctx, dogma_env_t* env, state_t newstate
 				&result
 			));
 		}
-
-		JLN(te, enveffects, index);
 	}
 
 	env->state = newstate;

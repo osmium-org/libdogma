@@ -43,20 +43,38 @@
 		(envptr)->state = 0; \
 		(envptr)->children = NULL; \
 		(envptr)->modifiers = NULL; \
+		(envptr)->chance_effects = NULL; \
 	} while(0)
 
 #define DOGMA_SAFE_CHAR_INDEXES 50000
 #define DOGMA_SAFE_SHIP_INDEXES 0
 
+_Static_assert(sizeof(key_t) >= sizeof(effectid_t), "Must be able to reliably use an effectid as an array index");
+_Static_assert(sizeof(key_t) >= sizeof(typeid_t), "Must be able to reliably use a typeid as an array index");
+_Static_assert(sizeof(Word_t) >= sizeof(void*), "Must be able to use a pointer as array value");
+
+
+
+
+
+/* -------- Return codes -------- */
+
+/* NOTE: only include here return codes used by internal
+ * functions. Public return codes (values which may be returned by
+ * exported methods) should go in dogma.h. */
+
 /* Used by dogma_apply_modifier() when the modifier was not applied
  * because it did not match some filters. */
-#define DOGMA_SKIPPED 2
+#define DOGMA_SKIPPED -1
+
+
+
+
 
 /* -------- Data types -------- */
 
 typedef uint16_t groupid_t;
 typedef uint8_t  categoryid_t;
-typedef int32_t effectid_t;
 typedef int32_t expressionid_t;
 
 struct dogma_type_s {
@@ -160,6 +178,7 @@ struct dogma_env_s {
 	state_t state;
 	array_t children;
 	array_t modifiers;
+	array_t chance_effects;
 };
 typedef struct dogma_env_s dogma_env_t;
 

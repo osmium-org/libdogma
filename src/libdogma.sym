@@ -15,6 +15,7 @@ dogma_remove_charge
 dogma_add_drone
 dogma_remove_drone_partial
 dogma_remove_drone
+dogma_toggle_chance_based_effect
 dogma_get_location_attribute
 dogma_get_character_attribute
 dogma_get_implant_attribute
@@ -23,3 +24,4 @@ dogma_get_ship_attribute
 dogma_get_module_attribute
 dogma_get_charge_attribute
 dogma_get_drone_attribute
+dogma_get_chance_based_effect_chance

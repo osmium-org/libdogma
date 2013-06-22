@@ -38,8 +38,14 @@
 #define TYPE_OverdriveInjectorSystemII 1236
 #define TYPE_SmallPolycarb 31177
 
+#define TYPE_StrongBluePill 10156
+#define EFFECT_BoosterShieldCapacityPenalty 2737
+#define EFFECT_BoosterCapacitorCapacityPenalty 2745
+
 #define ATT_ShieldBonus 68
 #define ATT_MaxVelocity 37
+#define ATT_ShieldCapacity 263
+#define ATT_CapacitorCapacity 482
 
 dogma_context_t* ctx;
 key_t slot0, slot1, slot2, slot3;
@@ -103,6 +109,70 @@ int main(void) {
 
 	dogma_get_ship_attribute(ctx, ATT_MaxVelocity, &v);
 	assertf(644.929066501, v, 0.0000000005);
+
+	dogma_free_context(ctx);
+	dogma_init_context(&ctx);
+
+	/* Source: EFT 2.19.1 */
+
+	dogma_add_implant(ctx, TYPE_StrongBluePill, &impslot0);
+
+	dogma_set_ship(ctx, TYPE_Venture);
+	dogma_add_module(ctx, TYPE_SSBII, &slot0);
+	dogma_set_module_state(ctx, slot0, DOGMA_Active);
+
+	const location_t imploc0 = {
+		.type = DOGMA_LOC_Implant,
+		.implant_index = impslot0,
+	};
+
+	dogma_get_chance_based_effect_chance(ctx, imploc0, EFFECT_BoosterShieldCapacityPenalty, &v);
+	assertf(0.3, v, 0.05);
+	dogma_get_chance_based_effect_chance(ctx, imploc0, EFFECT_BoosterCapacitorCapacityPenalty, &v);
+	assertf(0.3, v, 0.05);
+
+	dogma_get_module_attribute(ctx, slot0, ATT_ShieldBonus, &v);
+	assertf(39, v, 0.5);
+	dogma_get_ship_attribute(ctx, ATT_ShieldCapacity, &v);
+	assertf(281.25, v, 0.005);
+	dogma_get_ship_attribute(ctx, ATT_CapacitorCapacity, &v);
+	assertf(312.5, v, 0.05);
+
+	dogma_toggle_chance_based_effect(ctx, imploc0, EFFECT_BoosterShieldCapacityPenalty, true);
+
+	dogma_get_module_attribute(ctx, slot0, ATT_ShieldBonus, &v);
+	assertf(39, v, 0.5);
+	dogma_get_ship_attribute(ctx, ATT_ShieldCapacity, &v);
+	assertf(217.96875, v, 0.000005);
+	dogma_get_ship_attribute(ctx, ATT_CapacitorCapacity, &v);
+	assertf(312.5, v, 0.05);
+
+	dogma_toggle_chance_based_effect(ctx, imploc0, EFFECT_BoosterCapacitorCapacityPenalty, true);
+
+	dogma_get_module_attribute(ctx, slot0, ATT_ShieldBonus, &v);
+	assertf(39, v, 0.5);
+	dogma_get_ship_attribute(ctx, ATT_ShieldCapacity, &v);
+	assertf(217.96875, v, 0.000005);
+	dogma_get_ship_attribute(ctx, ATT_CapacitorCapacity, &v);
+	assertf(242.1875, v, 0.00005);
+
+	dogma_toggle_chance_based_effect(ctx, imploc0, EFFECT_BoosterShieldCapacityPenalty, false);
+
+	dogma_get_module_attribute(ctx, slot0, ATT_ShieldBonus, &v);
+	assertf(39, v, 0.5);
+	dogma_get_ship_attribute(ctx, ATT_ShieldCapacity, &v);
+	assertf(281.25, v, 0.005);
+	dogma_get_ship_attribute(ctx, ATT_CapacitorCapacity, &v);
+	assertf(242.1875, v, 0.00005);
+
+	dogma_toggle_chance_based_effect(ctx, imploc0, EFFECT_BoosterCapacitorCapacityPenalty, false);
+
+	dogma_get_module_attribute(ctx, slot0, ATT_ShieldBonus, &v);
+	assertf(39, v, 0.5);
+	dogma_get_ship_attribute(ctx, ATT_ShieldCapacity, &v);
+	assertf(281.25, v, 0.005);
+	dogma_get_ship_attribute(ctx, ATT_CapacitorCapacity, &v);
+	assertf(312.5, v, 0.05);
 
 	dogma_free_context(ctx);
 	return 0;
