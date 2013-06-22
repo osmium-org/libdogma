@@ -61,6 +61,8 @@ int dogma_add_modifier(dogma_modifier_t* modifier) {
 	dogma_modifier_t** modifier_value;
 	dogma_modifier_t* copy;
 
+	if(modifier->targetenv == NULL) return DOGMA_OK;
+
 	modifier->penalized = dogma_modifier_is_penalized(modifier);
 
 	copy = malloc(sizeof(dogma_modifier_t));
@@ -89,6 +91,8 @@ int dogma_remove_modifier(dogma_modifier_t* modifier) {
 	array_t* modifiers_by_assoctype;
 	array_t* modifiers;
 	dogma_modifier_t** modifier_value;
+
+	if(modifier->targetenv == NULL) return DOGMA_OK;
 
 	JLG(modifiers_by_assoctype, modifier->targetenv->modifiers, modifier->targetattribute);
 	assert(modifiers_by_assoctype != NULL);

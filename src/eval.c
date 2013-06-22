@@ -485,7 +485,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 			break;
 
 		case DOGMA_ENVIDX_Target:
-			result->env_value = ctx->target;
+			result->env_value = self->target;
 			break;
 
 		case DOGMA_ENVIDX_Area:
@@ -494,7 +494,6 @@ int dogma_eval_expression(dogma_context_t* ctx,
 
 		case DOGMA_ENVIDX_Other:
 			/* XXX: this doesn't feel right */
-			assert(self->parent != NULL);
 			result->env_value = self->parent;
 			break;
 

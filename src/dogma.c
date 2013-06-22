@@ -63,12 +63,9 @@ int dogma_init_context(dogma_context_t** ctx) {
 
 	new_ctx->character = malloc(sizeof(dogma_env_t));
 	new_ctx->ship = malloc(sizeof(dogma_env_t));
-	new_ctx->target = malloc(sizeof(dogma_env_t));
-	new_ctx->area = malloc(sizeof(dogma_env_t));
+	new_ctx->area = NULL;
 
 	DOGMA_INIT_ENV(new_ctx->character, 0, NULL, 0, new_ctx->character);
-	DOGMA_INIT_ENV(new_ctx->target, 0, NULL, 0, NULL);
-	DOGMA_INIT_ENV(new_ctx->area, 0, NULL, 0, NULL);
 
 	JLI(value, new_ctx->character->children, 0);
 	*value = new_ctx->ship;
@@ -77,7 +74,6 @@ int dogma_init_context(dogma_context_t** ctx) {
 
 	new_ctx->default_skill_level = DOGMA_MAX_SKILL_LEVEL;
 	new_ctx->skill_levels = (array_t)NULL;
-
 	new_ctx->drone_map = (array_t)NULL;
 
 	*ctx = new_ctx;
@@ -101,8 +97,6 @@ int dogma_free_context(dogma_context_t* ctx) {
 	int ret;
 
 	dogma_free_env(ctx->character);
-	dogma_free_env(ctx->target);
-	dogma_free_env(ctx->area);
 	dogma_reset_skill_levels(ctx);
 
 	JLF(value, ctx->drone_map, index);
@@ -399,6 +393,38 @@ int dogma_toggle_chance_based_effect(dogma_context_t* ctx, location_t loc, effec
 
 		DOGMA_ASSUME_OK(dogma_eval_expression(ctx, loc_env, e->postexpressionid, &result));
 	}
+
+	return DOGMA_OK;
+}
+
+
+
+
+
+int dogma_target(dogma_context_t* targeter, location_t loc, dogma_context_t* targetee) {
+	dogma_env_t* targeter_env;
+	state_t s;
+
+	DOGMA_ASSUME_OK(dogma_get_location_env(targeter, loc, &targeter_env));
+	s = targeter_env->state;
+
+	DOGMA_ASSUME_OK(dogma_set_env_state(targeter, targeter_env, DOGMA_Unplugged));
+	targeter_env->target = targetee->ship;
+	DOGMA_ASSUME_OK(dogma_set_env_state(targeter, targeter_env, s));
+
+	return DOGMA_OK;
+}
+
+int dogma_clear_target(dogma_context_t* targeter, location_t loc) {
+	dogma_env_t* targeter_env;
+	state_t s;
+
+	DOGMA_ASSUME_OK(dogma_get_location_env(targeter, loc, &targeter_env));
+	s = targeter_env->state;
+
+	DOGMA_ASSUME_OK(dogma_set_env_state(targeter, targeter_env, DOGMA_Unplugged));
+	targeter_env->target = NULL;
+	DOGMA_ASSUME_OK(dogma_set_env_state(targeter, targeter_env, s));
 
 	return DOGMA_OK;
 }

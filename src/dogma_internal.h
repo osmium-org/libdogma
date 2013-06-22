@@ -39,6 +39,7 @@
 		(envptr)->id = (_typeid); \
 		(envptr)->parent = (_parent); \
 		(envptr)->owner = (_owner); \
+		(envptr)->target = NULL; \
 		(envptr)->index = (_index); \
 		(envptr)->state = 0; \
 		(envptr)->children = NULL; \
@@ -49,8 +50,8 @@
 #define DOGMA_SAFE_CHAR_INDEXES 50000
 #define DOGMA_SAFE_SHIP_INDEXES 0
 
-_Static_assert(sizeof(key_t) >= sizeof(effectid_t), "Must be able to reliably use an effectid as an array index");
-_Static_assert(sizeof(key_t) >= sizeof(typeid_t), "Must be able to reliably use a typeid as an array index");
+_Static_assert(sizeof(key_t) >= sizeof(effectid_t), "Must be able to use an effectid as an array index");
+_Static_assert(sizeof(key_t) >= sizeof(typeid_t), "Must be able to use a typeid as an array index");
 _Static_assert(sizeof(Word_t) >= sizeof(void*), "Must be able to use a pointer as array value");
 
 
@@ -174,6 +175,7 @@ struct dogma_env_s {
 	typeid_t id;
 	struct dogma_env_s* parent; /* Also known as location in dogma terminology */
 	struct dogma_env_s* owner;
+	struct dogma_env_s* target;
 	key_t index; /* Index in parent->children array */
 	state_t state;
 	array_t children;
@@ -195,8 +197,7 @@ struct dogma_context_s {
 	 * 0. This pointer is just an alias, for convenience. */
 	dogma_env_t* ship;
 
-	/* These two are unused for now and should always be NULL. */
-	dogma_env_t* target;
+	/* Unused for now */
 	dogma_env_t* area;
 
 	uint8_t default_skill_level;

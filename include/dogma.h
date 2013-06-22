@@ -222,6 +222,22 @@ int dogma_toggle_chance_based_effect(dogma_context_t*, location_t, effectid_t, b
 
 
 
+/* Have something target another ship. Note that a location on a
+ * context (usually a module) can only have one target! Calling
+ * dogma_target() when a target already exists will silently
+ * overwrite the old target. */
+int dogma_target(dogma_context_t* targeter, location_t, dogma_context_t* targetee);
+
+/* Clear a target.
+ *
+ * @warning This operation is not automatically done if, for example,
+ * you free the targetee context with dogma_free_context(). If
+ * anything happens to the targetee, make sure to clear the targets on
+ * all context targeting it or expect segmentation faults. */
+int dogma_clear_target(dogma_context_t* targeter, location_t);
+
+
+
 
 
 /* -------- Attribute getters -------- */

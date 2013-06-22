@@ -21,12 +21,12 @@ Features
 * Computes attributes of characters, skills, implants, ships, drones,
   modules and charges
 
+* Supports projected effects
+
 Missing features / Known issues
 -------------------------------
 
 * Gang/fleet bonuses are not supported yet
-
-* Projected effects are not supported yet
 
 * Area effects (like wormhole effects) are not supported yet
 
