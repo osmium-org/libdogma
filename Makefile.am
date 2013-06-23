@@ -14,7 +14,7 @@ libdogma_la_LDFLAGS=-export-symbols src/libdogma.sym -version-info 0:0:0
 include_HEADERS=include/dogma.h include/dogma-names.h
 
 check_PROGRAMS=test/trivial test/basic-attributes				\
-	test/basic-skill-levels test/basic-charges					\
+	test/basic-skill-levels test/basic-charges test/basic-fleet	\
 	test/stacking-penalties test/ancillary-modules test/drones	\
 	test/implants test/projected-effects test/bruteforce
 

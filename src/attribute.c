@@ -24,6 +24,14 @@
 
 #define MAX_PENALIZED_MODIFIERS 16
 
+#define MULTIPLICATIVE_ASSOC_TYPES (	  \
+	(1 << DOGMA_ASSOC_PreMul) | \
+	(1 << DOGMA_ASSOC_PostMul) | \
+	(1 << DOGMA_ASSOC_PostPercent) | \
+	(1 << DOGMA_ASSOC_PreDiv) | \
+	(1 << DOGMA_ASSOC_PostDiv)	\
+)
+
 /* Values taken from Aenigma's guide:
  * http://eve.battleclinic.com/guide/9196-Aenigma-s-Stacking-Penalty-Guide.html */
 static double penalized_coefficients[] = {
@@ -45,7 +53,8 @@ static int dogma_apply_modifier(dogma_context_t*, dogma_env_t*, dogma_modifier_t
 static int dogma_apply_modifiers_from_env(dogma_context_t*, array_t, dogma_env_t*,
                                           double* penalized_positive, double* penalized_negative,
                                           size_t* penalized_pos_count, size_t* penalized_neg_count,
-                                          double*);
+                                          bool highisgood, double* singleton_val,
+                                          int* singleton_penalized, double* out);
 
 static int compare(const void* left, const void* right) {
 	return *(double*)left < *(double*)right ? -1 : 1;
@@ -57,15 +66,16 @@ static int rcompare(const void* left, const void* right) {
 int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_t attributeid, double* out) {
 	const dogma_attribute_t* attr;
 	dogma_env_t* current_env;
+	dogma_fleet_context_t* fleet;
 	array_t* modifiers;
 
 	if(attributeid == ATT_SkillLevel) {
 		/* Special case: assume we want the skill level of a skill */
 		uint8_t* level;
 
-		JLG(level, ctx->skill_levels, env->id);
+		JLG(level, env->owner->skill_levels, env->id);
 		if(level == NULL) {
-			*out = (double)ctx->default_skill_level;
+			*out = (double)env->owner->default_skill_level;
 		} else {
 			*out = (double)(*level);
 		}
@@ -82,6 +92,8 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 		double penalized_positive[MAX_PENALIZED_MODIFIERS];
 		double penalized_negative[MAX_PENALIZED_MODIFIERS];
 		size_t penalized_pos_count = 0, penalized_neg_count = 0;
+		double singleton_val = 1.0;
+		int singleton_penalized = -1; /* Unknown or bool value */
 
 		current_env = env;
 		while(current_env != NULL) {
@@ -95,12 +107,62 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 						ctx, *modifiers, env,
 						penalized_positive, penalized_negative,
 						&penalized_pos_count, &penalized_neg_count,
-						out
+						attr->highisgood, &singleton_val,
+						&singleton_penalized, out
 					));
 				}
 			}
 
 			current_env = current_env->parent;
+		}
+
+		fleet = ctx->fleet;
+		while(fleet != NULL) {
+			if(fleet->booster == NULL) {
+				break;
+			}
+
+			JLG(modifiers, fleet->booster->gang->modifiers, attributeid);
+
+			if(modifiers != NULL) {
+				JLG(modifiers, *modifiers, assoctype);
+
+				if(modifiers != NULL) {
+					DOGMA_ASSUME_OK(dogma_apply_modifiers_from_env(
+						ctx, *modifiers, env,
+						penalized_positive, penalized_negative,
+						&penalized_pos_count, &penalized_neg_count,
+						attr->highisgood, &singleton_val,
+						&singleton_penalized, out
+					));
+				}
+			}
+
+			fleet = fleet->parent;
+		}
+
+		if(singleton_penalized) {
+			if(singleton_val >= 1.0) {
+				if(penalized_pos_count >= MAX_PENALIZED_MODIFIERS) {
+					DOGMA_WARN(
+						"reached maximum amount of + penalized modifiers, ignoring singleton %f",
+						singleton_val
+					);
+				} else {
+					penalized_positive[penalized_pos_count++] = singleton_val - 1.0;
+				}
+			} else {
+				if(penalized_neg_count >= MAX_PENALIZED_MODIFIERS) {
+					DOGMA_WARN(
+						"reached maximum amount of - penalized modifiers, ignoring singleton %f",
+						singleton_val
+					);
+				} else {
+					penalized_negative[penalized_neg_count++] = singleton_val - 1.0;
+				}
+			}
+		} else {
+			*out *= singleton_val;
 		}
 
 		if(penalized_pos_count == 0 && penalized_neg_count == 0) continue;
@@ -155,19 +217,44 @@ int dogma_env_requires_skill(dogma_context_t* ctx, dogma_env_t* env, typeid_t sk
 static int dogma_apply_modifiers_from_env(dogma_context_t* ctx, array_t modifiers, dogma_env_t* env,
                                           double* penalized_positive, double* penalized_negative,
                                           size_t* penalized_pos_count, size_t* penalized_neg_count,
-                                          double* out) {
+                                          bool highisgood, double* singleton_val,
+                                          int* singleton_penalized, double* out) {
 	dogma_modifier_t** modifier;
 	key_t index = 0;
 	int ret;
 
 	JLG(modifier, modifiers, index);
 	while(modifier != NULL) {
-		if((*modifier)->penalized) {
-			/* NB: assumed here that all penalized modifiers are for
-			 * multiplicative operations. This is currently the case
-			 * (ModAdd/ModSub are never penalized), but if this
-			 * changes in the future this could become a serious
-			 * problem. */
+		if((*modifier)->singleton) {
+			assert((MULTIPLICATIVE_ASSOC_TYPES >> (*modifier)->assoctype) & 1);
+
+			double v = 1.0;
+			ret = dogma_apply_modifier(ctx, env, *modifier, &v);
+			if(ret == DOGMA_OK) {
+				if(*singleton_penalized == -1) {
+					*singleton_val = v;
+					*singleton_penalized = (*modifier)->penalized;
+				} else {
+					if(highisgood) {
+						if(v > *singleton_val) *singleton_val = v;
+					} else {
+						if(v < *singleton_val) *singleton_val = v;
+					}
+
+					if(*singleton_penalized != (*modifier)->penalized) {
+						DOGMA_WARN(
+							"singleton modifiers have different penalized values, attribute %i on type %i",
+							(*modifier)->targetattribute,
+							(*modifier)->targetenv->id
+						);
+					}
+				}
+			} else {
+				assert(ret == DOGMA_SKIPPED);
+			}
+		} else if((*modifier)->penalized) {
+			assert((MULTIPLICATIVE_ASSOC_TYPES >> (*modifier)->assoctype) & 1);
+
 			double v = 1.0;
 			ret = dogma_apply_modifier(ctx, env, *modifier, &v);
 			if(ret == DOGMA_OK) {
@@ -230,6 +317,17 @@ static int dogma_apply_modifier(dogma_context_t* ctx, dogma_env_t* env,
 		/* Owner modifiers (added with AORSM etc.) only affect
 		 * environments owned by the same character */
 		if(env->owner != modifier->sourceenv->owner) return DOGMA_SKIPPED;
+		break;
+
+	case DOGMA_SCOPE_Gang:
+		/* Supposedly applies to anything as long as fleet bonuses are
+		 * being received. */
+		if(ctx->fleet == NULL) return DOGMA_SKIPPED;
+		break;
+
+	case DOGMA_SCOPE_Gang_Ship:
+		/* Used by AGIM/RGIM, applies to gang ships only. */
+		if(ctx->fleet == NULL || env != ctx->ship) return DOGMA_SKIPPED;
 		break;
 
 	}

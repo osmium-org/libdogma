@@ -24,15 +24,15 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define failf(expected, result) do {									\
-		fprintf(stderr, "Expected: %f, Got: %f\n",						\
-				(expected), (result));									\
-		exit(1);														\
+#define failf(expected, result) do {	  \
+		fprintf(stderr, "%s:%i: Expected: %f, Got: %f\n", \
+		        __FILE__, __LINE__, (expected), (result)); \
+		exit(1); \
 	} while(0)
 
-#define assertf(expected, result, epsilon)  do {						\
-		double e = (expected), r = (result), eps = (epsilon);			\
-		if(!((e - r <= eps) && (r - e <= eps))) {						\
-			failf(e, r);												\
-		}																\
+#define assertf(expected, result, epsilon)  do {	  \
+		double e = (expected), r = (result), eps = (epsilon); \
+		if(!((e - r <= eps) && (r - e <= eps))) { \
+			failf(e, r); \
+		} \
 	} while(0)

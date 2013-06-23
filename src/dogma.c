@@ -29,7 +29,7 @@
 #define DOGMA_MIN_SKILL_LEVEL 0
 #define DOGMA_MAX_SKILL_LEVEL 5
 
-static int dogma_add_env_generic(dogma_context_t*, dogma_env_t*, dogma_env_t*,
+static int dogma_add_env_generic(dogma_context_t*, dogma_env_t*, dogma_context_t*,
                                  typeid_t, key_t*, state_t);
 static int dogma_remove_env_generic(dogma_context_t*, dogma_env_t*, key_t);
 
@@ -61,16 +61,18 @@ int dogma_init_context(dogma_context_t** ctx) {
 	key_t index = 0;
 	const dogma_type_t** type;
 
+	new_ctx->gang = malloc(sizeof(dogma_env_t));
 	new_ctx->character = malloc(sizeof(dogma_env_t));
 	new_ctx->ship = malloc(sizeof(dogma_env_t));
 	new_ctx->area = NULL;
+	new_ctx->fleet = NULL;
 
-	DOGMA_INIT_ENV(new_ctx->character, 0, NULL, 0, new_ctx->character);
+	DOGMA_INIT_ENV(new_ctx->gang, 0, NULL, 0, new_ctx);
+	DOGMA_INIT_ENV(new_ctx->character, 0, NULL, 0, new_ctx);
+	DOGMA_INIT_ENV(new_ctx->ship, 0, new_ctx->character, 0, new_ctx);
 
 	JLI(value, new_ctx->character->children, 0);
 	*value = new_ctx->ship;
-
-	DOGMA_INIT_ENV(new_ctx->ship, 0, new_ctx->character, 0, new_ctx->character);
 
 	new_ctx->default_skill_level = DOGMA_MAX_SKILL_LEVEL;
 	new_ctx->skill_levels = (array_t)NULL;
@@ -96,7 +98,14 @@ int dogma_free_context(dogma_context_t* ctx) {
 	key_t index = 0;
 	int ret;
 
+	if(ctx->fleet != NULL) {
+		bool found;
+		DOGMA_ASSUME_OK(dogma_remove_fleet_member(ctx->fleet, ctx, &found));
+		assert(found == true && ctx->fleet == NULL);
+	}
+
 	dogma_free_env(ctx->character);
+	dogma_free_env(ctx->gang);
 	dogma_reset_skill_levels(ctx);
 
 	JLF(value, ctx->drone_map, index);
@@ -149,7 +158,7 @@ int dogma_reset_skill_levels(dogma_context_t* ctx) {
 
 
 static inline int dogma_add_env_generic(dogma_context_t* ctx,
-                                        dogma_env_t* location, dogma_env_t* owner,
+                                        dogma_env_t* location, dogma_context_t* owner,
                                         typeid_t id, key_t* index, state_t state) {
 	dogma_env_t* new_env = malloc(sizeof(dogma_env_t));
 	dogma_env_t** value;
@@ -207,7 +216,7 @@ int dogma_add_module(dogma_context_t* ctx, typeid_t module_typeid, key_t* out_in
 	*out_index = DOGMA_SAFE_SHIP_INDEXES;
 	return dogma_add_env_generic(
 		ctx,
-		ctx->ship, ctx->character,
+		ctx->ship, ctx,
 		module_typeid, out_index, 0
 	);
 }
@@ -257,7 +266,7 @@ int dogma_add_charge(dogma_context_t* ctx, key_t index, typeid_t chargeid) {
 
 	return dogma_add_env_generic(
 		ctx,
-		*module_env, ctx->character,
+		*module_env, ctx,
 		chargeid, &charge_index, DOGMA_STATE_Active
 	);
 }
@@ -308,7 +317,7 @@ int dogma_add_drone(dogma_context_t* ctx, typeid_t droneid, unsigned int quantit
 	JLI(value1, ctx->character->children, index);
 	*value1 = drone_env;
 
-	DOGMA_INIT_ENV(drone_env, droneid, ctx->character, index, ctx->character);
+	DOGMA_INIT_ENV(drone_env, droneid, ctx->character, index, ctx);
 
 	JLI(value2, ctx->drone_map, droneid);
 	*value2 = drone_ctx;
@@ -361,7 +370,7 @@ int dogma_add_implant(dogma_context_t* ctx, typeid_t id, key_t* index) {
 	*index = DOGMA_SAFE_CHAR_INDEXES;
 	return dogma_add_env_generic(
 		ctx,
-		ctx->character, ctx->character,
+		ctx->character, ctx,
 		id, index, DOGMA_STATE_Online
 	);
 }

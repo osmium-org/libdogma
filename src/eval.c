@@ -293,14 +293,14 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		result->modifier_value.filter.type = DOGMA_FILTERTYPE_SKILL_REQUIRED;
 		result->modifier_value.filter.typeid = resarg1.typeid_value;
 		result->modifier_value.targetattribute = resarg2.attributeid_value;
-		result->modifier_value.targetenv = ctx->ship; /* FIXME: or char? */
 		break;
 
 	case DOGMA_IA:
 		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
 		assert(resarg1.type == DOGMA_CTXTYPE_ATTRIBUTEID);
-		result->type = DOGMA_CTXTYPE_ATTRIBUTEID;
-		result->attributeid_value = resarg1.attributeid_value;
+		result->type = DOGMA_CTXTYPE_MODIFIER;
+		result->modifier_value.filter.type = DOGMA_FILTERTYPE_PASS;
+		result->modifier_value.targetattribute = resarg1.attributeid_value;
 		break;
 
 	case DOGMA_GA:
@@ -312,7 +312,6 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		result->modifier_value.filter.type = DOGMA_FILTERTYPE_GROUP;
 		result->modifier_value.filter.groupid = resarg1.groupid_value;
 		result->modifier_value.targetattribute = resarg2.attributeid_value;
-		result->modifier_value.targetenv = ctx->ship; /* FIXME: or char? */
 		break;
 
 	case DOGMA_GM:
@@ -338,37 +337,9 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		/* Modifiers */
 
 	case DOGMA_AGGM:
-		/* TODO */
-		break;
-
-	case DOGMA_RGGM:
-		/* TODO */
-		break;
-
 	case DOGMA_AGIM:
-		/* TODO */
-		break;
-
-	case DOGMA_RGIM:
-		/* TODO */
-		break;
-
 	case DOGMA_AGORSM:
-		/* TODO */
-		break;
-
-	case DOGMA_RGORSM:
-		/* TODO */
-		break;
-
 	case DOGMA_AGRSM:
-		/* TODO */
-		break;
-
-	case DOGMA_RGRSM:
-		/* TODO */
-		break;
-
 	case DOGMA_AIM:
 	case DOGMA_ALM:
 	case DOGMA_ALGM:
@@ -402,7 +373,20 @@ int dogma_eval_expression(dogma_context_t* ctx,
 			resarg1.modifier_value.scope = DOGMA_SCOPE_Owner;
 			break;
 
+		case DOGMA_AGGM:
+		case DOGMA_AGORSM:
+		case DOGMA_AGRSM:
+			resarg1.modifier_value.targetenv = ctx->gang;
+			resarg1.modifier_value.scope = DOGMA_SCOPE_Gang;
+			break;
+
+		case DOGMA_AGIM:
+			resarg1.modifier_value.targetenv = ctx->gang;
+			resarg1.modifier_value.scope = DOGMA_SCOPE_Gang_Ship;
+			break;
+
 		default:
+			assert(false);
 			break;
 
 		}
@@ -410,6 +394,10 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		assert(dogma_add_modifier(&(resarg1.modifier_value)) == DOGMA_OK);
 		break;
 
+	case DOGMA_RGGM:
+	case DOGMA_RGIM:
+	case DOGMA_RGORSM:
+	case DOGMA_RGRSM:
 	case DOGMA_RIM:
 	case DOGMA_RLM:
 	case DOGMA_RLGM:
@@ -443,7 +431,20 @@ int dogma_eval_expression(dogma_context_t* ctx,
 			resarg1.modifier_value.scope = DOGMA_SCOPE_Owner;
 			break;
 
+		case DOGMA_RGGM:
+		case DOGMA_RGORSM:
+		case DOGMA_RGRSM:
+			resarg1.modifier_value.targetenv = ctx->gang;
+			resarg1.modifier_value.scope = DOGMA_SCOPE_Gang;
+			break;
+
+		case DOGMA_RGIM:
+			resarg1.modifier_value.targetenv = ctx->gang;
+			resarg1.modifier_value.scope = DOGMA_SCOPE_Gang_Ship;
+			break;
+
 		default:
+			assert(false);
 			break;
 
 		}
@@ -580,6 +581,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 
 	default:
 		return DOGMA_NOT_FOUND;
+
 	}
 
 	return DOGMA_OK;

@@ -38,6 +38,8 @@ enum dogma_scope_e {
 	DOGMA_SCOPE_Item,
 	DOGMA_SCOPE_Location,
 	DOGMA_SCOPE_Owner,
+	DOGMA_SCOPE_Gang,
+	DOGMA_SCOPE_Gang_Ship,
 };
 typedef enum dogma_scope_e dogma_scope_t;
 
@@ -56,6 +58,9 @@ struct dogma_modifier_s {
 	dogma_env_t* targetenv;
 	dogma_association_t assoctype;
 	bool penalized;
+	bool singleton; /* Of all modifiers with singleton set to true
+	                 * affecting the same attribute, only the "best"
+	                 * will be chosen. (Used for gang bonuses.) */
 	attributeid_t sourceattribute;
 	dogma_env_t* sourceenv;
 	dogma_filter_t filter;

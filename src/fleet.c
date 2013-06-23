@@ -20,10 +20,9 @@
 
 static dogma_fleet_context_t* dogma_get_subfleet(dogma_fleet_context_t*, key_t);
 
-static int dogma_add_subfleet_commander(dogma_fleet_context_t* fctx, dogma_fleet_context_t* subfctx,
-                                        dogma_context_t*);
+static int dogma_add_subfleet_commander(dogma_fleet_context_t* subfctx, dogma_context_t*);
 
-int dogma_create_fleet_context(dogma_fleet_context_t** fctx) {
+int dogma_init_fleet_context(dogma_fleet_context_t** fctx) {
 	dogma_fleet_context_t* new_fctx;
 	DOGMA_INIT_FLEET_CTX(new_fctx, NULL, 0);
 	*fctx = new_fctx;
@@ -53,12 +52,11 @@ int dogma_free_fleet_context(dogma_fleet_context_t* fctx) {
 }
 
 int dogma_add_fleet_commander(dogma_fleet_context_t* fctx, dogma_context_t* ctx) {
-	return dogma_add_subfleet_commander(fctx, fctx, ctx);
+	return dogma_add_subfleet_commander(fctx, ctx);
 }
 
 int dogma_add_wing_commander(dogma_fleet_context_t* fctx, key_t wing, dogma_context_t* ctx) {
 	return dogma_add_subfleet_commander(
-		fctx,
 		dogma_get_subfleet(fctx, wing),
 		ctx
 	);
@@ -66,7 +64,6 @@ int dogma_add_wing_commander(dogma_fleet_context_t* fctx, key_t wing, dogma_cont
 
 int dogma_add_squad_commander(dogma_fleet_context_t* fctx, key_t wing, key_t squad, dogma_context_t* ctx) {
 	return dogma_add_subfleet_commander(
-		fctx,
 		dogma_get_subfleet(
 			dogma_get_subfleet(fctx, wing),
 			squad
@@ -86,17 +83,18 @@ int dogma_add_squad_member(dogma_fleet_context_t* fctx, key_t wing, key_t squad,
 	if(ctx->fleet != NULL) {
 		bool found;
 		DOGMA_ASSUME_OK(dogma_remove_fleet_member(ctx->fleet, ctx, &found));
-		assert(found == true);
+		assert(found == true && ctx->fleet == NULL);
 	}
 
 	JLG(memberctx, subfctx->members, index);
 	if(memberctx != NULL) {
-		assert(*memberctx == ctx);
+		assert(*memberctx == ctx && ctx->fleet == fctx);
 		return DOGMA_OK;
 	}
 
 	JLI(memberctx, subfctx->members, index);
 	*memberctx = ctx;
+	ctx->fleet = subfctx;
 
 	return DOGMA_OK;
 }
@@ -112,12 +110,14 @@ int dogma_remove_fleet_member(dogma_fleet_context_t* fctx, dogma_context_t* ctx,
 
 	if(fctx->commander == ctx) {
 		fctx->commander = NULL;
+		ctx->fleet = NULL;
 		*found = true;
 		return DOGMA_OK;
 	}
 
 	JLD(ret, fctx->members, index);
 	if(ret == 1) {
+		ctx->fleet = NULL;
 		*found = true;
 		return DOGMA_OK;
 	}
@@ -127,6 +127,7 @@ int dogma_remove_fleet_member(dogma_fleet_context_t* fctx, dogma_context_t* ctx,
 	while(subfleetctx != NULL) {
 		DOGMA_ASSUME_OK(dogma_remove_fleet_member(*subfleetctx, ctx, found));
 		if(*found == true) {
+			assert(ctx->fleet == NULL);
 			return DOGMA_OK;
 		}
 
@@ -169,8 +170,7 @@ static dogma_fleet_context_t* dogma_get_subfleet(dogma_fleet_context_t* fctx, ke
 	return *sub_fctx;
 }
 
-static int dogma_add_subfleet_commander(dogma_fleet_context_t* fctx, dogma_fleet_context_t* subfctx,
-                                        dogma_context_t* ctx) {
+static int dogma_add_subfleet_commander(dogma_fleet_context_t* subfctx, dogma_context_t* ctx) {
 	if(subfctx->commander != NULL) {
 		return DOGMA_NOT_APPLICABLE;
 	}
@@ -178,10 +178,10 @@ static int dogma_add_subfleet_commander(dogma_fleet_context_t* fctx, dogma_fleet
 	if(ctx->fleet != NULL) {
 		bool found;
 		DOGMA_ASSUME_OK(dogma_remove_fleet_member(ctx->fleet, ctx, &found));
-		assert(found == true);
+		assert(found == true && ctx->fleet == NULL);
 	}
 
-	ctx->fleet = fctx;
+	ctx->fleet = subfctx;
 
 	subfctx->commander = ctx;
 	if(subfctx->booster == NULL) {

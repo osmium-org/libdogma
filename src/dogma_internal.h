@@ -201,11 +201,20 @@ typedef struct dogma_expression_s dogma_expression_t;
 
 
 
+struct dogma_env_s;
+typedef struct dogma_env_s dogma_env_t;
+
+struct dogma_context_s;
+typedef struct dogma_context_s dogma_context_t;
+
+struct dogma_fleet_context_s;
+typedef struct dogma_fleet_context_s dogma_fleet_context_t;
+
 struct dogma_env_s {
 	typeid_t id;
-	struct dogma_env_s* parent; /* Also known as location in dogma terminology */
-	struct dogma_env_s* owner;
-	struct dogma_env_s* target; /* NULL if no target */
+	dogma_env_t* parent; /* Also known as location in dogma terminology */
+	dogma_context_t* owner;
+	dogma_env_t* target; /* NULL if no target */
 	key_t index; /* Index in parent->children array */
 	state_t state;
 	array_t children;
@@ -213,23 +222,12 @@ struct dogma_env_s {
 	array_t chance_effects;
 	array_t targeted_by; /* dogma_env_t* -> dogma_context_t* */
 };
-typedef struct dogma_env_s dogma_env_t;
-
-
 
 struct dogma_drone_context_s {
 	dogma_env_t* drone;
 	unsigned int quantity;
 };
 typedef struct dogma_drone_context_s dogma_drone_context_t;
-
-
-
-struct dogma_context_s;
-typedef struct dogma_context_s dogma_context_t;
-
-struct dogma_fleet_context_s;
-typedef struct dogma_fleet_context_s dogma_fleet_context_t;
 
 struct dogma_context_s {
 	dogma_fleet_context_t* fleet;

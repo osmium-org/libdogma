@@ -213,7 +213,7 @@ int dogma_inject_skill(dogma_context_t* ctx, typeid_t skillid) {
 	JLI(value, ctx->character->children, skillid);
 	*value = skill_env;
 
-	DOGMA_INIT_ENV(skill_env, skillid, ctx->character, skillid, ctx->character);
+	DOGMA_INIT_ENV(skill_env, skillid, ctx->character, skillid, ctx);
 
 	assert(skillid < DOGMA_SAFE_CHAR_INDEXES);
 

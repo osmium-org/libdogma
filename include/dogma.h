@@ -259,7 +259,7 @@ int dogma_clear_target(dogma_context_t* targeter, dogma_location_t);
 /* -------- Fleet manipulation -------- */
 
 /* Create a new empty fleet. */
-int dogma_create_fleet_context(dogma_fleet_context_t**);
+int dogma_init_fleet_context(dogma_fleet_context_t**);
 
 /* Free a fleet context created by dogma_create_fleet_context(). This
  * does not free the fleet members, only the fleet itself. */
@@ -290,7 +290,7 @@ int dogma_add_squad_commander(dogma_fleet_context_t*, dogma_key_t wing, dogma_ke
 
 /* Add a fleet member. If the member is already in a different fleet,
  * it will be removed from the old fleet then added to the new one. */
-int dogma_add_fleet_member(dogma_fleet_context_t*, dogma_key_t wing, dogma_key_t squad, dogma_context_t*);
+int dogma_add_squad_member(dogma_fleet_context_t*, dogma_key_t wing, dogma_key_t squad, dogma_context_t*);
 
 
 
@@ -302,17 +302,19 @@ int dogma_remove_fleet_member(dogma_fleet_context_t*, dogma_context_t*, bool* fo
 
 /* Set a booster for the fleet. If there is already a fleet booster,
  * it will be silently overwritten. Assumes the given member is a
- * member of the fleet. */
+ * member of the fleet. You can use NULL to disable the fleet
+ * booster. */
 int dogma_set_fleet_booster(dogma_fleet_context_t*, dogma_context_t*);
 
 /* Set a booster for the wing. If there is already a wing booster, it
  * will be silently overwritten. Assumes the given member is a member
- * of the wing. */
+ * of the wing. You can use NULL to disable the wing booster. */
 int dogma_set_wing_booster(dogma_fleet_context_t*, dogma_key_t wing, dogma_context_t*);
 
 /* Set a booster for the squad. If there is already a squad booster,
  * it will be silently overwritten. Assumes the given member is a
- * member of the squad. */
+ * member of the squad. You can use NULL to disable the squad
+ * booster. */
 int dogma_set_squad_booster(dogma_fleet_context_t*, dogma_key_t wing, dogma_key_t squad, dogma_context_t*);
 
 

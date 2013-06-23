@@ -18,16 +18,6 @@
 
 #include "test.h"
 
-#define TYPE_Rifter 587
-#define TYPE_Scimitar 11978
-#define TYPE_TrackingLinkII 2104
-#define TYPE_TrackingSpeedScript 29001
-#define TYPE_125mmAutocannonII  2873
-#define TYPE_BarrageS 12625
-#define TYPE_TrackingEnhancerII 1999
-
-#define ATT_TrackingSpeed 160
-
 int main(void) {
 	dogma_context_t *ctxA, *ctxB, *ctxC;
 	dogma_key_t slots[30];
@@ -43,7 +33,7 @@ int main(void) {
 	 * Scimitar each with the maximum number of tracking links. */
 
 	dogma_set_ship(ctxA, TYPE_Rifter);
-	dogma_add_module_sc(ctxA, TYPE_125mmAutocannonII, &slots[0], DOGMA_STATE_Active, TYPE_BarrageS);
+	dogma_add_module_sc(ctxA, TYPE_125mmGatlingAutoCannonII, &slots[0], DOGMA_STATE_Active, TYPE_BarrageS);
 	dogma_add_module_s(ctxA, TYPE_TrackingEnhancerII, &slots[1], DOGMA_STATE_Online);
 	dogma_add_module_s(ctxA, TYPE_TrackingEnhancerII, &slots[2], DOGMA_STATE_Online);
 	dogma_add_module_s(ctxA, TYPE_TrackingEnhancerII, &slots[3], DOGMA_STATE_Online);

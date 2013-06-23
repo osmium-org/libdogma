@@ -32,15 +32,6 @@
 		(fctxptr)->index = (_index); \
 		(fctxptr)->subfleets = NULL; \
 		(fctxptr)->members = NULL; \
-		if((_parent) != NULL) { \
-			dogma_fleet_context_t** val; \
-			JLG(val, (fctxptr)->parent->subfleets, (fctxptr)->index); \
-			assert(val == NULL); \
-			JLI(val, (fctxptr)->parent->subfleets, (fctxptr)->index); \
-			*val = (fctxptr); \
-		} else { \
-			(fctxptr)->index = 0; \
-		} \
 	} while(0)
 
 #endif

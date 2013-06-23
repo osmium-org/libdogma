@@ -61,6 +61,7 @@ int dogma_add_modifier(dogma_modifier_t* modifier) {
 	if(modifier->targetenv == NULL) return DOGMA_OK;
 
 	modifier->penalized = dogma_modifier_is_penalized(modifier);
+	modifier->singleton = (modifier->targetenv == modifier->targetenv->owner->gang);
 
 	copy = malloc(sizeof(dogma_modifier_t));
 	*copy = *modifier;
