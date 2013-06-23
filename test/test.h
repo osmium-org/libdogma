@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -16,8 +16,10 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <assert.h>
 #include <dogma.h>
+#include <dogma-names.h>
+
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>

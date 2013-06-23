@@ -18,13 +18,6 @@
 
 #include "test.h"
 
-#define TYPE_Rifter 587
-#define ATT_HighSlots 14
-#define ATT_MediumSlots 13
-#define ATT_LowSlots 12
-#define ATT_RigSlots 1154
-#define ATT_SubsystemSlots 1367
-
 int main(void) {
 	dogma_context_t* ctx;
 	double value;
@@ -34,15 +27,15 @@ int main(void) {
 
 	assert(dogma_set_ship(ctx, TYPE_Rifter) == DOGMA_OK);
 
-	assert(dogma_get_ship_attribute(ctx, ATT_HighSlots, &value) == DOGMA_OK);
+	assert(dogma_get_ship_attribute(ctx, ATT_HiSlots, &value) == DOGMA_OK);
 	assert(value == 4);
-	assert(dogma_get_ship_attribute(ctx, ATT_MediumSlots, &value) == DOGMA_OK);
+	assert(dogma_get_ship_attribute(ctx, ATT_MedSlots, &value) == DOGMA_OK);
 	assert(value == 3);
 	assert(dogma_get_ship_attribute(ctx, ATT_LowSlots, &value) == DOGMA_OK);
 	assert(value == 3);
-	assert(dogma_get_ship_attribute(ctx, ATT_RigSlots, &value) == DOGMA_OK);
+	assert(dogma_get_ship_attribute(ctx, ATT_UpgradeSlotsLeft, &value) == DOGMA_OK);
 	assert(value == 3);
-	assert(dogma_get_ship_attribute(ctx, ATT_SubsystemSlots, &value) == DOGMA_OK);
+	assert(dogma_get_ship_attribute(ctx, ATT_MaxSubSystems, &value) == DOGMA_OK);
 	assert(value == 0);
 
 	assert(dogma_free_context(ctx) == DOGMA_OK);

@@ -18,22 +18,6 @@
 
 #include "test.h"
 
-#define TYPE_Dominix 645
-#define TYPE_Scorpion 640
-#define TYPE_GardeII 28211
-#define TYPE_HornetEC300 23707
-#define TYPE_LargeSDA 25920
-#define TYPE_DroneDamageAmplifierII 4405
-#define TYPE_OmnidirectionalTrackingLinkII 24438
-#define TYPE_SignalDistortionAmplifierII 25563
-#define TYPE_ECMPhaseInverterII 2559
-
-#define ATT_MaxRange 54
-#define ATT_DamageMultiplier 64
-#define ATT_TrackingSpeed 160
-#define ATT_ScanLadarStrengthBonus 239
-#define ATT_ArmorHP 265
-
 int main(void) {
 	dogma_context_t* ctx;
 	dogma_key_t slot0, slot1, slot2;
@@ -72,7 +56,7 @@ int main(void) {
 	dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_TrackingSpeed, &v);
 	assertf(0.054, v, 0.0005);
 
-	dogma_add_module(ctx, TYPE_LargeSDA, &slot0);
+	dogma_add_module(ctx, TYPE_LargeSentryDamageAugmentorI, &slot0);
 	dogma_add_module(ctx, TYPE_DroneDamageAmplifierII, &slot1);
 	dogma_add_module(ctx, TYPE_OmnidirectionalTrackingLinkII, &slot2);
 	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Online);

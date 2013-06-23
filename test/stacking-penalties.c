@@ -18,19 +18,6 @@
 
 #include "test.h"
 
-#define TYPE_Abaddon 24692
-#define TYPE_DamageControlII 2048
-#define TYPE_DracliraModifiedEANM 14950
-#define TYPE_ReactiveArmorHardener 4403
-#define TYPE_AntiThermicPumpII 26292
-
-#define TYPE_OverdriveInjectorSystemII 1236
-#define TYPE_TrimarkArmorPumpII 26302
-
-#define ATT_ArmorThermalDamageResonance 270
-#define ATT_MaxVelocity 37
-#define ATT_Capacity 38
-
 dogma_context_t* ctx;
 
 static void expect_thermal_resistance(double resistance) {
@@ -71,11 +58,11 @@ int main(void) {
 	dogma_set_module_state(ctx, slot1, DOGMA_STATE_Active);
 	expect_thermal_resistance(61.56);
 
-	dogma_add_module(ctx, TYPE_DracliraModifiedEANM, &slot2);
-	dogma_add_module(ctx, TYPE_DracliraModifiedEANM, &slot3);
-	dogma_add_module(ctx, TYPE_DracliraModifiedEANM, &slot4);
-	dogma_add_module(ctx, TYPE_DracliraModifiedEANM, &slot5);
-	dogma_add_module(ctx, TYPE_DracliraModifiedEANM, &slot6);
+	dogma_add_module(ctx, TYPE_DraclirasModifiedEnergizedAdaptiveNanoMembrane, &slot2);
+	dogma_add_module(ctx, TYPE_DraclirasModifiedEnergizedAdaptiveNanoMembrane, &slot3);
+	dogma_add_module(ctx, TYPE_DraclirasModifiedEnergizedAdaptiveNanoMembrane, &slot4);
+	dogma_add_module(ctx, TYPE_DraclirasModifiedEnergizedAdaptiveNanoMembrane, &slot5);
+	dogma_add_module(ctx, TYPE_DraclirasModifiedEnergizedAdaptiveNanoMembrane, &slot6);
 	expect_thermal_resistance(61.56);
 
 	dogma_set_module_state(ctx, slot2, DOGMA_STATE_Online);
@@ -89,9 +76,9 @@ int main(void) {
 	dogma_set_module_state(ctx, slot6, DOGMA_STATE_Online);
 	expect_thermal_resistance(89.21);
 
-	dogma_add_module(ctx, TYPE_AntiThermicPumpII, &slot7);
-	dogma_add_module(ctx, TYPE_AntiThermicPumpII, &slot8);
-	dogma_add_module(ctx, TYPE_AntiThermicPumpII, &slot9);
+	dogma_add_module(ctx, TYPE_LargeAntiThermicPumpII, &slot7);
+	dogma_add_module(ctx, TYPE_LargeAntiThermicPumpII, &slot8);
+	dogma_add_module(ctx, TYPE_LargeAntiThermicPumpII, &slot9);
 
 	dogma_set_module_state(ctx, slot7, DOGMA_STATE_Online);
 	expect_thermal_resistance(89.32);
@@ -119,9 +106,9 @@ int main(void) {
 	dogma_add_module_s(ctx, TYPE_OverdriveInjectorSystemII, &slot6, DOGMA_STATE_Online);
 	expect_max_velocity(156.7);
 
-	dogma_add_module_s(ctx, TYPE_TrimarkArmorPumpII, &slot7, DOGMA_STATE_Online);
-	dogma_add_module_s(ctx, TYPE_TrimarkArmorPumpII, &slot8, DOGMA_STATE_Online);
-	dogma_add_module_s(ctx, TYPE_TrimarkArmorPumpII, &slot9, DOGMA_STATE_Online);
+	dogma_add_module_s(ctx, TYPE_LargeTrimarkArmorPumpII, &slot7, DOGMA_STATE_Online);
+	dogma_add_module_s(ctx, TYPE_LargeTrimarkArmorPumpII, &slot8, DOGMA_STATE_Online);
+	dogma_add_module_s(ctx, TYPE_LargeTrimarkArmorPumpII, &slot9, DOGMA_STATE_Online);
 	expect_max_velocity(138.3);
 
 	/* On the other hand, the capacity penalty of the Overdrives is

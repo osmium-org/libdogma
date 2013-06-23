@@ -22,6 +22,7 @@ test/*
 !test/*.[ch]
 src/operands.h
 src/tables-data.h
+include/dogma-names.h
 test-driver
 test-suite.log
 libdogma-*.tar.xz

@@ -11,7 +11,7 @@ libdogma_la_SOURCES=src/dogma.c include/dogma.h src/dogma_internal.c	\
 	tools/bootstrap_from_json
 
 libdogma_la_LDFLAGS=-export-symbols src/libdogma.sym -version-info 0:0:0
-include_HEADERS=include/dogma.h
+include_HEADERS=include/dogma.h include/dogma-names.h
 
 check_PROGRAMS=test/trivial test/basic-attributes				\
 	test/basic-skill-levels test/basic-charges					\

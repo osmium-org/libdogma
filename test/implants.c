@@ -18,35 +18,6 @@
 
 #include "test.h"
 
-#define TYPE_Venture 32880
-
-#define TYPE_CrystalAlpha 20121
-#define TYPE_CrystalBeta 20157
-#define TYPE_CrystalGamma 20158
-#define TYPE_CrystalDelta 20159
-#define TYPE_CrystalEpsilon 20160
-#define TYPE_CrystalOmega 20161
-#define TYPE_SSBII 400
-#define TYPE_SBAII 24443
-
-#define TYPE_SnakeAlpha 19540
-#define TYPE_SnakeBeta 19551
-#define TYPE_SnakeGamma 19553
-#define TYPE_SnakeDelta 19554
-#define TYPE_SnakeEpsilon 19555
-#define TYPE_SnakeOmega 19556
-#define TYPE_OverdriveInjectorSystemII 1236
-#define TYPE_SmallPolycarb 31177
-
-#define TYPE_StrongBluePill 10156
-#define EFFECT_BoosterShieldCapacityPenalty 2737
-#define EFFECT_BoosterCapacitorCapacityPenalty 2745
-
-#define ATT_ShieldBonus 68
-#define ATT_MaxVelocity 37
-#define ATT_ShieldCapacity 263
-#define ATT_CapacitorCapacity 482
-
 dogma_context_t* ctx;
 dogma_key_t slot0, slot1, slot2, slot3;
 dogma_key_t impslot0, impslot1, impslot2, impslot3, impslot4, impslot5;
@@ -71,9 +42,9 @@ int main(void) {
 	dogma_add_implant(ctx, TYPE_CrystalOmega, &impslot5);
 
 	dogma_set_ship(ctx, TYPE_Venture);
-	dogma_add_module(ctx, TYPE_SSBII, &slot0);
-	dogma_add_module(ctx, TYPE_SBAII, &slot1);
-	dogma_add_module(ctx, TYPE_SBAII, &slot2);
+	dogma_add_module(ctx, TYPE_SmallShieldBoosterII, &slot0);
+	dogma_add_module(ctx, TYPE_ShieldBoostAmplifierII, &slot1);
+	dogma_add_module(ctx, TYPE_ShieldBoostAmplifierII, &slot2);
 	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Active);
 	dogma_set_module_state(ctx, slot1, DOGMA_STATE_Online);
 	dogma_set_module_state(ctx, slot2, DOGMA_STATE_Online);
@@ -99,9 +70,9 @@ int main(void) {
 
 	dogma_set_ship(ctx, TYPE_Venture);
 	dogma_add_module(ctx, TYPE_OverdriveInjectorSystemII, &slot0);
-	dogma_add_module(ctx, TYPE_SmallPolycarb, &slot1);
-	dogma_add_module(ctx, TYPE_SmallPolycarb, &slot2);
-	dogma_add_module(ctx, TYPE_SmallPolycarb, &slot3);
+	dogma_add_module(ctx, TYPE_SmallPolycarbonEngineHousingI, &slot1);
+	dogma_add_module(ctx, TYPE_SmallPolycarbonEngineHousingI, &slot2);
+	dogma_add_module(ctx, TYPE_SmallPolycarbonEngineHousingI, &slot3);
 	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Online);
 	dogma_set_module_state(ctx, slot1, DOGMA_STATE_Online);
 	dogma_set_module_state(ctx, slot2, DOGMA_STATE_Online);
@@ -115,10 +86,10 @@ int main(void) {
 
 	/* Source: EFT 2.19.1 */
 
-	dogma_add_implant(ctx, TYPE_StrongBluePill, &impslot0);
+	dogma_add_implant(ctx, TYPE_StrongBluePillBooster, &impslot0);
 
 	dogma_set_ship(ctx, TYPE_Venture);
-	dogma_add_module(ctx, TYPE_SSBII, &slot0);
+	dogma_add_module(ctx, TYPE_SmallShieldBoosterII, &slot0);
 	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Active);
 
 	const dogma_location_t imploc0 = {

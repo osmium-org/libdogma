@@ -25,18 +25,6 @@
 
 #include <stdio.h>
 
-#define CAT_Ship 6
-#define CAT_Module 7
-#define CAT_Charge 8
-#define CAT_Drone 18
-#define CAT_Implant 20
-#define CAT_Subsystem 32
-
-#define GROUP_Booster 303
-
-#define TYPE_Drone 2488
-#define TYPE_Skillbook 3300
-
 dogma_context_t* ctx;
 dogma_key_t module_slot, implant_slot;
 
@@ -55,7 +43,7 @@ int main(void) {
 	dogma_init_context(&ctx);
 
 	try_all_char_attribs();
-	try_all_skill_attribs(TYPE_Skillbook);
+	try_all_skill_attribs(TYPE_Gunnery);
 
 	/* To be perfectly thorough, some of these for loops should be
 	 * nested in one another. Try it if you have spare time! */
@@ -113,7 +101,7 @@ int main(void) {
 		dogma_remove_drone(ctx, dogma_table_types[i].id);
 	}
 
-	dogma_add_drone(ctx, TYPE_Drone, 1);
+	dogma_add_drone(ctx, TYPE_WarriorII, 1);
 
 	for(i = 0; dogma_table_types[i].id != 0; ++i) {
 		if(dogma_table_types[i].categoryid != CAT_Ship) continue;
@@ -133,7 +121,7 @@ int main(void) {
 		dogma_set_module_state(ctx, module_slot, DOGMA_STATE_Overloaded);
 		try_all_char_attribs();
 		try_all_ship_attribs();
-		try_all_drone_attribs(TYPE_Drone);
+		try_all_drone_attribs(TYPE_WarriorII);
 		try_all_module_attribs();
 		dogma_remove_module(ctx, module_slot);
 	}

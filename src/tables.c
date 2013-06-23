@@ -21,9 +21,7 @@
 #include "tables.h"
 #include "tables-data.h"
 
-#define ATT_Mass 4
-#define ATT_Capacity 38
-#define ATT_Volume 161
+#include "dogma-names.h"
 
 array_t types_by_id = NULL;
 array_t attributes_by_id = NULL;

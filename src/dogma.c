@@ -24,10 +24,10 @@
 #include "eval.h"
 #include "attribute.h"
 
+#include "dogma-names.h"
+
 #define DOGMA_MIN_SKILL_LEVEL 0
 #define DOGMA_MAX_SKILL_LEVEL 5
-
-#define CAT_Skill 16
 
 static int dogma_add_env_generic(dogma_context_t*, dogma_env_t*, dogma_env_t*,
                                  typeid_t, key_t*, state_t);

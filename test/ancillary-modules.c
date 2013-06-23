@@ -18,17 +18,6 @@
 
 #include "test.h"
 
-#define TYPE_Golem 28710
-#define TYPE_Kronos 28661
-#define TYPE_LargeASB 4391
-#define TYPE_CapBooster150 11283
-#define TYPE_LargeAAR 33103
-#define TYPE_NaniteRepairPaste 28668
-
-#define ATT_CapacitorNeed 6
-#define ATT_ShieldBonus 68
-#define ATT_ArmorDamageAmount 84
-
 int main(void) {
 	dogma_context_t* ctx;
 	dogma_key_t slot;
@@ -40,7 +29,7 @@ int main(void) {
 	/* Source: Pyfa-42efa48 (Jun 13 2013) */
 
 	dogma_set_ship(ctx, TYPE_Golem);
-	dogma_add_module(ctx, TYPE_LargeASB, &slot);
+	dogma_add_module(ctx, TYPE_LargeAncillaryShieldBooster, &slot);
 	dogma_set_module_state(ctx, slot, DOGMA_STATE_Active);
 
 	dogma_get_module_attribute(ctx, slot, ATT_CapacitorNeed, &v);
@@ -64,7 +53,7 @@ int main(void) {
 
 	dogma_init_context(&ctx);
 	dogma_set_ship(ctx, TYPE_Kronos);
-	dogma_add_module(ctx, TYPE_LargeAAR, &slot);
+	dogma_add_module(ctx, TYPE_LargeAncillaryArmorRepairer, &slot);
 	dogma_set_module_state(ctx, slot, DOGMA_STATE_Active);
 
 	dogma_get_module_attribute(ctx, slot, ATT_CapacitorNeed, &v);

@@ -20,10 +20,7 @@
 #include "modifier.h"
 #include "tables.h"
 
-#define EFF_LoPower 11
-#define EFF_HiPower 12
-#define EFF_MedPower 13
-#define EFF_RigSlot 2663
+#include "dogma-names.h"
 
 static bool dogma_modifier_is_penalized(dogma_modifier_t*);
 
@@ -43,10 +40,10 @@ static bool dogma_modifier_is_penalized(dogma_modifier_t* modifier) {
 		return false;
 	}
 
-	if(dogma_get_type_effect(modifier->sourceenv->id, EFF_LoPower, &te) == DOGMA_OK
-	   || dogma_get_type_effect(modifier->sourceenv->id, EFF_HiPower, &te) == DOGMA_OK
-	   || dogma_get_type_effect(modifier->sourceenv->id, EFF_MedPower, &te) == DOGMA_OK
-	   || dogma_get_type_effect(modifier->sourceenv->id, EFF_RigSlot, &te) == DOGMA_OK) {
+	if(dogma_get_type_effect(modifier->sourceenv->id, EFFECT_LoPower, &te) == DOGMA_OK
+	   || dogma_get_type_effect(modifier->sourceenv->id, EFFECT_HiPower, &te) == DOGMA_OK
+	   || dogma_get_type_effect(modifier->sourceenv->id, EFFECT_MedPower, &te) == DOGMA_OK
+	   || dogma_get_type_effect(modifier->sourceenv->id, EFFECT_RigSlot, &te) == DOGMA_OK) {
 		return true;
 	}
 

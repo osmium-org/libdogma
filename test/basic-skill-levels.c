@@ -19,12 +19,6 @@
 #include "test.h"
 #include <stdio.h>
 
-#define TYPE_Harbinger 24696
-#define TYPE_Electronics 3426
-#define TYPE_Engineering 3413
-#define ATT_CpuOutput 48
-#define ATT_PowerOutput 11
-
 /* Osmium 0.6.4 (Retribution 1.1) */
 #define HARB_BaseCPU 375.00
 #define HARB_BasePG 1425.00

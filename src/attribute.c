@@ -20,14 +20,7 @@
 #include "tables.h"
 #include <assert.h>
 
-#define ATT_SkillLevel 280
-
-#define ATT_RequiredSkill1 182
-#define ATT_RequiredSkill2 183
-#define ATT_RequiredSkill3 184
-#define ATT_RequiredSkill4 1285
-#define ATT_RequiredSkill5 1289
-#define ATT_RequiredSkill6 1290
+#include "dogma-names.h"
 
 #define MAX_PENALIZED_MODIFIERS 16
 
