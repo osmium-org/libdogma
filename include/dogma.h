@@ -47,7 +47,7 @@
  * program, but the GPLv3 has a strong copyleft clause; make sure you
  * understand what it means for you and your program!
  *
- * NOTE TO DEVELOPERS: be very careful when making changes to this
+ * @note to developers: be very careful when making changes to this
  * file. Do not break the ABI unless it's absolutely necessary.
  */
 
@@ -91,6 +91,8 @@ enum location_type_e {
 };
 typedef enum location_type_e location_type_t;
 
+/* @note to developers: keep this structure small, it is always passed
+ * by value */
 struct location_s {
 	location_type_t type;
 
@@ -120,9 +122,13 @@ typedef enum state_s state_t;
 
 
 
-/* Opaque structure, to help maintain ABI compatibility */
+/* A dogma context. Usually represents a character with a ship. */
 struct dogma_context_s;
 typedef struct dogma_context_s dogma_context_t;
+
+/* A dogma fleet context.  */
+struct dogma_fleet_context_s;
+typedef struct dogma_fleet_context_s dogma_fleet_context_t;
 
 
 
@@ -233,6 +239,69 @@ int dogma_target(dogma_context_t* targeter, location_t, dogma_context_t* targete
 /* Clear a target. This is automatically done if the target disappears
  * (for example if you free the target context). */
 int dogma_clear_target(dogma_context_t* targeter, location_t);
+
+
+
+
+
+/* -------- Fleet manipulation -------- */
+
+/* Create a new empty fleet. */
+int dogma_create_fleet_context(dogma_fleet_context_t**);
+
+/* Free a fleet context created by dogma_create_fleet_context(). This
+ * does not free the fleet members, only the fleet itself. */
+int dogma_free_fleet_context(dogma_fleet_context_t*);
+
+
+
+/* Add a fleet member as fleet commander. This will fail if there is
+ * already a fleet commander. If the fleet does not have a booster,
+ * the new fleet commander will be used as fleet booster. If the
+ * member is already in a different fleet, it will be removed from the
+ * old fleet then added to the new one. */
+int dogma_add_fleet_commander(dogma_fleet_context_t*, dogma_context_t*);
+
+/* Add a fleet member as wing commander. This will fail if there is
+ * already a commander in the same wing. If the wing does not have a
+ * booster, the new wing commander will be used as wing booster. If
+ * the member is already in a different fleet, it will be removed from
+ * the old fleet then added to the new one. */
+int dogma_add_wing_commander(dogma_fleet_context_t*, key_t wing, dogma_context_t*);
+
+/* Add a fleet member as squad commander. This will fail if there is
+ * already a commander in the same squad. If the squad does not have a
+ * booster, the new squad commander will be used as squad
+ * commander. If the member is already in a different fleet, it will
+ * be removed from the old fleet then added to the new one. */
+int dogma_add_squad_commander(dogma_fleet_context_t*, key_t wing, key_t squad, dogma_context_t*);
+
+/* Add a fleet member. If the member is already in a different fleet,
+ * it will be removed from the old fleet then added to the new one. */
+int dogma_add_fleet_member(dogma_fleet_context_t*, key_t wing, key_t squad, dogma_context_t*);
+
+
+
+/* Remove a fleet member. Found will be set to true if the member was
+ * in fleet, or false if not. */
+int dogma_remove_fleet_member(dogma_fleet_context_t*, dogma_context_t*, bool* found);
+
+
+
+/* Set a booster for the fleet. If there is already a fleet booster,
+ * it will be silently overwritten. Assumes the given member is a
+ * member of the fleet. */
+int dogma_set_fleet_booster(dogma_fleet_context_t*, dogma_context_t*);
+
+/* Set a booster for the wing. If there is already a wing booster, it
+ * will be silently overwritten. Assumes the given member is a member
+ * of the wing. */
+int dogma_set_wing_booster(dogma_fleet_context_t*, key_t wing, dogma_context_t*);
+
+/* Set a booster for the squad. If there is already a squad booster,
+ * it will be silently overwritten. Assumes the given member is a
+ * member of the squad. */
+int dogma_set_squad_booster(dogma_fleet_context_t*, key_t wing, key_t squad, dogma_context_t*);
 
 
 

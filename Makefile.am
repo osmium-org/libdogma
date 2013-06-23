@@ -6,8 +6,9 @@ libdogma_ladir=.
 libdogma_la_SOURCES=src/dogma.c include/dogma.h src/dogma_internal.c	\
 	src/dogma_internal.h src/tables.c src/tables.h src/eval.c			\
 	src/eval.h src/modifier.c src/modifier.h src/attribute.c			\
-	src/attribute.h src/libdogma.sym src/operands.h src/tables-data.h	\
-	test/test.h tools/bootstrap_from_json
+	src/attribute.h src/fleet.c src/fleet.h src/libdogma.sym			\
+	src/operands.h src/tables-data.h test/test.h						\
+	tools/bootstrap_from_json
 
 libdogma_la_LDFLAGS=-export-symbols src/libdogma.sym -version-info 0:0:0
 include_HEADERS=include/dogma.h

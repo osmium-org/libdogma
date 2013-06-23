@@ -16,6 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
 #ifndef _DOGMA_INTERNAL_H
 #define _DOGMA_INTERNAL_H 1
 
@@ -80,6 +81,8 @@ typedef uint16_t groupid_t;
 typedef uint8_t  categoryid_t;
 typedef int32_t expressionid_t;
 
+
+
 struct dogma_type_s {
 	typeid_t id;
 	double volume;
@@ -90,6 +93,8 @@ struct dogma_type_s {
 };
 typedef struct dogma_type_s dogma_type_t;
 
+
+
 struct dogma_attribute_s {
 	attributeid_t id;
 	double defaultvalue;
@@ -97,6 +102,8 @@ struct dogma_attribute_s {
 	bool highisgood;
 };
 typedef struct dogma_attribute_s dogma_attribute_t;
+
+
 
 struct dogma_effect_s {
 	effectid_t id;
@@ -112,6 +119,8 @@ struct dogma_effect_s {
 };
 typedef struct dogma_effect_s dogma_effect_t;
 
+
+
 struct dogma_type_attribute_s {
 	typeid_t typeid;
 	attributeid_t attributeid;
@@ -119,11 +128,15 @@ struct dogma_type_attribute_s {
 };
 typedef struct dogma_type_attribute_s dogma_type_attribute_t;
 
+
+
 struct dogma_type_effect_s {
 	typeid_t typeid;
 	effectid_t effectid;
 };
 typedef struct dogma_type_effect_s dogma_type_effect_t;
+
+
 
 /* Different association types, sorted by evaluation order (sort of
  * like operator precedence).
@@ -153,6 +166,8 @@ enum dogma_env_index_e {
 };
 typedef enum dogma_env_index_e dogma_env_index_t;
 
+
+
 struct dogma_expression_s {
 	expressionid_t id;
 	dogma_operand_t operand;
@@ -173,6 +188,8 @@ struct dogma_expression_s {
 };
 typedef struct dogma_expression_s dogma_expression_t;
 
+
+
 struct dogma_env_s {
 	typeid_t id;
 	struct dogma_env_s* parent; /* Also known as location in dogma terminology */
@@ -187,13 +204,28 @@ struct dogma_env_s {
 };
 typedef struct dogma_env_s dogma_env_t;
 
+
+
 struct dogma_drone_context_s {
 	dogma_env_t* drone;
 	unsigned int quantity;
 };
 typedef struct dogma_drone_context_s dogma_drone_context_t;
 
+
+
+struct dogma_context_s;
+typedef struct dogma_context_s dogma_context_t;
+
+struct dogma_fleet_context_s;
+typedef struct dogma_fleet_context_s dogma_fleet_context_t;
+
 struct dogma_context_s {
+	dogma_fleet_context_t* fleet;
+	dogma_env_t* gang; /* Where gang modifiers live */
+
+	/* The root environment of this context. Contains the ship,
+	 * skillbooks, drones and implants as direct children. */
 	dogma_env_t* character;
 
 	/* The ship is actually a child of character, and it has index
@@ -211,6 +243,23 @@ struct dogma_context_s {
 	 * values are pointers to dogma_drone_context_t. */
 	array_t drone_map;
 };
+
+struct dogma_fleet_context_s {
+	dogma_context_t* commander;
+	dogma_context_t* booster; /* Assumed to be a member of this fleet
+	                           * context (or its subfleets) */
+
+	dogma_fleet_context_t* parent;
+	key_t index; /* Index in parent->subfleets, typically the
+	              * squad/wing number */
+	array_t subfleets; /* Wings, squads, etc. */
+	array_t members; /* Array of dogma_context_t* (keys are the same
+	                  * as values to enforce uniqueness) */
+};
+
+
+
+
 
 /* -------- Internal functions -------- */
 
@@ -231,5 +280,9 @@ int dogma_inject_skill(dogma_context_t*, typeid_t);
 
 /* Set a target. */
 int dogma_set_target(dogma_context_t*, dogma_env_t*, dogma_env_t*);
+
+
+
+
 
 #endif
