@@ -18,18 +18,18 @@
 
 #include "test.h"
 
-#define TYPE_Rifter (typeid_t)587
-#define TYPE_AutocannonII (typeid_t)2873
-#define TYPE_EMPS (typeid_t)185
-#define TYPE_NuclearS (typeid_t)195
-#define TYPE_BarrageS (typeid_t)12625
+#define TYPE_Rifter 587
+#define TYPE_AutocannonII 2873
+#define TYPE_EMPS 185
+#define TYPE_NuclearS 195
+#define TYPE_BarrageS 12625
 
-#define ATT_MaxRange (attributeid_t)54
-#define ATT_Falloff (attributeid_t)158
-#define ATT_TrackingSpeed (attributeid_t)160
+#define ATT_MaxRange 54
+#define ATT_Falloff 158
+#define ATT_TrackingSpeed 160
 
 dogma_context_t* ctx;
-key_t slot;
+dogma_key_t slot;
 
 static void expect_optimal_falloff_tracking(double optimal, double falloff, double tracking) {
 	double v;
@@ -52,7 +52,7 @@ int main(void) {
 
 	assert(dogma_set_ship(ctx, TYPE_Rifter) == DOGMA_OK);
 	assert(dogma_add_module(ctx, TYPE_AutocannonII, &slot) == DOGMA_OK);
-	assert(dogma_set_module_state(ctx, slot, DOGMA_Active) == DOGMA_OK);
+	assert(dogma_set_module_state(ctx, slot, DOGMA_STATE_Active) == DOGMA_OK);
 	expect_optimal_falloff_tracking(1200.0, 5000.0, 0.71671875);
 
 	assert(dogma_add_charge(ctx, slot, TYPE_EMPS) == DOGMA_OK);

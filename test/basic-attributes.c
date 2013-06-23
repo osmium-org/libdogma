@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -18,12 +18,12 @@
 
 #include "test.h"
 
-#define TYPE_Rifter (typeid_t)587
-#define ATT_HighSlots (attributeid_t)14
-#define ATT_MediumSlots (attributeid_t)13
-#define ATT_LowSlots (attributeid_t)12
-#define ATT_RigSlots (attributeid_t)1154
-#define ATT_SubsystemSlots (attributeid_t)1367
+#define TYPE_Rifter 587
+#define ATT_HighSlots 14
+#define ATT_MediumSlots 13
+#define ATT_LowSlots 12
+#define ATT_RigSlots 1154
+#define ATT_SubsystemSlots 1367
 
 int main(void) {
 	dogma_context_t* ctx;

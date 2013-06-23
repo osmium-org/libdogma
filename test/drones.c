@@ -36,7 +36,7 @@
 
 int main(void) {
 	dogma_context_t* ctx;
-	key_t slot0, slot1, slot2;
+	dogma_key_t slot0, slot1, slot2;
 	double v;
 
 	dogma_init();
@@ -75,9 +75,9 @@ int main(void) {
 	dogma_add_module(ctx, TYPE_LargeSDA, &slot0);
 	dogma_add_module(ctx, TYPE_DroneDamageAmplifierII, &slot1);
 	dogma_add_module(ctx, TYPE_OmnidirectionalTrackingLinkII, &slot2);
-	dogma_set_module_state(ctx, slot0, DOGMA_Online);
-	dogma_set_module_state(ctx, slot1, DOGMA_Online);
-	dogma_set_module_state(ctx, slot2, DOGMA_Online);
+	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot1, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot2, DOGMA_STATE_Online);
 	dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_MaxRange, &v);
 	assertf(56250.0, v, 0.05);
 	dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_TrackingSpeed, &v);
@@ -92,8 +92,8 @@ int main(void) {
 	dogma_add_drone(ctx, TYPE_HornetEC300, 1);
 	dogma_add_module(ctx, TYPE_SignalDistortionAmplifierII, &slot0);
 	dogma_add_module(ctx, TYPE_ECMPhaseInverterII, &slot1);
-	dogma_set_module_state(ctx, slot0, DOGMA_Online);
-	dogma_set_module_state(ctx, slot1, DOGMA_Active);
+	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot1, DOGMA_STATE_Active);
 
 	/* Ship-related ECM bonuses should not apply to the drone */
 	dogma_get_drone_attribute(ctx, TYPE_HornetEC300, ATT_ScanLadarStrengthBonus, &v);

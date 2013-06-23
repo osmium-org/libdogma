@@ -174,7 +174,7 @@ static inline int dogma_remove_env_generic(dogma_context_t* ctx,
 	JLG(env, location->children, index);
 	if(env == NULL) return DOGMA_NOT_FOUND;
 
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, *env, DOGMA_Unplugged));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, *env, DOGMA_STATE_Unplugged));
 
 	dogma_free_env(*env);
 
@@ -192,9 +192,9 @@ int dogma_set_ship(dogma_context_t* ctx, typeid_t ship_typeid) {
 		return DOGMA_OK;
 	}
 
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, ctx->ship, DOGMA_Unplugged));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, ctx->ship, DOGMA_STATE_Unplugged));
 	ctx->ship->id = ship_typeid;
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, ctx->ship, DOGMA_Online));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, ctx->ship, DOGMA_STATE_Online));
 
 	return DOGMA_OK;
 }
@@ -242,7 +242,7 @@ int dogma_add_charge(dogma_context_t* ctx, key_t index, typeid_t chargeid) {
 	return dogma_add_env_generic(
 		ctx,
 		*module_env, ctx->character,
-		chargeid, &charge_index, DOGMA_Active
+		chargeid, &charge_index, DOGMA_STATE_Active
 	);
 }
 
@@ -300,7 +300,7 @@ int dogma_add_drone(dogma_context_t* ctx, typeid_t droneid, unsigned int quantit
 	drone_ctx->drone = drone_env;
 	drone_ctx->quantity = quantity;
 
-	return dogma_set_env_state(ctx, drone_env, DOGMA_Active);
+	return dogma_set_env_state(ctx, drone_env, DOGMA_STATE_Active);
 }
 
 int dogma_remove_drone_partial(dogma_context_t* ctx, typeid_t droneid, unsigned int quantity) {
@@ -327,7 +327,7 @@ int dogma_remove_drone(dogma_context_t* ctx, typeid_t droneid) {
 	if(value == NULL) return DOGMA_OK; /* Nonexistent drone */
 
 	drone_env = (*value)->drone;
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, drone_env, DOGMA_Unplugged));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, drone_env, DOGMA_STATE_Unplugged));
 	JLD(ret, drone_env->parent->children, drone_env->index);
 	JLD(ret, ctx->drone_map, drone_env->id);
 
@@ -346,7 +346,7 @@ int dogma_add_implant(dogma_context_t* ctx, typeid_t id, key_t* index) {
 	return dogma_add_env_generic(
 		ctx,
 		ctx->character, ctx->character,
-		id, index, DOGMA_Online
+		id, index, DOGMA_STATE_Online
 	);
 }
 

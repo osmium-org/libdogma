@@ -52,11 +52,6 @@
 #define DOGMA_SAFE_CHAR_INDEXES 50000
 #define DOGMA_SAFE_SHIP_INDEXES 0
 
-_Static_assert(sizeof(key_t) >= sizeof(effectid_t), "Must be able to use an effectid as an array index");
-_Static_assert(sizeof(key_t) >= sizeof(typeid_t), "Must be able to use a typeid as an array index");
-_Static_assert(sizeof(key_t) >= sizeof(intptr_t), "Must be able to use a pointer as an array index");
-_Static_assert(sizeof(Word_t) >= sizeof(void*), "Must be able to use a pointer as array value");
-
 
 
 
@@ -80,6 +75,22 @@ _Static_assert(sizeof(Word_t) >= sizeof(void*), "Must be able to use a pointer a
 typedef uint16_t groupid_t;
 typedef uint8_t  categoryid_t;
 typedef int32_t expressionid_t;
+
+/* Shorter aliases for use in non-exported library code (the public
+ * API always uses prefixed types because polluting the global
+ * namespace is not a good idea in libraries) */
+typedef dogma_array_t array_t;
+typedef dogma_key_t key_t;
+typedef dogma_typeid_t typeid_t;
+typedef dogma_attributeid_t attributeid_t;
+typedef dogma_effectid_t effectid_t;
+typedef dogma_location_t location_t;
+typedef dogma_state_t state_t;
+
+_Static_assert(sizeof(key_t) >= sizeof(effectid_t), "Must be able to use an effectid as an array index");
+_Static_assert(sizeof(key_t) >= sizeof(typeid_t), "Must be able to use a typeid as an array index");
+_Static_assert(sizeof(key_t) >= sizeof(intptr_t), "Must be able to use a pointer as an array index");
+_Static_assert(sizeof(Word_t) >= sizeof(void*), "Must be able to use a pointer as array value");
 
 
 

@@ -38,7 +38,7 @@
 #define TYPE_Skillbook 3300
 
 dogma_context_t* ctx;
-key_t module_slot, implant_slot;
+dogma_key_t module_slot, implant_slot;
 
 static void try_all_char_attribs(void);
 static void try_all_implant_attribs(void);
@@ -130,7 +130,7 @@ int main(void) {
 		   && dogma_table_types[i].categoryid != CAT_Subsystem) continue;
 
 		dogma_add_module(ctx, dogma_table_types[i].id, &module_slot);
-		dogma_set_module_state(ctx, module_slot, DOGMA_Overloaded);
+		dogma_set_module_state(ctx, module_slot, DOGMA_STATE_Overloaded);
 		try_all_char_attribs();
 		try_all_ship_attribs();
 		try_all_drone_attribs(TYPE_Drone);

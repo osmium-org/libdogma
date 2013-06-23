@@ -48,8 +48,8 @@
 #define ATT_CapacitorCapacity 482
 
 dogma_context_t* ctx;
-key_t slot0, slot1, slot2, slot3;
-key_t impslot0, impslot1, impslot2, impslot3, impslot4, impslot5;
+dogma_key_t slot0, slot1, slot2, slot3;
+dogma_key_t impslot0, impslot1, impslot2, impslot3, impslot4, impslot5;
 
 int main(void) {
 	double v;
@@ -74,9 +74,9 @@ int main(void) {
 	dogma_add_module(ctx, TYPE_SSBII, &slot0);
 	dogma_add_module(ctx, TYPE_SBAII, &slot1);
 	dogma_add_module(ctx, TYPE_SBAII, &slot2);
-	dogma_set_module_state(ctx, slot0, DOGMA_Active);
-	dogma_set_module_state(ctx, slot1, DOGMA_Online);
-	dogma_set_module_state(ctx, slot2, DOGMA_Online);
+	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Active);
+	dogma_set_module_state(ctx, slot1, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot2, DOGMA_STATE_Online);
 
 	dogma_get_module_attribute(ctx, slot0, ATT_ShieldBonus, &v);
 	assertf(82.2947996695, v, 0.00000000005);
@@ -102,10 +102,10 @@ int main(void) {
 	dogma_add_module(ctx, TYPE_SmallPolycarb, &slot1);
 	dogma_add_module(ctx, TYPE_SmallPolycarb, &slot2);
 	dogma_add_module(ctx, TYPE_SmallPolycarb, &slot3);
-	dogma_set_module_state(ctx, slot0, DOGMA_Online);
-	dogma_set_module_state(ctx, slot1, DOGMA_Online);
-	dogma_set_module_state(ctx, slot2, DOGMA_Online);
-	dogma_set_module_state(ctx, slot3, DOGMA_Online);
+	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot1, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot2, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot3, DOGMA_STATE_Online);
 
 	dogma_get_ship_attribute(ctx, ATT_MaxVelocity, &v);
 	assertf(644.929066501, v, 0.0000000005);
@@ -119,9 +119,9 @@ int main(void) {
 
 	dogma_set_ship(ctx, TYPE_Venture);
 	dogma_add_module(ctx, TYPE_SSBII, &slot0);
-	dogma_set_module_state(ctx, slot0, DOGMA_Active);
+	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Active);
 
-	const location_t imploc0 = {
+	const dogma_location_t imploc0 = {
 		.type = DOGMA_LOC_Implant,
 		.implant_index = impslot0,
 	};

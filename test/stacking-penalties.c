@@ -18,18 +18,18 @@
 
 #include "test.h"
 
-#define TYPE_Abaddon (typeid_t)24692
-#define TYPE_DamageControlII (typeid_t)2048
-#define TYPE_DracliraModifiedEANM (typeid_t)14950
-#define TYPE_ReactiveArmorHardener (typeid_t)4403
-#define TYPE_AntiThermicPumpII (typeid_t)26292
+#define TYPE_Abaddon 24692
+#define TYPE_DamageControlII 2048
+#define TYPE_DracliraModifiedEANM 14950
+#define TYPE_ReactiveArmorHardener 4403
+#define TYPE_AntiThermicPumpII 26292
 
-#define TYPE_OverdriveInjectorSystemII (typeid_t)1236
-#define TYPE_TrimarkArmorPumpII (typeid_t)26302
+#define TYPE_OverdriveInjectorSystemII 1236
+#define TYPE_TrimarkArmorPumpII 26302
 
-#define ATT_ArmorThermalDamageResonance (attributeid_t)270
-#define ATT_MaxVelocity (attributeid_t)37
-#define ATT_Capacity (attributeid_t)38
+#define ATT_ArmorThermalDamageResonance 270
+#define ATT_MaxVelocity 37
+#define ATT_Capacity 38
 
 dogma_context_t* ctx;
 
@@ -48,7 +48,7 @@ static void expect_max_velocity(double velocity) {
 }
 
 int main(void) {
-	key_t slot0, slot1, slot2, slot3, slot4, slot5, slot6, slot7, slot8, slot9;
+	dogma_key_t slot0, slot1, slot2, slot3, slot4, slot5, slot6, slot7, slot8, slot9;
 
 	dogma_init();
 	dogma_init_context(&ctx);
@@ -60,15 +60,15 @@ int main(void) {
 
 	dogma_add_module(ctx, TYPE_DamageControlII, &slot0);
 	expect_thermal_resistance(48.0);
-	dogma_set_module_state(ctx, slot0, DOGMA_Active);
+	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Active);
 	expect_thermal_resistance(55.80);
-	dogma_set_module_state(ctx, slot0, DOGMA_Online);
+	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Online);
 	expect_thermal_resistance(48.0);
-	dogma_set_module_state(ctx, slot0, DOGMA_Active);
+	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Active);
 	expect_thermal_resistance(55.80);
 
 	dogma_add_module(ctx, TYPE_ReactiveArmorHardener, &slot1);
-	dogma_set_module_state(ctx, slot1, DOGMA_Active);
+	dogma_set_module_state(ctx, slot1, DOGMA_STATE_Active);
 	expect_thermal_resistance(61.56);
 
 	dogma_add_module(ctx, TYPE_DracliraModifiedEANM, &slot2);
@@ -78,26 +78,26 @@ int main(void) {
 	dogma_add_module(ctx, TYPE_DracliraModifiedEANM, &slot6);
 	expect_thermal_resistance(61.56);
 
-	dogma_set_module_state(ctx, slot2, DOGMA_Online);
+	dogma_set_module_state(ctx, slot2, DOGMA_STATE_Online);
 	expect_thermal_resistance(76.10);
-	dogma_set_module_state(ctx, slot3, DOGMA_Online);
+	dogma_set_module_state(ctx, slot3, DOGMA_STATE_Online);
 	expect_thermal_resistance(83.95);
-	dogma_set_module_state(ctx, slot4, DOGMA_Online);
+	dogma_set_module_state(ctx, slot4, DOGMA_STATE_Online);
 	expect_thermal_resistance(87.41);
-	dogma_set_module_state(ctx, slot5, DOGMA_Online);
+	dogma_set_module_state(ctx, slot5, DOGMA_STATE_Online);
 	expect_thermal_resistance(88.76);
-	dogma_set_module_state(ctx, slot6, DOGMA_Online);
+	dogma_set_module_state(ctx, slot6, DOGMA_STATE_Online);
 	expect_thermal_resistance(89.21);
 
 	dogma_add_module(ctx, TYPE_AntiThermicPumpII, &slot7);
 	dogma_add_module(ctx, TYPE_AntiThermicPumpII, &slot8);
 	dogma_add_module(ctx, TYPE_AntiThermicPumpII, &slot9);
 
-	dogma_set_module_state(ctx, slot7, DOGMA_Online);
+	dogma_set_module_state(ctx, slot7, DOGMA_STATE_Online);
 	expect_thermal_resistance(89.32);
-	dogma_set_module_state(ctx, slot7, DOGMA_Online);
+	dogma_set_module_state(ctx, slot7, DOGMA_STATE_Online);
 	expect_thermal_resistance(89.35);
-	dogma_set_module_state(ctx, slot7, DOGMA_Online);
+	dogma_set_module_state(ctx, slot7, DOGMA_STATE_Online);
 	expect_thermal_resistance(89.35);
 
 	dogma_free_context(ctx);
@@ -117,21 +117,21 @@ int main(void) {
 	dogma_add_module(ctx, TYPE_OverdriveInjectorSystemII, &slot4);
 	dogma_add_module(ctx, TYPE_OverdriveInjectorSystemII, &slot5);
 	dogma_add_module(ctx, TYPE_OverdriveInjectorSystemII, &slot6);
-	dogma_set_module_state(ctx, slot0, DOGMA_Online);
-	dogma_set_module_state(ctx, slot1, DOGMA_Online);
-	dogma_set_module_state(ctx, slot2, DOGMA_Online);
-	dogma_set_module_state(ctx, slot3, DOGMA_Online);
-	dogma_set_module_state(ctx, slot4, DOGMA_Online);
-	dogma_set_module_state(ctx, slot5, DOGMA_Online);
-	dogma_set_module_state(ctx, slot6, DOGMA_Online);
+	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot1, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot2, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot3, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot4, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot5, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot6, DOGMA_STATE_Online);
 	expect_max_velocity(156.7);
 
 	dogma_add_module(ctx, TYPE_TrimarkArmorPumpII, &slot7);
 	dogma_add_module(ctx, TYPE_TrimarkArmorPumpII, &slot8);
 	dogma_add_module(ctx, TYPE_TrimarkArmorPumpII, &slot9);
-	dogma_set_module_state(ctx, slot7, DOGMA_Online);
-	dogma_set_module_state(ctx, slot8, DOGMA_Online);
-	dogma_set_module_state(ctx, slot9, DOGMA_Online);
+	dogma_set_module_state(ctx, slot7, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot8, DOGMA_STATE_Online);
+	dogma_set_module_state(ctx, slot9, DOGMA_STATE_Online);
 	expect_max_velocity(138.3);
 
 	/* On the other hand, the capacity penalty of the Overdrives is

@@ -217,7 +217,7 @@ int dogma_inject_skill(dogma_context_t* ctx, typeid_t skillid) {
 
 	assert(skillid < DOGMA_SAFE_CHAR_INDEXES);
 
-	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, skill_env, DOGMA_Online));
+	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, skill_env, DOGMA_STATE_Online));
 
 	return DOGMA_OK;
 }
@@ -225,7 +225,7 @@ int dogma_inject_skill(dogma_context_t* ctx, typeid_t skillid) {
 int dogma_set_target(dogma_context_t* targeter, dogma_env_t* source, dogma_env_t* target) {
 	state_t s = source->state;
 
-	DOGMA_ASSUME_OK(dogma_set_env_state(targeter, source, DOGMA_Unplugged));
+	DOGMA_ASSUME_OK(dogma_set_env_state(targeter, source, DOGMA_STATE_Unplugged));
 
 	if(source->target != NULL) {
 		/* Remove targeter from targetee */
