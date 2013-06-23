@@ -28,7 +28,7 @@ static bool dogma_modifier_is_penalized(dogma_modifier_t* modifier) {
 	const dogma_attribute_t* attribute;
 	const dogma_type_effect_t* te;
 
-	if(!((1 << modifier->assoctype) & DOGMA_PENALIZABLE_ASSOCTYPES)) {
+	if((~DOGMA_PENALIZABLE_ASSOCTYPES >> modifier->assoctype) & 1) {
 		/* Assoctype is not penalizable */
 		return false;
 	}

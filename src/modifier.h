@@ -26,12 +26,13 @@
 #define DOGMA_FILTERTYPE_GROUP 1
 #define DOGMA_FILTERTYPE_SKILL_REQUIRED 2
 
-#define DOGMA_PENALIZABLE_ASSOCTYPES	  \
+#define DOGMA_PENALIZABLE_ASSOCTYPES (	  \
 	(1 << DOGMA_ASSOC_PreMul) | \
 	(1 << DOGMA_ASSOC_PostMul) | \
 	(1 << DOGMA_ASSOC_PostPercent) | \
 	(1 << DOGMA_ASSOC_PreDiv) | \
-	(1 << DOGMA_ASSOC_PostDiv)
+	(1 << DOGMA_ASSOC_PostDiv) \
+)
 
 enum dogma_scope_e {
 	DOGMA_SCOPE_Item,
