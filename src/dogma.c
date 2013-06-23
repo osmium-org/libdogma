@@ -33,7 +33,7 @@ static int dogma_add_env_generic(dogma_context_t*, dogma_env_t*, dogma_env_t*,
                                  typeid_t, key_t*, state_t);
 static int dogma_remove_env_generic(dogma_context_t*, dogma_env_t*, key_t);
 
-static inline int dogma_get_location_env(dogma_context_t*, location_t, dogma_env_t**);
+static int dogma_get_location_env(dogma_context_t*, location_t, dogma_env_t**);
 
 
 
@@ -403,30 +403,16 @@ int dogma_toggle_chance_based_effect(dogma_context_t* ctx, location_t loc, effec
 
 int dogma_target(dogma_context_t* targeter, location_t loc, dogma_context_t* targetee) {
 	dogma_env_t* targeter_env;
-	state_t s;
 
 	DOGMA_ASSUME_OK(dogma_get_location_env(targeter, loc, &targeter_env));
-	s = targeter_env->state;
-
-	DOGMA_ASSUME_OK(dogma_set_env_state(targeter, targeter_env, DOGMA_Unplugged));
-	targeter_env->target = targetee->ship;
-	DOGMA_ASSUME_OK(dogma_set_env_state(targeter, targeter_env, s));
-
-	return DOGMA_OK;
+	return dogma_set_target(targeter, targeter_env, targetee->ship);
 }
 
 int dogma_clear_target(dogma_context_t* targeter, location_t loc) {
 	dogma_env_t* targeter_env;
-	state_t s;
 
 	DOGMA_ASSUME_OK(dogma_get_location_env(targeter, loc, &targeter_env));
-	s = targeter_env->state;
-
-	DOGMA_ASSUME_OK(dogma_set_env_state(targeter, targeter_env, DOGMA_Unplugged));
-	targeter_env->target = NULL;
-	DOGMA_ASSUME_OK(dogma_set_env_state(targeter, targeter_env, s));
-
-	return DOGMA_OK;
+	return dogma_set_target(targeter, targeter_env, NULL);
 }
 
 

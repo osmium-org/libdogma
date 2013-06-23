@@ -122,14 +122,16 @@ int main(void) {
 	dogma_get_module_attribute(ctxA, slots[0], ATT_TrackingSpeed, &v);
 	assertf(1.07326286262, v, 0.000000000005);
 
-	dogma_clear_target(ctxB, (location_t){ .type = DOGMA_LOC_Module, .module_index = slots[10] });
-	dogma_clear_target(ctxB, (location_t){ .type = DOGMA_LOC_Module, .module_index = slots[11] });
-	dogma_clear_target(ctxB, (location_t){ .type = DOGMA_LOC_Module, .module_index = slots[12] });
+	dogma_free_context(ctxA); /* Free the targetee context before the
+	                           * targeter context. Oops! */
+
+	/* Now try to remove the tracking links, which may blow up because
+	 * it will try to remove the modifier on the target, which doesn't
+	 * exist anymore */
+	dogma_remove_module(ctxB,slots[10]);
+	dogma_remove_module(ctxB,slots[11]);
+	dogma_remove_module(ctxB,slots[12]);
+
 	dogma_free_context(ctxB);
-
-	dogma_get_module_attribute(ctxA, slots[0], ATT_TrackingSpeed, &v);
-	assertf(0.671744203407, v, 0.0000000000005);
-
-	dogma_free_context(ctxA);
 	return 0;
 }

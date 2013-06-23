@@ -30,7 +30,7 @@
 /* -------- General -------- */
 
 #define DOGMA_WARN(format, ...) fprintf(stderr, "%s: %s:%i: " format "\n", \
-                                        PACKAGE_NAME, __FILE__, __LINE__, __VA_ARGS__)
+                                        __func__, __FILE__, __LINE__, __VA_ARGS__)
 
 #define DOGMA_ASSUME_OK(RESULT)	  \
 	{ int call_result__ = RESULT; if(call_result__ != DOGMA_OK) return call_result__; }
@@ -45,6 +45,7 @@
 		(envptr)->children = NULL; \
 		(envptr)->modifiers = NULL; \
 		(envptr)->chance_effects = NULL; \
+		(envptr)->targeted_by = NULL; \
 	} while(0)
 
 #define DOGMA_SAFE_CHAR_INDEXES 50000
@@ -52,6 +53,7 @@
 
 _Static_assert(sizeof(key_t) >= sizeof(effectid_t), "Must be able to use an effectid as an array index");
 _Static_assert(sizeof(key_t) >= sizeof(typeid_t), "Must be able to use a typeid as an array index");
+_Static_assert(sizeof(key_t) >= sizeof(intptr_t), "Must be able to use a pointer as an array index");
 _Static_assert(sizeof(Word_t) >= sizeof(void*), "Must be able to use a pointer as array value");
 
 
@@ -175,12 +177,13 @@ struct dogma_env_s {
 	typeid_t id;
 	struct dogma_env_s* parent; /* Also known as location in dogma terminology */
 	struct dogma_env_s* owner;
-	struct dogma_env_s* target;
+	struct dogma_env_s* target; /* NULL if no target */
 	key_t index; /* Index in parent->children array */
 	state_t state;
 	array_t children;
-	array_t modifiers;
+	array_t modifiers; /* targetattribute -> assoctype -> (index) -> modifier */
 	array_t chance_effects;
+	array_t targeted_by; /* dogma_env_t* -> dogma_context_t* */
 };
 typedef struct dogma_env_s dogma_env_t;
 
@@ -225,5 +228,8 @@ int dogma_dump_modifiers(dogma_env_t*);
 
 /* Inject a skill in character. */
 int dogma_inject_skill(dogma_context_t*, typeid_t);
+
+/* Set a target. */
+int dogma_set_target(dogma_context_t*, dogma_env_t*, dogma_env_t*);
 
 #endif
