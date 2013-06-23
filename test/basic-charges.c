@@ -51,8 +51,7 @@ int main(void) {
 	/* Source: Pyfa-42efa48 (Jun 13 2013) */
 
 	assert(dogma_set_ship(ctx, TYPE_Rifter) == DOGMA_OK);
-	assert(dogma_add_module(ctx, TYPE_AutocannonII, &slot) == DOGMA_OK);
-	assert(dogma_set_module_state(ctx, slot, DOGMA_STATE_Active) == DOGMA_OK);
+	assert(dogma_add_module_s(ctx, TYPE_AutocannonII, &slot, DOGMA_STATE_Active) == DOGMA_OK);
 	expect_optimal_falloff_tracking(1200.0, 5000.0, 0.71671875);
 
 	assert(dogma_add_charge(ctx, slot, TYPE_EMPS) == DOGMA_OK);

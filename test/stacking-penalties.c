@@ -110,28 +110,18 @@ int main(void) {
 	dogma_set_ship(ctx, TYPE_Abaddon);
 	expect_max_velocity(111.2);
 
-	dogma_add_module(ctx, TYPE_OverdriveInjectorSystemII, &slot0);
-	dogma_add_module(ctx, TYPE_OverdriveInjectorSystemII, &slot1);
-	dogma_add_module(ctx, TYPE_OverdriveInjectorSystemII, &slot2);
-	dogma_add_module(ctx, TYPE_OverdriveInjectorSystemII, &slot3);
-	dogma_add_module(ctx, TYPE_OverdriveInjectorSystemII, &slot4);
-	dogma_add_module(ctx, TYPE_OverdriveInjectorSystemII, &slot5);
-	dogma_add_module(ctx, TYPE_OverdriveInjectorSystemII, &slot6);
-	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Online);
-	dogma_set_module_state(ctx, slot1, DOGMA_STATE_Online);
-	dogma_set_module_state(ctx, slot2, DOGMA_STATE_Online);
-	dogma_set_module_state(ctx, slot3, DOGMA_STATE_Online);
-	dogma_set_module_state(ctx, slot4, DOGMA_STATE_Online);
-	dogma_set_module_state(ctx, slot5, DOGMA_STATE_Online);
-	dogma_set_module_state(ctx, slot6, DOGMA_STATE_Online);
+	dogma_add_module_s(ctx, TYPE_OverdriveInjectorSystemII, &slot0, DOGMA_STATE_Online);
+	dogma_add_module_s(ctx, TYPE_OverdriveInjectorSystemII, &slot1, DOGMA_STATE_Online);
+	dogma_add_module_s(ctx, TYPE_OverdriveInjectorSystemII, &slot2, DOGMA_STATE_Online);
+	dogma_add_module_s(ctx, TYPE_OverdriveInjectorSystemII, &slot3, DOGMA_STATE_Online);
+	dogma_add_module_s(ctx, TYPE_OverdriveInjectorSystemII, &slot4, DOGMA_STATE_Online);
+	dogma_add_module_s(ctx, TYPE_OverdriveInjectorSystemII, &slot5, DOGMA_STATE_Online);
+	dogma_add_module_s(ctx, TYPE_OverdriveInjectorSystemII, &slot6, DOGMA_STATE_Online);
 	expect_max_velocity(156.7);
 
-	dogma_add_module(ctx, TYPE_TrimarkArmorPumpII, &slot7);
-	dogma_add_module(ctx, TYPE_TrimarkArmorPumpII, &slot8);
-	dogma_add_module(ctx, TYPE_TrimarkArmorPumpII, &slot9);
-	dogma_set_module_state(ctx, slot7, DOGMA_STATE_Online);
-	dogma_set_module_state(ctx, slot8, DOGMA_STATE_Online);
-	dogma_set_module_state(ctx, slot9, DOGMA_STATE_Online);
+	dogma_add_module_s(ctx, TYPE_TrimarkArmorPumpII, &slot7, DOGMA_STATE_Online);
+	dogma_add_module_s(ctx, TYPE_TrimarkArmorPumpII, &slot8, DOGMA_STATE_Online);
+	dogma_add_module_s(ctx, TYPE_TrimarkArmorPumpII, &slot9, DOGMA_STATE_Online);
 	expect_max_velocity(138.3);
 
 	/* On the other hand, the capacity penalty of the Overdrives is

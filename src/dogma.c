@@ -212,6 +212,22 @@ int dogma_add_module(dogma_context_t* ctx, typeid_t module_typeid, key_t* out_in
 	);
 }
 
+int dogma_add_module_s(dogma_context_t* ctx, typeid_t id, key_t* index, state_t s) {
+	DOGMA_ASSUME_OK(dogma_add_module(ctx, id, index));
+	return dogma_set_module_state(ctx, *index, s);
+}
+
+int dogma_add_module_c(dogma_context_t* ctx, typeid_t id, key_t* index, typeid_t charge) {
+	DOGMA_ASSUME_OK(dogma_add_module(ctx, id, index));
+	return dogma_add_charge(ctx, *index, charge);
+}
+
+int dogma_add_module_sc(dogma_context_t* ctx, typeid_t id, key_t* index, state_t s, typeid_t charge) {
+	DOGMA_ASSUME_OK(dogma_add_module(ctx, id, index));
+	DOGMA_ASSUME_OK(dogma_set_module_state(ctx, *index, s));
+	return dogma_add_charge(ctx, *index, charge);
+}
+
 int dogma_remove_module(dogma_context_t* ctx, key_t index) {
 	return dogma_remove_env_generic(ctx, ctx->ship, index);
 }

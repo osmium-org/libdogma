@@ -43,16 +43,10 @@ int main(void) {
 	 * Scimitar each with the maximum number of tracking links. */
 
 	dogma_set_ship(ctxA, TYPE_Rifter);
-	dogma_add_module(ctxA, TYPE_125mmAutocannonII, &slots[0]);
-	dogma_add_charge(ctxA, slots[0], TYPE_BarrageS);
-	dogma_add_module(ctxA, TYPE_TrackingEnhancerII, &slots[1]);
-	dogma_add_module(ctxA, TYPE_TrackingEnhancerII, &slots[2]);
-	dogma_add_module(ctxA, TYPE_TrackingEnhancerII, &slots[3]);
-	dogma_set_module_state(ctxA, slots[0], DOGMA_STATE_Active);
-	dogma_set_module_state(ctxA, slots[1], DOGMA_STATE_Online);
-	dogma_set_module_state(ctxA, slots[2], DOGMA_STATE_Online);
-	dogma_set_module_state(ctxA, slots[3], DOGMA_STATE_Online);
-
+	dogma_add_module_sc(ctxA, TYPE_125mmAutocannonII, &slots[0], DOGMA_STATE_Active, TYPE_BarrageS);
+	dogma_add_module_s(ctxA, TYPE_TrackingEnhancerII, &slots[1], DOGMA_STATE_Online);
+	dogma_add_module_s(ctxA, TYPE_TrackingEnhancerII, &slots[2], DOGMA_STATE_Online);
+	dogma_add_module_s(ctxA, TYPE_TrackingEnhancerII, &slots[3], DOGMA_STATE_Online);
 
 	/* Source: Pyfa-42efa48 (Jun 13 2013) */
 
@@ -60,12 +54,9 @@ int main(void) {
 	assertf(0.671744203407, v, 0.0000000000005);
 
 	dogma_set_ship(ctxB, TYPE_Rifter);
-	dogma_add_module(ctxB, TYPE_TrackingLinkII, &slots[10]);
-	dogma_add_module(ctxB, TYPE_TrackingLinkII, &slots[11]);
-	dogma_add_module(ctxB, TYPE_TrackingLinkII, &slots[12]);
-	dogma_set_module_state(ctxB, slots[10], DOGMA_STATE_Active);
-	dogma_set_module_state(ctxB, slots[11], DOGMA_STATE_Active);
-	dogma_set_module_state(ctxB, slots[12], DOGMA_STATE_Active);
+	dogma_add_module_s(ctxB, TYPE_TrackingLinkII, &slots[10], DOGMA_STATE_Active);
+	dogma_add_module_s(ctxB, TYPE_TrackingLinkII, &slots[11], DOGMA_STATE_Active);
+	dogma_add_module_s(ctxB, TYPE_TrackingLinkII, &slots[12], DOGMA_STATE_Active);
 	dogma_target(ctxB, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[10] }, ctxA);
 	dogma_target(ctxB, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[11] }, ctxA);
 	dogma_target(ctxB, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[12] }, ctxA);
@@ -86,21 +77,11 @@ int main(void) {
 	assertf(1.07326286262, v, 0.000000000005);
 
 	dogma_set_ship(ctxC, TYPE_Scimitar);
-	dogma_add_module(ctxC, TYPE_TrackingLinkII, &slots[20]);
-	dogma_add_module(ctxC, TYPE_TrackingLinkII, &slots[21]);
-	dogma_add_module(ctxC, TYPE_TrackingLinkII, &slots[22]);
-	dogma_add_module(ctxC, TYPE_TrackingLinkII, &slots[23]);
-	dogma_add_module(ctxC, TYPE_TrackingLinkII, &slots[24]);
-	dogma_add_charge(ctxC, slots[20], TYPE_TrackingSpeedScript);
-	dogma_add_charge(ctxC, slots[21], TYPE_TrackingSpeedScript);
-	dogma_add_charge(ctxC, slots[22], TYPE_TrackingSpeedScript);
-	dogma_add_charge(ctxC, slots[23], TYPE_TrackingSpeedScript);
-	dogma_add_charge(ctxC, slots[24], TYPE_TrackingSpeedScript);
-	dogma_set_module_state(ctxC, slots[20], DOGMA_STATE_Active);
-	dogma_set_module_state(ctxC, slots[21], DOGMA_STATE_Active);
-	dogma_set_module_state(ctxC, slots[22], DOGMA_STATE_Active);
-	dogma_set_module_state(ctxC, slots[23], DOGMA_STATE_Active);
-	dogma_set_module_state(ctxC, slots[24], DOGMA_STATE_Active);
+	dogma_add_module_sc(ctxC, TYPE_TrackingLinkII, &slots[20], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
+	dogma_add_module_sc(ctxC, TYPE_TrackingLinkII, &slots[21], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
+	dogma_add_module_sc(ctxC, TYPE_TrackingLinkII, &slots[22], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
+	dogma_add_module_sc(ctxC, TYPE_TrackingLinkII, &slots[23], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
+	dogma_add_module_sc(ctxC, TYPE_TrackingLinkII, &slots[24], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
 	dogma_target(ctxC, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[20] }, ctxA);
 	dogma_target(ctxC, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[21] }, ctxA);
 	dogma_target(ctxC, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[22] }, ctxA);

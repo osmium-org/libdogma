@@ -8,6 +8,9 @@ dogma_set_skill_level
 dogma_reset_skill_levels
 dogma_set_ship
 dogma_add_module
+dogma_add_module_s
+dogma_add_module_c
+dogma_add_module_sc
 dogma_remove_module
 dogma_set_module_state
 dogma_add_charge
