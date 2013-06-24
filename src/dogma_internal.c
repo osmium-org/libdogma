@@ -150,62 +150,6 @@ int dogma_set_env_state(dogma_context_t* ctx, dogma_env_t* env, state_t newstate
 	return DOGMA_OK;
 }
 
-int dogma_dump_modifiers(dogma_env_t* env) {
-	key_t index = 0, index2, index3;
-	array_t* modifiers_by_assoctype;
-	array_t* modifiers;
-	dogma_modifier_t** modifier;
-
-	printf("modifiers of %p, type %i\n", env, env->id);
-	printf("=========================================\n");
-
-	JLF(modifiers_by_assoctype, env->modifiers, index);
-	while(modifiers_by_assoctype != NULL) {
-		printf("attribute %li:\n", index);
-
-		index2 = 0;
-		JLF(modifiers, *modifiers_by_assoctype, index2);
-		while(modifiers != NULL) {
-			printf("    assoc %li:\n", index2);
-
-			index3 = 0;
-			JLF(modifier, *modifiers, index3);
-			while(modifier != NULL) {
-				printf("        ");
-
-				switch((*modifier)->filter.type) {
-
-				case DOGMA_FILTERTYPE_PASS:
-					printf("(filter: all)");
-					break;
-
-				case DOGMA_FILTERTYPE_GROUP:
-					printf("(filter: group %i)", (*modifier)->filter.groupid);
-					break;
-
-				case DOGMA_FILTERTYPE_SKILL_REQUIRED:
-					printf("(filter: requires skill %i)", (*modifier)->filter.typeid);
-					break;
-
-				}
-
-				printf(" source attribute %hi of env %p, type %i\n",
-				       (*modifier)->sourceattribute,
-				       (*modifier)->sourceenv,
-				       (*modifier)->sourceenv->id);
-
-				JLN(modifier, *modifiers, index3);
-			}
-
-			JLN(modifiers, *modifiers_by_assoctype, index2);
-		}
-
-		JLN(modifiers_by_assoctype, env->modifiers, index);
-	}
-
-	return DOGMA_OK;
-}
-
 int dogma_inject_skill(dogma_context_t* ctx, typeid_t skillid) {
 	dogma_env_t* skill_env = malloc(sizeof(dogma_env_t));
 	dogma_env_t** value;

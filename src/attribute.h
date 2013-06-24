@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -23,7 +23,17 @@
 #include "dogma_internal.h"
 #include "modifier.h"
 
+/* -------- Internal functions -------- */
+
+/* Get an attribute value of an environment, applying all relevant
+ * modifiers to it. */
 int dogma_get_env_attribute(dogma_context_t*, dogma_env_t*, attributeid_t, double*);
+
+/* Checks whether an environment requires a skill. */
 int dogma_env_requires_skill(dogma_context_t*, dogma_env_t*, typeid_t, bool*);
+
+
+
+
 
 #endif

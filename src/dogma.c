@@ -33,8 +33,6 @@ static int dogma_add_env_generic(dogma_context_t*, dogma_env_t*, dogma_context_t
                                  typeid_t, key_t*, state_t);
 static int dogma_remove_env_generic(dogma_context_t*, dogma_env_t*, key_t);
 
-static int dogma_get_location_env(dogma_context_t*, location_t, dogma_env_t**);
-
 
 
 
@@ -444,7 +442,7 @@ int dogma_clear_target(dogma_context_t* targeter, location_t loc) {
 
 
 
-static inline int dogma_get_location_env(dogma_context_t* ctx, location_t location, dogma_env_t** env) {
+int dogma_get_location_env(dogma_context_t* ctx, location_t location, dogma_env_t** env) {
 	dogma_env_t** env1;
 	dogma_env_t** env2;
 	dogma_drone_context_t** drone_env1;

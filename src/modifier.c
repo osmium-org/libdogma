@@ -135,3 +135,131 @@ int dogma_remove_modifier(dogma_modifier_t* modifier) {
 
 	return DOGMA_NOT_FOUND;
 }
+
+int dogma_modifier_is_applicable(dogma_context_t* ctx, dogma_env_t* env,
+                                 dogma_modifier_t* modifier, bool* applicable) {
+	const dogma_type_t* t;
+	bool required;
+
+	switch(modifier->scope) {
+
+	case DOGMA_SCOPE_Item:
+		/* Item modifiers (added with AIM and similar operands) only
+		 * affect the target environment, not its children */
+		if(env != modifier->targetenv) {
+			*applicable = false;
+			return DOGMA_OK;
+		}
+		break;
+
+	case DOGMA_SCOPE_Location:
+		/* Location modifiers only affect environments with a certain
+		 * location (parent) */
+		if(env->parent != modifier->targetenv) {
+			*applicable = false;
+			return DOGMA_OK;
+		}
+		break;
+
+	case DOGMA_SCOPE_Owner:
+		/* Owner modifiers (added with AORSM etc.) only affect
+		 * environments owned by the same character */
+		if(env->owner != modifier->sourceenv->owner) {
+			*applicable = false;
+			return DOGMA_OK;
+		}
+		break;
+
+	case DOGMA_SCOPE_Gang:
+		/* Supposedly applies to anything as long as fleet bonuses are
+		 * being received. */
+		if(ctx->fleet == NULL) {
+			*applicable = false;
+			return DOGMA_OK;
+		}
+		break;
+
+	case DOGMA_SCOPE_Gang_Ship:
+		/* Used by AGIM/RGIM, applies to gang ships only. */
+		if(ctx->fleet == NULL || env != ctx->ship) {
+			*applicable = false;
+			return DOGMA_OK;
+		}
+		break;
+
+	}
+
+	switch(modifier->filter.type) {
+
+	case DOGMA_FILTERTYPE_PASS:
+		break;
+
+	case DOGMA_FILTERTYPE_GROUP:
+		if(env->id == 0) {
+			*applicable = false;
+			return DOGMA_OK;
+		}
+		DOGMA_ASSUME_OK(dogma_get_type(env->id, &t));
+		if(t->groupid != modifier->filter.groupid) {
+			*applicable = false;
+			return DOGMA_OK;
+		}
+		break;
+
+	case DOGMA_FILTERTYPE_SKILL_REQUIRED:
+		if(env->id == 0) {
+			*applicable = false;
+			return DOGMA_OK;
+		}
+		DOGMA_ASSUME_OK(dogma_env_requires_skill(ctx, env, modifier->filter.typeid, &required));
+		if(!required) {
+			*applicable = false;
+			return DOGMA_OK;
+		}
+		break;
+
+	}
+
+	*applicable = true;
+	return DOGMA_OK;
+}
+
+int dogma_apply_modifier(dogma_context_t* ctx, dogma_modifier_t* modifier, double* out) {
+	double value;
+
+	DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, modifier->sourceenv, modifier->sourceattribute, &value));
+
+	switch(modifier->assoctype) {
+
+	case DOGMA_ASSOC_PreAssignment:
+	case DOGMA_ASSOC_PostAssignment:
+		*out = value;
+		break;
+
+	case DOGMA_ASSOC_PreMul:
+	case DOGMA_ASSOC_PostMul:
+		*out *= value;
+		break;
+
+	case DOGMA_ASSOC_PreDiv:
+	case DOGMA_ASSOC_PostDiv:
+		*out /= value;
+		break;
+
+	case DOGMA_ASSOC_ModAdd:
+		*out += value;
+		break;
+
+	case DOGMA_ASSOC_ModSub:
+		*out -= value;
+		break;
+
+	case DOGMA_ASSOC_PostPercent:
+		*out *= (100 + value);
+		*out /= 100;
+		break;
+
+	}
+
+	return DOGMA_OK;
+}

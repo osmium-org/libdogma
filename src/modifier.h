@@ -21,6 +21,9 @@
 
 #include "dogma.h"
 #include "dogma_internal.h"
+#include "attribute.h"
+
+/* -------- General -------- */
 
 #define DOGMA_FILTERTYPE_PASS 0
 #define DOGMA_FILTERTYPE_GROUP 1
@@ -33,6 +36,12 @@
 	(1 << DOGMA_ASSOC_PreDiv) | \
 	(1 << DOGMA_ASSOC_PostDiv) \
 )
+
+
+
+
+
+/* -------- Data types -------- */
 
 enum dogma_scope_e {
 	DOGMA_SCOPE_Item,
@@ -68,7 +77,26 @@ struct dogma_modifier_s {
 };
 typedef struct dogma_modifier_s dogma_modifier_t;
 
+
+
+
+
+/* -------- Internal functions -------- */
+
+/* Add a modifier (to its targetenv). */
 int dogma_add_modifier(dogma_modifier_t*);
+
+/* Remove a modifier (from its targetenv). */
 int dogma_remove_modifier(dogma_modifier_t*);
+
+/* Checks whether a modifier applies to a given environment. */
+int dogma_modifier_is_applicable(dogma_context_t*, dogma_env_t*, dogma_modifier_t*, bool*);
+
+/* Apply a given modifier. */
+int dogma_apply_modifier(dogma_context_t*, dogma_modifier_t*, double*);
+
+
+
+
 
 #endif

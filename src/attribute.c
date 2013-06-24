@@ -49,7 +49,6 @@ static double penalized_coefficients[] = {
 	0.0,
 };
 
-static int dogma_apply_modifier(dogma_context_t*, dogma_env_t*, dogma_modifier_t*, double*);
 static int dogma_apply_modifiers_from_env(dogma_context_t*, array_t, dogma_env_t*,
                                           double* penalized_positive, double* penalized_negative,
                                           size_t* penalized_pos_count, size_t* penalized_neg_count,
@@ -68,6 +67,11 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 	dogma_env_t* current_env;
 	dogma_fleet_context_t* fleet;
 	array_t* modifiers;
+	double penalized_positive[MAX_PENALIZED_MODIFIERS];
+	double penalized_negative[MAX_PENALIZED_MODIFIERS];
+	size_t penalized_pos_count, penalized_neg_count;
+	double singleton_val;
+	int singleton_penalized;
 
 	if(attributeid == ATT_SkillLevel) {
 		/* Special case: assume we want the skill level of a skill */
@@ -86,14 +90,15 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 	DOGMA_ASSUME_OK(dogma_get_attribute(attributeid, &attr));
 	DOGMA_ASSUME_OK(dogma_get_type_attribute(env->id, attributeid, out));
 
+	/* Code below is somewhat similar to the traverse code in extra.c */
+
 	for(dogma_association_t assoctype = DOGMA_ASSOC_PreAssignment;
 	    assoctype <= DOGMA_ASSOC_PostAssignment;
 	    ++assoctype) {
-		double penalized_positive[MAX_PENALIZED_MODIFIERS];
-		double penalized_negative[MAX_PENALIZED_MODIFIERS];
-		size_t penalized_pos_count = 0, penalized_neg_count = 0;
-		double singleton_val = 1.0;
-		int singleton_penalized = -1; /* Unknown or bool value */
+		singleton_val = 1.0;
+		singleton_penalized = -1; /* Unknown or bool value */
+		penalized_pos_count = 0;
+		penalized_neg_count = 0;
 
 		current_env = env;
 		while(current_env != NULL) {
@@ -118,7 +123,7 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 
 		fleet = ctx->fleet;
 		while(fleet != NULL) {
-			if(fleet->booster == NULL) {
+			if(fleet->booster == NULL || fleet->commander == NULL) {
 				break;
 			}
 
@@ -221,168 +226,71 @@ static int dogma_apply_modifiers_from_env(dogma_context_t* ctx, array_t modifier
                                           int* singleton_penalized, double* out) {
 	dogma_modifier_t** modifier;
 	key_t index = 0;
-	int ret;
+	bool applicable;
 
 	JLG(modifier, modifiers, index);
 	while(modifier != NULL) {
+		DOGMA_ASSUME_OK(dogma_modifier_is_applicable(ctx, env, *modifier, &applicable));
+		if(!applicable) {
+			JLN(modifier, modifiers, index);
+			continue;
+		}
+
 		if((*modifier)->singleton) {
 			assert((MULTIPLICATIVE_ASSOC_TYPES >> (*modifier)->assoctype) & 1);
 
 			double v = 1.0;
-			ret = dogma_apply_modifier(ctx, env, *modifier, &v);
-			if(ret == DOGMA_OK) {
-				if(*singleton_penalized == -1) {
-					*singleton_val = v;
-					*singleton_penalized = (*modifier)->penalized;
-				} else {
-					if(highisgood) {
-						if(v > *singleton_val) *singleton_val = v;
-					} else {
-						if(v < *singleton_val) *singleton_val = v;
-					}
+			DOGMA_ASSUME_OK(dogma_apply_modifier(ctx, *modifier, &v));
 
-					if(*singleton_penalized != (*modifier)->penalized) {
-						DOGMA_WARN(
-							"singleton modifiers have different penalized values, attribute %i on type %i",
-							(*modifier)->targetattribute,
-							(*modifier)->targetenv->id
-						);
-					}
-				}
+			if(*singleton_penalized == -1) {
+				*singleton_val = v;
+				*singleton_penalized = (*modifier)->penalized;
 			} else {
-				assert(ret == DOGMA_SKIPPED);
+				if(highisgood) {
+					if(v > *singleton_val) *singleton_val = v;
+				} else {
+					if(v < *singleton_val) *singleton_val = v;
+				}
+
+				if(*singleton_penalized != (*modifier)->penalized) {
+					DOGMA_WARN(
+						"singleton modifiers have different penalized values, attribute %i on type %i",
+						(*modifier)->targetattribute,
+						(*modifier)->targetenv->id
+					);
+				}
 			}
 		} else if((*modifier)->penalized) {
 			assert((MULTIPLICATIVE_ASSOC_TYPES >> (*modifier)->assoctype) & 1);
 
 			double v = 1.0;
-			ret = dogma_apply_modifier(ctx, env, *modifier, &v);
-			if(ret == DOGMA_OK) {
-				v -= 1.0;
+			DOGMA_ASSUME_OK(dogma_apply_modifier(ctx, *modifier, &v));
+			v -= 1.0;
 
-				if(v >= 0) {
-					if(*penalized_pos_count >= MAX_PENALIZED_MODIFIERS) {
-						DOGMA_WARN(
-							"reached maximum amount of + penalized modifiers, ignoring %f",
-							v
-						);
-					} else {
-						penalized_positive[(*penalized_pos_count)++] = v;
-					}
+			if(v >= 0) {
+				if(*penalized_pos_count >= MAX_PENALIZED_MODIFIERS) {
+					DOGMA_WARN(
+						"reached maximum amount of + penalized modifiers, ignoring %f",
+						v
+					);
 				} else {
-					if(*penalized_neg_count >= MAX_PENALIZED_MODIFIERS) {
-						DOGMA_WARN(
-							"reached maximum amount of - penalized modifiers, ignoring %f",
-							v
-						);
-					} else {
-						penalized_negative[(*penalized_neg_count)++] = v;
-					}
+					penalized_positive[(*penalized_pos_count)++] = v;
 				}
 			} else {
-				assert(ret == DOGMA_SKIPPED);
+				if(*penalized_neg_count >= MAX_PENALIZED_MODIFIERS) {
+					DOGMA_WARN(
+						"reached maximum amount of - penalized modifiers, ignoring %f",
+						v
+					);
+				} else {
+					penalized_negative[(*penalized_neg_count)++] = v;
+				}
 			}
 		} else {
-			ret = dogma_apply_modifier(ctx, env, *modifier, out);
-			assert(ret == DOGMA_OK || ret == DOGMA_SKIPPED);
+			DOGMA_ASSUME_OK(dogma_apply_modifier(ctx, *modifier, out));
 		}
 
 		JLN(modifier, modifiers, index);
-	}
-
-	return DOGMA_OK;
-}
-
-static int dogma_apply_modifier(dogma_context_t* ctx, dogma_env_t* env,
-                                dogma_modifier_t* modifier, double* out) {
-	const dogma_type_t* t;
-	bool required;
-	double value;
-
-	switch(modifier->scope) {
-
-	case DOGMA_SCOPE_Item:
-		/* Item modifiers (added with AIM and similar operands) only
-		 * affect the target environment, not its children */
-		if(env != modifier->targetenv) return DOGMA_SKIPPED;
-		break;
-
-	case DOGMA_SCOPE_Location:
-		/* Location modifiers only affect environments with a certain
-		 * location (parent) */
-		if(env->parent != modifier->targetenv) return DOGMA_SKIPPED;
-		break;
-
-	case DOGMA_SCOPE_Owner:
-		/* Owner modifiers (added with AORSM etc.) only affect
-		 * environments owned by the same character */
-		if(env->owner != modifier->sourceenv->owner) return DOGMA_SKIPPED;
-		break;
-
-	case DOGMA_SCOPE_Gang:
-		/* Supposedly applies to anything as long as fleet bonuses are
-		 * being received. */
-		if(ctx->fleet == NULL) return DOGMA_SKIPPED;
-		break;
-
-	case DOGMA_SCOPE_Gang_Ship:
-		/* Used by AGIM/RGIM, applies to gang ships only. */
-		if(ctx->fleet == NULL || env != ctx->ship) return DOGMA_SKIPPED;
-		break;
-
-	}
-
-	switch(modifier->filter.type) {
-
-	case DOGMA_FILTERTYPE_PASS:
-		break;
-
-	case DOGMA_FILTERTYPE_GROUP:
-		if(env->id == 0) return DOGMA_SKIPPED;
-		DOGMA_ASSUME_OK(dogma_get_type(env->id, &t));
-		if(t->groupid != modifier->filter.groupid) return DOGMA_SKIPPED;
-		break;
-
-	case DOGMA_FILTERTYPE_SKILL_REQUIRED:
-		if(env->id == 0) return DOGMA_SKIPPED;
-		DOGMA_ASSUME_OK(dogma_env_requires_skill(ctx, env, modifier->filter.typeid, &required));
-		if(!required) return DOGMA_SKIPPED;
-		break;
-
-	}
-
-	DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, modifier->sourceenv, modifier->sourceattribute, &value));
-
-	switch(modifier->assoctype) {
-
-	case DOGMA_ASSOC_PreAssignment:
-	case DOGMA_ASSOC_PostAssignment:
-		*out = value;
-		break;
-
-	case DOGMA_ASSOC_PreMul:
-	case DOGMA_ASSOC_PostMul:
-		*out *= value;
-		break;
-
-	case DOGMA_ASSOC_PreDiv:
-	case DOGMA_ASSOC_PostDiv:
-		*out /= value;
-		break;
-
-	case DOGMA_ASSOC_ModAdd:
-		*out += value;
-		break;
-
-	case DOGMA_ASSOC_ModSub:
-		*out -= value;
-		break;
-
-	case DOGMA_ASSOC_PostPercent:
-		*out *= (100 + value);
-		*out /= 100;
-		break;
-
 	}
 
 	return DOGMA_OK;

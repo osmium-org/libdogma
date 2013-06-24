@@ -18,11 +18,15 @@
 
 #include <dogma.h>
 #include <dogma-names.h>
+#include <dogma-extra.h>
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+#define stringify(s) stringify2(s)
+#define stringify2(s) #s
 
 #define failf(expected, result) do {	  \
 		fprintf(stderr, "%s:%i: Expected: %f, Got: %f\n", \
@@ -35,4 +39,47 @@
 		if(!((e - r <= eps) && (r - e <= eps))) { \
 			failf(e, r); \
 		} \
+	} while(0)
+
+#define debug_affectors(ctx, location) do {	  \
+		dogma_simple_affector_t* aff; \
+		size_t len; \
+		size_t k = 0; \
+		dogma_get_affectors((ctx), (location), &aff, &len); \
+		printf("Affectors of %s\n", stringify(location)); \
+		for(size_t i = 0; i < len; ++i) { \
+			printf( \
+				"%c%c%1i (source %7i) (attribute %6i) %c= %g\n", \
+				(aff[i].flags & DOGMA_AFFECTOR_PENALIZED) ? 'P' : ' ', \
+				(aff[i].flags & DOGMA_AFFECTOR_SINGLETON) ? 'S' : ' ', \
+				aff[i].order, \
+				aff[i].id, aff[i].destid, \
+				aff[i].operator, aff[i].value \
+			); \
+			++k; \
+		} \
+		printf("%zu modifier%c\n", k, k == 1 ? ' ' : 's'); \
+		dogma_free_affector_list(aff); \
+	} while(0)
+
+#define debug_affectors_of_attribute(ctx, location, att) do {	  \
+		dogma_simple_affector_t* aff; \
+		size_t len; \
+		size_t k = 0; \
+		dogma_get_affectors((ctx), (location), &aff, &len); \
+		printf("Affectors of %s on attribute %i\n", stringify(location), (att)); \
+		for(size_t i = 0; i < len; ++i) { \
+			if(aff[i].destid != (att)) continue; \
+			printf( \
+				"%c%c%1i (source %-7i) %c= %g\n", \
+				(aff[i].flags & DOGMA_AFFECTOR_PENALIZED) ? 'P' : ' ', \
+				(aff[i].flags & DOGMA_AFFECTOR_SINGLETON) ? 'S' : ' ', \
+				aff[i].order, \
+				aff[i].id, \
+				aff[i].operator, aff[i].value \
+			); \
+			++k; \
+		} \
+		printf("%zu modifier%c\n", k, k == 1 ? ' ' : 's'); \
+		dogma_free_affector_list(aff); \
 	} while(0)

@@ -4,6 +4,10 @@ libdogma
 libdogma is an *ad hoc* fitting engine for the EVE Online multiplayer
 game.
 
+Reverse-engineered to be a **bottom-up** implementation of the real
+dogma engine (*probably*), with slight alterations to make it suitable
+for use in fitting simulation tools.
+
 Features
 --------
 
@@ -21,14 +25,21 @@ Features
 * Computes attributes of characters, skills, implants, ships, drones,
   modules and charges
 
-* Supports projected effects
+* Supports projected effects (with fine-grained per module target
+  selection)
+
+* Supports fleet/gang bonuses
 
 Missing features / Known issues
 -------------------------------
 
-* Gang/fleet bonuses are not supported yet
+* Leadership skills are not checked when applying gang bonuses. You
+  could have a squad with 50 people in it, or a fleet with 15 wings of
+  42 squads each, bonuses will be applied anyway. (Same goes if you
+  have a character with no skills as fleet commander.) Whether this is
+  a bug or a feature, you decide.
 
-* Area effects (like wormhole effects) are not supported yet
+* Area effects (like wormhole effects) are not supported yet.
 
 Credits
 -------

@@ -56,20 +56,6 @@
 
 
 
-/* -------- Return codes -------- */
-
-/* NOTE: only include here return codes used by internal
- * functions. Public return codes (values which may be returned by
- * exported methods) should go in dogma.h. */
-
-/* Used by dogma_apply_modifier() when the modifier was not applied
- * because it did not match some filters. */
-#define DOGMA_SKIPPED -1
-
-
-
-
-
 /* -------- Data types -------- */
 
 typedef uint16_t groupid_t;
@@ -87,6 +73,7 @@ typedef dogma_effectid_t effectid_t;
 typedef dogma_location_t location_t;
 typedef dogma_state_t state_t;
 
+_Static_assert(sizeof(key_t) >= sizeof(attributeid_t), "Must be able to use an attributeid as an array index");
 _Static_assert(sizeof(key_t) >= sizeof(effectid_t), "Must be able to use an effectid as an array index");
 _Static_assert(sizeof(key_t) >= sizeof(typeid_t), "Must be able to use a typeid as an array index");
 _Static_assert(sizeof(key_t) >= sizeof(intptr_t), "Must be able to use a pointer as an array index");
@@ -152,8 +139,9 @@ typedef struct dogma_type_effect_s dogma_type_effect_t;
 /* Different association types, sorted by evaluation order (sort of
  * like operator precedence).
  *
- * WARNING: if you change this, take a look in attribute.c, the enum
- * is traversed sequentially: make sure the new bounds match! */
+ * WARNING: if you change this, take a look in attribute.c and
+ * extra.c, the enum is traversed sequentially: make sure the new
+ * bounds match! */
 enum dogma_association_e {
 	DOGMA_ASSOC_PreAssignment,
 	DOGMA_ASSOC_PreMul,
@@ -230,7 +218,11 @@ struct dogma_drone_context_s {
 typedef struct dogma_drone_context_s dogma_drone_context_t;
 
 struct dogma_context_s {
-	dogma_fleet_context_t* fleet;
+	dogma_fleet_context_t* fleet; /* This is the subfleet this context
+	                               * is a member of, so this is not
+	                               * always the "root" fleet
+	                               * context */
+
 	dogma_env_t* gang; /* Where gang modifiers live */
 
 	/* The root environment of this context. Contains the ship,
@@ -245,7 +237,7 @@ struct dogma_context_s {
 	dogma_env_t* area;
 
 	uint8_t default_skill_level;
-	array_t skill_levels;
+	array_t skill_levels; /* typeid_t -> uint8_t */
 
 	/* Drones are children of character, with unpredictable
 	 * indexes. This is a map where keys are drone typeids, and the
@@ -281,14 +273,14 @@ int dogma_free_env(dogma_env_t*);
  * on effect categories. */
 int dogma_set_env_state(dogma_context_t*, dogma_env_t*, state_t);
 
-/* Dump the modifiers of an environment to stdout. */
-int dogma_dump_modifiers(dogma_env_t*);
-
 /* Inject a skill in character. */
 int dogma_inject_skill(dogma_context_t*, typeid_t);
 
 /* Set a target. */
 int dogma_set_target(dogma_context_t*, dogma_env_t*, dogma_env_t*);
+
+/* Get a dogma_env_t* based on its "simpler" location_t description. */
+int dogma_get_location_env(dogma_context_t*, location_t, dogma_env_t**);
 
 
 
