@@ -24,6 +24,8 @@
 #include "dogma_internal.h"
 #include <assert.h>
 
+/* -------- General -------- */
+
 #define DOGMA_INIT_FLEET_CTX(fctxptr, _parent, _index) do {	  \
 		(fctxptr) = malloc(sizeof(dogma_fleet_context_t)); \
 		(fctxptr)->commander = NULL; \
@@ -33,5 +35,9 @@
 		(fctxptr)->subfleets = NULL; \
 		(fctxptr)->members = NULL; \
 	} while(0)
+
+
+
+
 
 #endif

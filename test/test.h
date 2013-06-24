@@ -16,6 +16,10 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+#ifndef __DOGMA_TEST_H
+#define __DOGMA_TEST_H
+
 #include <dogma.h>
 #include <dogma-names.h>
 #include <dogma-extra.h>
@@ -24,6 +28,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+/* This header is intended to be used for test programs and debugging
+ * only. Do not use it in your applications! */
 
 #define stringify(s) stringify2(s)
 #define stringify2(s) #s
@@ -49,7 +56,7 @@
 		printf("Affectors of %s\n", stringify(location)); \
 		for(size_t i = 0; i < len; ++i) { \
 			printf( \
-				"%c%c%1i (source %7i) (attribute %6i) %c= %g\n", \
+				"%c%c%1i (source %-7i) (attribute %-6i) %c= %g\n", \
 				(aff[i].flags & DOGMA_AFFECTOR_PENALIZED) ? 'P' : ' ', \
 				(aff[i].flags & DOGMA_AFFECTOR_SINGLETON) ? 'S' : ' ', \
 				aff[i].order, \
@@ -83,3 +90,9 @@
 		printf("%zu modifier%c\n", k, k == 1 ? ' ' : 's'); \
 		dogma_free_affector_list(aff); \
 	} while(0)
+
+
+
+
+
+#endif

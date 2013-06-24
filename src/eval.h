@@ -16,6 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
 #ifndef _DOGMA_EVAL_H
 #define _DOGMA_EVAL_H 1
 
@@ -23,6 +24,8 @@
 #include "dogma_internal.h"
 #include "modifier.h"
 #include "operands.h"
+
+/* -------- General -------- */
 
 #define DOGMA_CTXTYPE_UNDEFINED 255
 #define DOGMA_CTXTYPE_FLOAT 0
@@ -35,6 +38,12 @@
 #define DOGMA_CTXTYPE_GROUPID 7
 #define DOGMA_CTXTYPE_BOOL 8
 #define DOGMA_CTXTYPE_MODIFIER 9
+
+
+
+
+
+/* -------- Data types -------- */
 
 struct dogma_expctx_s {
 	uint8_t type;
@@ -56,6 +65,17 @@ struct dogma_expctx_s {
 };
 typedef struct dogma_expctx_s dogma_expctx_t;
 
+
+
+
+
+/* -------- Internal functions -------- */
+
+/* Evaluate an expression. */
 int dogma_eval_expression(dogma_context_t*, dogma_env_t*, expressionid_t, dogma_expctx_t*);
+
+
+
+
 
 #endif

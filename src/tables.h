@@ -16,11 +16,14 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
 #ifndef _DOGMA_TABLES_H
 #define _DOGMA_TABLES_H 1
 
 #include "dogma.h"
 #include "dogma_internal.h"
+
+/* -------- General -------- */
 
 extern array_t types_by_id;
 extern array_t attributes_by_id;
@@ -29,17 +32,46 @@ extern array_t expressions_by_id;
 extern array_t type_attributes_by_typeid;
 extern array_t type_effects_by_typeid;
 
+
+
+
+
+/* -------- Internal functions -------- */
+
+/* Initialize the indexes. Must only be called once. */
 void dogma_init_tables(void);
 
+/* Get a type by its typeid. */
 int dogma_get_type(typeid_t, const dogma_type_t**);
+
+/* Get an attribute by its attributeid. */
 int dogma_get_attribute(attributeid_t, const dogma_attribute_t**);
+
+/* Get an effect by its effectid. */
 int dogma_get_effect(effectid_t, const dogma_effect_t**);
+
+/* Get an expression by its expressionid. */
 int dogma_get_expression(expressionid_t, const dogma_expression_t**);
 
+
+
+/* Get an array of all overridden attributes of a type. */
 int dogma_get_type_attributes(typeid_t, array_t*);
+
+/* Get an attribute of a type. Uses the overridden value (if there is
+ * one), or the default value. */
 int dogma_get_type_attribute(typeid_t, attributeid_t, double*);
 
+
+
+/* Get an array of all effects of a type. */
 int dogma_get_type_effects(typeid_t, array_t*);
+
+/* Get a typeeffect of a type. */
 int dogma_get_type_effect(typeid_t, effectid_t, const dogma_type_effect_t**);
+
+
+
+
 
 #endif

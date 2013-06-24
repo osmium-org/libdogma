@@ -16,6 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
 #ifndef _DOGMA_MODIFIER_H
 #define _DOGMA_MODIFIER_H 1
 

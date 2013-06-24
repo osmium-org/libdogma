@@ -16,6 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
 #ifndef _DOGMA_ATTRIBUTE_H
 #define _DOGMA_ATTRIBUTE_H 1
 
