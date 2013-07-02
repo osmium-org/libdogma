@@ -42,3 +42,5 @@ dogma_get_drone_attribute
 dogma_get_chance_based_effect_chance
 dogma_get_affectors
 dogma_free_affector_list
+dogma_location_has_active_effects
+dogma_location_has_overload_effects

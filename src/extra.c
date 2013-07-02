@@ -20,7 +20,13 @@
 #include "dogma-extra.h"
 #include "dogma_internal.h"
 #include "attribute.h"
+#include "tables.h"
 #include <assert.h>
+
+#define DOGMA_Active_OR_HIGHER (DOGMA_STATE_Active &	\
+                                (~(DOGMA_STATE_Offline | DOGMA_STATE_Online)))
+#define DOGMA_Overload_OR_HIGHER (DOGMA_STATE_Overloaded &			\
+                                  (~(DOGMA_STATE_Offline | DOGMA_STATE_Online | DOGMA_STATE_Active)))
 
 int dogma_get_affectors(dogma_context_t* ctx, dogma_location_t loc, dogma_simple_affector_t** list, size_t* len) {
 	size_t num_affectors = 0, i = 0;
@@ -233,5 +239,57 @@ int dogma_get_affectors(dogma_context_t* ctx, dogma_location_t loc, dogma_simple
 
 int dogma_free_affector_list(dogma_simple_affector_t* list) {
 	free(list);
+	return DOGMA_OK;
+}
+
+
+
+int dogma_location_has_active_effects(dogma_context_t* ctx, dogma_location_t loc, bool* activable) {
+	dogma_env_t* loc_env;
+	array_t effects;
+	const dogma_type_effect_t** te;
+	const dogma_effect_t* e;
+	key_t index = 0;
+
+	DOGMA_ASSUME_OK(dogma_get_location_env(ctx, loc, &loc_env));
+	DOGMA_ASSUME_OK(dogma_get_type_effects(loc_env->id, &effects));
+
+	JLF(te, effects, index);
+	while(te != NULL) {
+		DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
+		if((DOGMA_Active_OR_HIGHER >> e->category) & 1) {
+			*activable = true;
+			return DOGMA_OK;
+		}
+
+		JLN(te, effects, index);
+	}
+
+	*activable = false;
+	return DOGMA_OK;
+}
+
+int dogma_location_has_overload_effects(dogma_context_t* ctx, dogma_location_t loc, bool* overloadable) {
+	dogma_env_t* loc_env;
+	array_t effects;
+	const dogma_type_effect_t** te;
+	const dogma_effect_t* e;
+	key_t index = 0;
+
+	DOGMA_ASSUME_OK(dogma_get_location_env(ctx, loc, &loc_env));
+	DOGMA_ASSUME_OK(dogma_get_type_effects(loc_env->id, &effects));
+
+	JLF(te, effects, index);
+	while(te != NULL) {
+		DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
+		if((DOGMA_Overload_OR_HIGHER >> e->category) & 1) {
+			*overloadable = true;
+			return DOGMA_OK;
+		}
+
+		JLN(te, effects, index);
+	}
+
+	*overloadable = false;
 	return DOGMA_OK;
 }

@@ -67,6 +67,15 @@ int dogma_free_affector_list(dogma_simple_affector_t*);
 
 
 
+/* Checks if a certain location has effects only enabled in the active
+ * state or higher. */
+int dogma_location_has_active_effects(dogma_context_t*, dogma_location_t, bool*);
+
+/* Checks if a certain location has effects only enabled in the
+ * overloaded state or higher. */
+int dogma_location_has_overload_effects(dogma_context_t*, dogma_location_t, bool*);
+
+
 
 
 #endif

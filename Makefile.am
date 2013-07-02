@@ -18,7 +18,7 @@ check_PROGRAMS=test/trivial test/basic-attributes				\
 	test/basic-skill-levels test/basic-charges test/basic-fleet	\
 	test/stacking-penalties test/ancillary-modules test/drones	\
 	test/implants test/projected-effects test/fleet-stacking	\
-	test/self-on-self test/bruteforce
+	test/self-on-self test/extra-misc test/bruteforce
 
 LDADD=libdogma.la
 TESTS=$(check_PROGRAMS)
