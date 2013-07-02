@@ -481,7 +481,7 @@ int dogma_get_location_env(dogma_context_t* ctx, location_t location, dogma_env_
 		if(env1 == NULL) return DOGMA_NOT_FOUND;
 		JLF(env2, (*env1)->children, index);
 		if(env2 == NULL) return DOGMA_NOT_FOUND;
-		*env = *env1;
+		*env = *env2;
 		return DOGMA_OK;
 
 	case DOGMA_LOC_Drone:
