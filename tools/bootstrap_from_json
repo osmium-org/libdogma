@@ -323,7 +323,7 @@ $json['effects'][132]['preExpression'] = -1;
 $json['effects'][132]['postExpression'] = -1;
 
 /* online: inconsistent category, WTF? */
-$json['effects'][16]['categoryID'] = 4;
+$json['effects'][16]['effectCategory'] = 4;
 
 /* online: skip all the CPU/Power/Skill checks, they only make sense
  * in game */
