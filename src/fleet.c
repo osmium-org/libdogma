@@ -31,6 +31,7 @@ int dogma_init_fleet_context(dogma_fleet_context_t** fctx) {
 
 int dogma_free_fleet_context(dogma_fleet_context_t* fctx) {
 	dogma_fleet_context_t** subfctx;
+	dogma_context_t** memberctx;
 	key_t index = 0;
 	int ret;
 
@@ -39,6 +40,19 @@ int dogma_free_fleet_context(dogma_fleet_context_t* fctx) {
 		assert(ret == 1);
 	}
 
+	if(fctx->commander != NULL) {
+		assert(fctx->commander->fleet == fctx);
+		fctx->commander->fleet = NULL;
+	}
+
+	JLF(memberctx, fctx->members, index);
+	while(memberctx != NULL) {
+		assert((*memberctx)->fleet == fctx);
+		(*memberctx)->fleet = NULL;
+		JLN(memberctx, fctx->members, index);
+	}
+
+	index = 0;
 	JLF(subfctx, fctx->subfleets, index);
 	while(subfctx != NULL) {
 		DOGMA_ASSUME_OK(dogma_free_fleet_context(*subfctx));
