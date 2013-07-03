@@ -19,7 +19,10 @@
 #include "test.h"
 
 int main(void) {
+	dogma_context_t* ctx;
+	dogma_key_t slot;
 	bool able, hasit;
+	int ncycles;
 
 	dogma_init();
 
@@ -43,7 +46,38 @@ int main(void) {
 	assert(dogma_type_has_overload_effects(TYPE_1MNAfterburnerII, &able) == DOGMA_OK);
 	assert(able == true);
 
+	dogma_init_context(&ctx);
 
+	dogma_set_ship(ctx, TYPE_Rifter);
 
+	dogma_add_module_sc(ctx, TYPE_SmallFocusedPulseLaserII, &slot, DOGMA_STATE_Active, TYPE_MultifrequencyS);
+	assert(dogma_get_number_of_module_cycles_before_reload(ctx, slot, &ncycles) == DOGMA_OK);
+	assert(ncycles == -1);
+
+	dogma_add_charge(ctx, slot, TYPE_ScorchS);
+	assert(dogma_get_number_of_module_cycles_before_reload(ctx, slot, &ncycles) == DOGMA_OK);
+	assert(ncycles == 1000); /* No need for a source, the math is easy enough */
+
+	dogma_add_charge(ctx, slot, TYPE_ImperialNavyGammaS);
+	assert(dogma_get_number_of_module_cycles_before_reload(ctx, slot, &ncycles) == DOGMA_OK);
+	assert(ncycles == 4000);
+
+	dogma_remove_module(ctx, slot);
+	dogma_add_module_sc(ctx, TYPE_LightElectronBlasterII, &slot, DOGMA_STATE_Active, TYPE_IridiumChargeS);
+	assert(dogma_get_number_of_module_cycles_before_reload(ctx, slot, &ncycles) == DOGMA_OK);
+	assert(ncycles == 200);
+
+	dogma_remove_module(ctx, slot);
+	dogma_add_module_sc(ctx, TYPE_ExperimentalTE2100LightMissileLauncher,
+	                    &slot, DOGMA_STATE_Active, TYPE_NovaLightMissile);
+	assert(dogma_get_number_of_module_cycles_before_reload(ctx, slot, &ncycles) == DOGMA_OK);
+	assert(ncycles == 46);
+
+	dogma_remove_module(ctx, slot);
+	dogma_add_module_sc(ctx, TYPE_TrackingComputerII, &slot, DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
+	assert(dogma_get_number_of_module_cycles_before_reload(ctx, slot, &ncycles) == DOGMA_OK);
+	assert(ncycles == -1);
+
+	dogma_free_context(ctx);
 	return 0;
 }

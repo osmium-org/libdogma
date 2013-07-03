@@ -80,6 +80,22 @@ int dogma_type_has_overload_effects(dogma_typeid_t, bool*);
 
 
 
+/* Get the number of full cycles a module can do before having to
+ * reload. Uses -1 to indicate that the module never has to reload (ie
+ * infinite number of cycles). */
+int dogma_get_number_of_module_cycles_before_reload(dogma_context_t*, dogma_key_t, int*);
+
+
+/* Run a simulation of a context's ship capacitor over time. The delta
+ * parameter will be set to the number of used GJ/ms at peak recharge
+ * rate, stable will be set to true or false depending on the
+ * capacitor stability, and finally the last parameter will be set to
+ * the stability percentage (between 0 and 100) if stable is true, or
+ * the number of milliseconds the capacitor lasts if stable is
+ * false. */
+int dogma_get_capacitor(dogma_context_t*, bool include_reload_time, double* delta, bool* stable, double*);
+
+
 
 
 

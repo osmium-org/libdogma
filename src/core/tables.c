@@ -144,6 +144,24 @@ int dogma_get_type_attribute(typeid_t tid, attributeid_t aid, double* out) {
 	return DOGMA_OK;
 }
 
+int dogma_type_has_overridden_attribute(typeid_t tid, attributeid_t aid, bool* out) {
+	array_t attribs;
+	const dogma_type_attribute_t** ta;
+	int ret;
+
+	ret = dogma_get_type_attributes(tid, &attribs);
+	if(ret == DOGMA_NOT_FOUND) {
+		*out = false;
+		return DOGMA_OK;
+	} else if(ret != DOGMA_OK) {
+		return ret;
+	}
+
+	JLG(ta, attribs, aid);
+	*out = (ta != NULL);
+	return DOGMA_OK;
+}
+
 int dogma_get_type_effects(typeid_t id, array_t* out) {
 	array_t* value;
 

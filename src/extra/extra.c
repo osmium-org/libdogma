@@ -18,10 +18,12 @@
 
 #include "dogma.h"
 #include "dogma-extra.h"
+#include "dogma-names.h"
 #include "dogma_internal.h"
 #include "attribute.h"
 #include "tables.h"
 #include <assert.h>
+#include <math.h>
 
 #define DOGMA_Active_OR_HIGHER (DOGMA_STATE_Active &	\
                                 (~(DOGMA_STATE_Offline | DOGMA_STATE_Online)))
@@ -303,5 +305,98 @@ int dogma_type_has_overload_effects(dogma_typeid_t id, bool* overloadable) {
 	}
 
 	*overloadable = false;
+	return DOGMA_OK;
+}
+
+
+
+int dogma_get_number_of_module_cycles_before_reload(dogma_context_t* ctx, key_t loc, int* out) {
+	double charges_per_cycle, crystal_uses = 1, charge_volume, module_capacity;
+	dogma_env_t* env;
+	bool override_chargerate, override_crystalsgetdamaged;
+	int ret;
+
+	DOGMA_ASSUME_OK(dogma_get_location_env(
+		ctx, (location_t){ .type = DOGMA_LOC_Module, .module_index = loc }, &env
+	));
+	DOGMA_ASSUME_OK(dogma_type_has_overridden_attribute(env->id, ATT_ChargeRate, &override_chargerate));
+
+	ret = dogma_get_location_env(
+		ctx, (location_t){ .type = DOGMA_LOC_Charge, .module_index = loc }, &env
+	);
+	if(ret == DOGMA_NOT_FOUND) {
+		/* No charge */
+		override_crystalsgetdamaged = false;
+	} else if(ret != DOGMA_OK) {
+		return ret;
+	} else {
+		DOGMA_ASSUME_OK(dogma_type_has_overridden_attribute(
+			env->id, ATT_CrystalsGetDamaged, &override_crystalsgetdamaged
+		));
+	}
+
+	if(!override_chargerate && !override_crystalsgetdamaged) {
+		/* XXX: modules with scripts override neither but do not use
+		 * the charge (despite the chargeRate default being 1). */
+		*out = -1;
+		return DOGMA_OK;
+	}
+
+	DOGMA_ASSUME_OK(dogma_get_module_attribute(ctx, loc, ATT_ChargeRate, &charges_per_cycle));
+
+	if(charges_per_cycle == 0.0) {
+		/* Module does not use/consume charges */
+		*out = -1;
+		return DOGMA_OK;
+	}
+
+	ret = dogma_get_charge_attribute(ctx, loc, ATT_Volume, &charge_volume);
+	if(ret == DOGMA_NOT_FOUND) {
+		charge_volume = 0.0;
+	} else if(ret != DOGMA_OK) {
+		return ret;
+	}
+
+	if(charge_volume == 0.0) {
+		*out = -1;
+		return DOGMA_OK;
+	}
+
+	DOGMA_ASSUME_OK(dogma_get_module_attribute(ctx, loc, ATT_Capacity, &module_capacity));
+
+	if(override_crystalsgetdamaged) {
+		/* XXX: assume charge is a crystal */
+
+		double takes_damage;
+		DOGMA_ASSUME_OK(dogma_get_charge_attribute(ctx, loc, ATT_CrystalsGetDamaged, &takes_damage));
+
+		if(takes_damage == 0.0) {
+			/* Crystal takes no damage */
+			*out = -1;
+			return DOGMA_OK;
+		} else {
+			double hp, vol_chance, vol_damage;
+			DOGMA_ASSUME_OK(dogma_get_charge_attribute(ctx, loc, ATT_Hp, &hp));
+			DOGMA_ASSUME_OK(dogma_get_charge_attribute(
+				ctx, loc, ATT_CrystalVolatilityChance, &vol_chance
+			));
+			DOGMA_ASSUME_OK(dogma_get_charge_attribute(
+				ctx, loc, ATT_CrystalVolatilityDamage, &vol_damage
+			));
+
+			if(vol_chance == 0.0 || vol_damage == 0.0) {
+				*out = -1;
+				return DOGMA_OK;
+			}
+
+			/* Compute average number of uses */
+			crystal_uses = hp / (vol_chance * vol_damage);
+		}
+	}
+
+	*out = (int)floor(
+		crystal_uses * module_capacity / (charge_volume * charges_per_cycle)
+	);
+
 	return DOGMA_OK;
 }

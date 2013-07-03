@@ -62,6 +62,9 @@ int dogma_get_type_attributes(typeid_t, array_t*);
  * one), or the default value. */
 int dogma_get_type_attribute(typeid_t, attributeid_t, double*);
 
+/* Checks if a type has overridden an attribute. */
+int dogma_type_has_overridden_attribute(typeid_t, attributeid_t, bool*);
+
 
 
 /* Get an array of all effects of a type. */
