@@ -20,8 +20,8 @@
 
 /* This is dirty, but we need the data. Don't do this in real
  * applications! */
-#include "../src/tables.h"
-#include "../src/tables.c"
+#include "../src/core/tables.h"
+#include "../src/core/tables.c"
 
 #include <stdio.h>
 

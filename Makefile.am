@@ -1,13 +1,16 @@
-AM_CFLAGS=-Wall -Wextra -pedantic -std=c11 -I./src -I./include
+AM_CFLAGS=-Wall -Wextra -pedantic -std=c11 -I./src -I./src/core	\
+-I./src/extra -I./include
 
 lib_LTLIBRARIES=libdogma.la
 libdogma_ladir=.
 
-libdogma_la_SOURCES=src/dogma.c include/dogma.h src/dogma_internal.c	\
-	src/dogma_internal.h src/tables.c src/tables.h src/eval.c			\
-	src/eval.h src/modifier.c src/modifier.h src/attribute.c			\
-	src/attribute.h src/fleet.c src/fleet.h src/extra.c					\
-	src/libdogma.sym src/operands.h src/tables-data.h test/test.h		\
+libdogma_la_SOURCES=src/core/dogma.c include/dogma.h			\
+	src/core/dogma_internal.c src/core/dogma_internal.h			\
+	src/core/tables.c src/core/tables.h src/core/eval.c			\
+	src/core/eval.h src/core/modifier.c src/core/modifier.h		\
+	src/core/attribute.c src/core/attribute.h src/core/fleet.c	\
+	src/core/fleet.h src/extra/extra.c src/libdogma.sym			\
+	src/operands.h src/tables-data.h test/test.h				\
 	tools/bootstrap_from_json
 
 libdogma_la_LDFLAGS=-export-symbols src/libdogma.sym -version-info 0:0:0

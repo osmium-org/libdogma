@@ -244,15 +244,29 @@ int dogma_free_affector_list(dogma_simple_affector_t* list) {
 
 
 
-int dogma_location_has_active_effects(dogma_context_t* ctx, dogma_location_t loc, bool* activable) {
-	dogma_env_t* loc_env;
+int dogma_type_has_effect(dogma_typeid_t id, effectid_t effect, bool* hasit) {
+	const dogma_type_effect_t* te;
+	int ret;
+
+	ret = dogma_get_type_effect(id, effect, &te);
+	if(ret == DOGMA_OK) {
+		*hasit = true;
+	} else if(ret == DOGMA_NOT_FOUND) {
+		*hasit = false;
+	} else {
+		return ret;
+	}
+
+	return DOGMA_OK;
+}
+
+int dogma_type_has_active_effects(dogma_typeid_t id, bool* activable) {
 	array_t effects;
 	const dogma_type_effect_t** te;
 	const dogma_effect_t* e;
 	key_t index = 0;
 
-	DOGMA_ASSUME_OK(dogma_get_location_env(ctx, loc, &loc_env));
-	DOGMA_ASSUME_OK(dogma_get_type_effects(loc_env->id, &effects));
+	DOGMA_ASSUME_OK(dogma_get_type_effects(id, &effects));
 
 	JLF(te, effects, index);
 	while(te != NULL) {
@@ -269,15 +283,13 @@ int dogma_location_has_active_effects(dogma_context_t* ctx, dogma_location_t loc
 	return DOGMA_OK;
 }
 
-int dogma_location_has_overload_effects(dogma_context_t* ctx, dogma_location_t loc, bool* overloadable) {
-	dogma_env_t* loc_env;
+int dogma_type_has_overload_effects(dogma_typeid_t id, bool* overloadable) {
 	array_t effects;
 	const dogma_type_effect_t** te;
 	const dogma_effect_t* e;
 	key_t index = 0;
 
-	DOGMA_ASSUME_OK(dogma_get_location_env(ctx, loc, &loc_env));
-	DOGMA_ASSUME_OK(dogma_get_type_effects(loc_env->id, &effects));
+	DOGMA_ASSUME_OK(dogma_get_type_effects(id, &effects));
 
 	JLF(te, effects, index);
 	while(te != NULL) {

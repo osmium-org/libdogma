@@ -19,45 +19,31 @@
 #include "test.h"
 
 int main(void) {
-	dogma_context_t* ctx;
-	dogma_key_t slots[10];
-	bool able;
+	bool able, hasit;
 
 	dogma_init();
-	dogma_init_context(&ctx);
 
-	dogma_set_ship(ctx, TYPE_Punisher);
-	dogma_add_module(ctx, TYPE_AdaptiveNanoPlatingII, &slots[0]);
-	dogma_add_module(ctx, TYPE_DamageControlII, &slots[1]);
-	dogma_add_module(ctx, TYPE_1MNAfterburnerII, &slots[2]);
+	assert(dogma_type_has_effect(TYPE_AdaptiveNanoPlatingII, EFFECT_HiPower, &hasit) == DOGMA_OK);
+	assert(hasit == false);
+	assert(dogma_type_has_effect(TYPE_AdaptiveNanoPlatingII, EFFECT_LoPower, &hasit) == DOGMA_OK);
+	assert(hasit == true);
 
-	assert(dogma_location_has_active_effects(ctx, (dogma_location_t){
-			.type = DOGMA_LOC_Module, .module_index = slots[0]
-					}, &able) == DOGMA_OK);
+	assert(dogma_type_has_active_effects(TYPE_AdaptiveNanoPlatingII, &able) == DOGMA_OK);
 	assert(able == false);
-	assert(dogma_location_has_overload_effects(ctx, (dogma_location_t){
-			.type = DOGMA_LOC_Module, .module_index = slots[0]
-					}, &able) == DOGMA_OK);
+	assert(dogma_type_has_overload_effects(TYPE_AdaptiveNanoPlatingII, &able) == DOGMA_OK);
 	assert(able == false);
 
-	assert(dogma_location_has_active_effects(ctx, (dogma_location_t){
-			.type = DOGMA_LOC_Module, .module_index = slots[1]
-					}, &able) == DOGMA_OK);
+	assert(dogma_type_has_active_effects(TYPE_DamageControlII, &able) == DOGMA_OK);
 	assert(able == true);
-	assert(dogma_location_has_overload_effects(ctx, (dogma_location_t){
-			.type = DOGMA_LOC_Module, .module_index = slots[1]
-					}, &able) == DOGMA_OK);
+	assert(dogma_type_has_overload_effects(TYPE_DamageControlII, &able) == DOGMA_OK);
 	assert(able == false);
 
-	assert(dogma_location_has_active_effects(ctx, (dogma_location_t){
-			.type = DOGMA_LOC_Module, .module_index = slots[2]
-					}, &able) == DOGMA_OK);
+	assert(dogma_type_has_active_effects(TYPE_1MNAfterburnerII, &able) == DOGMA_OK);
 	assert(able == true);
-	assert(dogma_location_has_overload_effects(ctx, (dogma_location_t){
-			.type = DOGMA_LOC_Module, .module_index = slots[2]
-					}, &able) == DOGMA_OK);
+	assert(dogma_type_has_overload_effects(TYPE_1MNAfterburnerII, &able) == DOGMA_OK);
 	assert(able == true);
 
-	dogma_free_context(ctx);
+
+
 	return 0;
 }

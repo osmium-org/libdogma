@@ -6,7 +6,7 @@ AC_INIT([libdogma], [0.1.0])
 AM_INIT_AUTOMAKE([no-dist-gzip dist-xz no-define foreign silent-rules subdir-objects color-tests])
 AM_SILENT_RULES([yes])
 LT_INIT
-AC_CONFIG_SRCDIR([src/dogma.c])
+AC_CONFIG_SRCDIR([src/core/dogma.c])
 
 AC_MSG_CHECKING([whether debug flags should be enabled])
 AC_ARG_ENABLE(debug, AS_HELP_STRING([--enable-debug], [enable debug flags (default is no)]))
