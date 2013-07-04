@@ -22,7 +22,7 @@ check_PROGRAMS=test/trivial test/basic-attributes				\
 	test/stacking-penalties test/ancillary-modules test/drones	\
 	test/implants test/projected-effects test/fleet-stacking	\
 	test/self-on-self test/extra-misc test/extra-capacitor		\
-	test/bruteforce
+	test/bug-zero-powergrid test/bruteforce
 
 LDADD=libdogma.la
 TESTS=$(check_PROGRAMS)

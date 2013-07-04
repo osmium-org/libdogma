@@ -228,7 +228,7 @@ static int dogma_apply_modifiers_from_env(dogma_context_t* ctx, array_t modifier
 	key_t index = 0;
 	bool applicable;
 
-	JLG(modifier, modifiers, index);
+	JLF(modifier, modifiers, index);
 	while(modifier != NULL) {
 		DOGMA_ASSUME_OK(dogma_modifier_is_applicable(ctx, env, *modifier, &applicable));
 		if(!applicable) {
