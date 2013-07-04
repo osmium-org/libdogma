@@ -78,6 +78,10 @@ int dogma_type_has_active_effects(dogma_typeid_t, bool*);
  * overloaded state or higher. */
 int dogma_type_has_overload_effects(dogma_typeid_t, bool*);
 
+/* Get the base (ie without any modifiers) value of a type
+ * attribute. */
+int dogma_type_base_attribute(dogma_typeid_t, dogma_attributeid_t, double*);
+
 
 
 /* Get the number of full cycles a module can do before having to
@@ -95,6 +99,17 @@ int dogma_get_number_of_module_cycles_before_reload(dogma_context_t*, dogma_key_
  * false. */
 int dogma_get_capacitor(dogma_context_t*, bool include_reload_time, double* delta, bool* stable, double*);
 
+
+
+/* Get the n-th (starting from 0) effect ID of a location with at
+ * least one non-null attribute. Returns DOGMA_NOT_FOUND if there is
+ * none. */
+int dogma_get_nth_type_effect_with_attributes(dogma_typeid_t, unsigned int n, dogma_effectid_t*);
+
+/* Get the attributes of an effect of a location. */
+int dogma_get_location_effect_attributes(dogma_context_t*, dogma_location_t, dogma_effectid_t,
+                                         double* duration, double* trackingspeed, double* discharge,
+                                         double* range, double* falloff, double* fittingusagechance);
 
 
 

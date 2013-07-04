@@ -23,6 +23,8 @@ int main(void) {
 	dogma_key_t slot;
 	bool able, hasit;
 	int ncycles;
+	double out, duration, tracking, discharge, range, falloff, usagechance;
+	dogma_effectid_t eff;
 
 	dogma_init();
 
@@ -66,6 +68,24 @@ int main(void) {
 	dogma_add_module_sc(ctx, TYPE_LightElectronBlasterII, &slot, DOGMA_STATE_Active, TYPE_IridiumChargeS);
 	assert(dogma_get_number_of_module_cycles_before_reload(ctx, slot, &ncycles) == DOGMA_OK);
 	assert(ncycles == 200);
+
+	assert(dogma_type_base_attribute(TYPE_Rifter, ATT_TurretSlotsLeft, &out) == DOGMA_OK);
+	assert(out == 3.0);
+	assert(dogma_get_ship_attribute(ctx, ATT_TurretSlotsLeft, &out) == DOGMA_OK);
+	assert(out == 2.0);
+
+	assert(dogma_get_nth_type_effect_with_attributes(TYPE_LightElectronBlasterII, 1, &eff) == DOGMA_NOT_FOUND);
+	assert(dogma_get_nth_type_effect_with_attributes(TYPE_LightElectronBlasterII, 0, &eff) == DOGMA_OK);
+	assert(dogma_get_location_effect_attributes(
+		ctx, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slot }, eff,
+		&duration, &tracking, &discharge, &range, &falloff, &usagechance
+	) == DOGMA_OK);
+	/* Source: Pyfa-c67034e (2013-07-01) */
+	assertf(1440.0, duration, 0.05);
+	assertf(0.5475, tracking, 0.00005);
+	assertf(0.374262, discharge, 0.0000005);
+	assertf(range, 1800.0, 0.05);
+	assertf(falloff, 1875.0, 0.05);
 
 	dogma_remove_module(ctx, slot);
 	dogma_add_module_sc(ctx, TYPE_ExperimentalTE2100LightMissileLauncher,

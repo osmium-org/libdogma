@@ -308,6 +308,10 @@ int dogma_type_has_overload_effects(dogma_typeid_t id, bool* overloadable) {
 	return DOGMA_OK;
 }
 
+int dogma_type_base_attribute(dogma_typeid_t id, dogma_attributeid_t att, double* out) {
+	return dogma_get_type_attribute(id, att, out);
+}
+
 
 
 int dogma_get_number_of_module_cycles_before_reload(dogma_context_t* ctx, key_t loc, int* out) {
@@ -397,6 +401,68 @@ int dogma_get_number_of_module_cycles_before_reload(dogma_context_t* ctx, key_t 
 	*out = (int)floor(
 		crystal_uses * module_capacity / (charge_volume * charges_per_cycle)
 	);
+
+	return DOGMA_OK;
+}
+
+
+
+int dogma_get_nth_type_effect_with_attributes(dogma_typeid_t t, unsigned int n, dogma_effectid_t* out) {
+	array_t effects;
+	const dogma_type_effect_t** te;
+	const dogma_effect_t* e;
+	key_t index = 0;
+	unsigned int i = 0;
+
+	DOGMA_ASSUME_OK(dogma_get_type_effects(t, &effects));
+	JLF(te, effects, index);
+	while(te != NULL) {
+		DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
+
+		if(e->durationattributeid != 0 || e->trackingspeedattributeid != 0
+		|| e->dischargeattributeid != 0 || e->rangeattributeid != 0
+		|| e->falloffattributeid != 0 || e->fittingusagechanceattributeid != 0) {
+			if(i == n) {
+				*out = e->id;
+				return DOGMA_OK;
+			}
+
+			++i;
+		}
+
+		JLN(te, effects, index);
+	}
+
+	return DOGMA_NOT_FOUND;
+}
+
+int dogma_get_location_effect_attributes(dogma_context_t* ctx, dogma_location_t loc, dogma_effectid_t eid,
+                                         double* duration, double* tracking, double* discharge,
+                                         double* range, double* falloff, double* usagechance) {
+	dogma_env_t* loc_env;
+	const dogma_effect_t* e;
+
+	DOGMA_ASSUME_OK(dogma_get_location_env(ctx, loc, &loc_env));
+	DOGMA_ASSUME_OK(dogma_get_effect(eid, &e));
+
+	if(e->durationattributeid != 0) {
+		DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, loc_env, e->durationattributeid, duration));
+	}
+	if(e->trackingspeedattributeid != 0) {
+		DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, loc_env, e->trackingspeedattributeid, tracking));
+	}
+	if(e->dischargeattributeid != 0) {
+		DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, loc_env, e->dischargeattributeid, discharge));
+	}
+	if(e->rangeattributeid != 0) {
+		DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, loc_env, e->rangeattributeid, range));
+	}
+	if(e->falloffattributeid != 0) {
+		DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, loc_env, e->falloffattributeid, falloff));
+	}
+	if(e->fittingusagechanceattributeid != 0) {
+		DOGMA_ASSUME_OK(dogma_get_env_attribute(ctx, loc_env, e->fittingusagechanceattributeid, usagechance));
+	}
 
 	return DOGMA_OK;
 }
