@@ -68,7 +68,7 @@ int dogma_free_affector_list(dogma_simple_affector_t*);
 
 
 /* Checks if a certain type has an effect. */
-int dogma_type_has_effect(dogma_typeid_t, dogma_effectid_t, bool*);
+int dogma_type_has_effect(dogma_typeid_t, dogma_state_t, dogma_effectid_t, bool*);
 
 /* Checks if a certain type has effects only enabled in the active
  * state or higher. */

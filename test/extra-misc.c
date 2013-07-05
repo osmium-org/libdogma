@@ -28,10 +28,14 @@ int main(void) {
 
 	dogma_init();
 
-	assert(dogma_type_has_effect(TYPE_AdaptiveNanoPlatingII, EFFECT_HiPower, &hasit) == DOGMA_OK);
+	assert(dogma_type_has_effect(
+		TYPE_AdaptiveNanoPlatingII, DOGMA_STATE_Online, EFFECT_HiPower, &hasit
+	) == DOGMA_OK);
 	assert(hasit == false);
-	assert(dogma_type_has_effect(TYPE_AdaptiveNanoPlatingII, EFFECT_LoPower, &hasit) == DOGMA_OK);
-	assert(hasit == true);
+	assert(dogma_type_has_effect(
+		TYPE_AdaptiveNanoPlatingII, DOGMA_STATE_Unplugged, EFFECT_LoPower, &hasit
+	) == DOGMA_OK);
+	assert(hasit == false);
 
 	assert(dogma_type_has_active_effects(TYPE_AdaptiveNanoPlatingII, &able) == DOGMA_OK);
 	assert(able == false);

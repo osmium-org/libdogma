@@ -246,13 +246,16 @@ int dogma_free_affector_list(dogma_simple_affector_t* list) {
 
 
 
-int dogma_type_has_effect(dogma_typeid_t id, effectid_t effect, bool* hasit) {
+int dogma_type_has_effect(dogma_typeid_t id, dogma_state_t s, effectid_t effect, bool* hasit) {
 	const dogma_type_effect_t* te;
 	int ret;
 
 	ret = dogma_get_type_effect(id, effect, &te);
 	if(ret == DOGMA_OK) {
-		*hasit = true;
+		const dogma_effect_t* e;
+
+		DOGMA_ASSUME_OK(dogma_get_effect(effect, &e));
+		*hasit = ((s >> e->category) & 1);
 	} else if(ret == DOGMA_NOT_FOUND) {
 		*hasit = false;
 	} else {
