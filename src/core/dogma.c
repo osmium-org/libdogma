@@ -36,7 +36,6 @@ static int dogma_remove_env_generic(dogma_context_t*, dogma_env_t*, key_t);
 
 
 
-
 int dogma_init(void) {
 	static bool initialized = false;
 	if(initialized) return DOGMA_OK;
@@ -102,8 +101,8 @@ int dogma_free_context(dogma_context_t* ctx) {
 		assert(found == true && ctx->fleet == NULL);
 	}
 
-	dogma_free_env(ctx->character);
-	dogma_free_env(ctx->gang);
+	dogma_free_env(ctx, ctx->character);
+	dogma_free_env(ctx, ctx->gang);
 	dogma_reset_skill_levels(ctx);
 
 	JLF(value, ctx->drone_map, index);
@@ -183,7 +182,7 @@ static inline int dogma_remove_env_generic(dogma_context_t* ctx,
 
 	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, *env, DOGMA_STATE_Unplugged));
 
-	dogma_free_env(*env);
+	dogma_free_env(ctx, *env);
 
 	JLD(result, location->children, index);
 	return DOGMA_OK;
@@ -354,7 +353,7 @@ int dogma_remove_drone(dogma_context_t* ctx, typeid_t droneid) {
 	JLD(ret, drone_env->parent->children, drone_env->index);
 	JLD(ret, ctx->drone_map, drone_env->id);
 
-	dogma_free_env(drone_env);
+	dogma_free_env(ctx, drone_env);
 	free(*value);
 
 	return DOGMA_OK;
@@ -382,42 +381,9 @@ int dogma_remove_implant(dogma_context_t* ctx, key_t index) {
 
 
 int dogma_toggle_chance_based_effect(dogma_context_t* ctx, location_t loc, effectid_t id, bool on) {
-	const dogma_type_effect_t* te;
-	const dogma_effect_t* e;
 	dogma_env_t* loc_env;
-	bool* val;
-	int ret;
-	dogma_expctx_t result;
-
 	DOGMA_ASSUME_OK(dogma_get_location_env(ctx, loc, &loc_env));
-	DOGMA_ASSUME_OK(dogma_get_type_effect(loc_env->id, id, &te));
-	DOGMA_ASSUME_OK(dogma_get_effect(id, &e));
-
-	if(e->fittingusagechanceattributeid == 0) {
-		/* Effect is not chance-based */
-		return DOGMA_NOT_APPLICABLE;
-	}
-
-	JLG(val, loc_env->chance_effects, id);
-	if(val == NULL) {
-		/* Effect is off */
-		if(!on) return DOGMA_OK;
-
-		JLI(val, loc_env->chance_effects, id);
-		*val = true;
-
-		DOGMA_ASSUME_OK(dogma_eval_expression(ctx, loc_env, e->preexpressionid, &result));
-	} else {
-		/* Effect is on */
-		assert(*val == true);
-		if(on) return DOGMA_OK;
-
-		JLD(ret, loc_env->chance_effects, id);
-
-		DOGMA_ASSUME_OK(dogma_eval_expression(ctx, loc_env, e->postexpressionid, &result));
-	}
-
-	return DOGMA_OK;
+	return dogma_toggle_chance_based_effect_env(ctx, loc_env, id, on);
 }
 
 

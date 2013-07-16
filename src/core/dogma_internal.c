@@ -23,9 +23,9 @@
 #include "tables.h"
 #include "eval.h"
 
-int dogma_free_env(dogma_env_t* env) {
+int dogma_free_env(dogma_context_t* ctx, dogma_env_t* env) {
 	int ret;
-	key_t index = 0, index2, index3;
+	key_t index = -1, index2, index3;
 	dogma_env_t** child;
 	array_t* modifiers;
 	array_t* modifiers2;
@@ -49,10 +49,24 @@ int dogma_free_env(dogma_env_t* env) {
 		JLFA(ret, env->targeted_by);
 	}
 
-	JLF(child, env->children, index);
+	/* Clear any chance-based effects */
+	if(env->chance_effects != NULL) {
+		key_t effectid = 0;
+		bool* val;
+
+		JLF(val, env->chance_effects, effectid);
+		while(val != NULL) {
+			DOGMA_ASSUME_OK(dogma_toggle_chance_based_effect_env(ctx, env, effectid, false));
+			JLN(val, env->chance_effects, effectid);
+		}
+
+		JLFA(ret, env->chance_effects);
+	}
+
+	JLL(child, env->children, index);
 	while(child != NULL) {
-		dogma_free_env(*child);
-		JLN(child, env->children, index);
+		dogma_free_env(ctx, *child);
+		JLP(child, env->children, index);
 	}
 	JLFA(ret, env->children);
 
@@ -77,11 +91,6 @@ int dogma_free_env(dogma_env_t* env) {
 		JLN(modifiers, env->modifiers, index);
 	}
 	JLFA(ret, env->modifiers);
-
-	if(env->chance_effects != NULL) {
-		DOGMA_WARN("env %p (type %i) still has chance effects toggled on, expect memory leaks!", env, env->id);
-		JLFA(ret, env->chance_effects);
-	}
 
 	free(env);
 
@@ -190,6 +199,43 @@ int dogma_set_target(dogma_context_t* targeter, dogma_env_t* source, dogma_env_t
 	}
 
 	DOGMA_ASSUME_OK(dogma_set_env_state(targeter, source, s));
+
+	return DOGMA_OK;
+}
+
+int dogma_toggle_chance_based_effect_env(dogma_context_t* ctx, dogma_env_t* env, effectid_t id, bool on) {
+	const dogma_type_effect_t* te;
+	const dogma_effect_t* e;
+	bool* val;
+	int ret;
+	dogma_expctx_t result;
+
+	DOGMA_ASSUME_OK(dogma_get_type_effect(env->id, id, &te));
+	DOGMA_ASSUME_OK(dogma_get_effect(id, &e));
+
+	if(e->fittingusagechanceattributeid == 0) {
+		/* Effect is not chance-based */
+		return DOGMA_NOT_APPLICABLE;
+	}
+
+	JLG(val, env->chance_effects, id);
+	if(val == NULL) {
+		/* Effect is off */
+		if(!on) return DOGMA_OK;
+
+		JLI(val, env->chance_effects, id);
+		*val = true;
+
+		DOGMA_ASSUME_OK(dogma_eval_expression(ctx, env, e->preexpressionid, &result));
+	} else {
+		/* Effect is on */
+		assert(*val == true);
+		if(on) return DOGMA_OK;
+
+		JLD(ret, env->chance_effects, id);
+
+		DOGMA_ASSUME_OK(dogma_eval_expression(ctx, env, e->postexpressionid, &result));
+	}
 
 	return DOGMA_OK;
 }

@@ -267,7 +267,7 @@ struct dogma_fleet_context_s {
 /* Free an environment, including its modifiers and children,
  * recursively. This function is not smart and will not remove
  * obsolete modifiers on parents! */
-int dogma_free_env(dogma_env_t*);
+int dogma_free_env(dogma_context_t*, dogma_env_t*);
 
 /* Set state of an environment and evaluate needed expressions based
  * on effect categories. */
@@ -281,6 +281,9 @@ int dogma_set_target(dogma_context_t*, dogma_env_t*, dogma_env_t*);
 
 /* Get a dogma_env_t* based on its "simpler" location_t description. */
 int dogma_get_location_env(dogma_context_t*, location_t, dogma_env_t**);
+
+/* Toggle a chance based effect on or off. */
+int dogma_toggle_chance_based_effect_env(dogma_context_t*, dogma_env_t*, effectid_t, bool);
 
 
 
