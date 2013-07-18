@@ -29,3 +29,5 @@ TESTS=$(check_PROGRAMS)
 
 pkgconfigdir=$(libdir)/pkgconfig
 pkgconfig_DATA = libdogma.pc
+
+EXTRA_DIST = README.md
