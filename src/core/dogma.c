@@ -26,7 +26,6 @@
 
 #include "dogma-names.h"
 
-#define DOGMA_MIN_SKILL_LEVEL 0
 #define DOGMA_MAX_SKILL_LEVEL 5
 
 static int dogma_add_env_generic(dogma_context_t*, dogma_env_t*, dogma_context_t*,
@@ -42,8 +41,6 @@ int dogma_init(void) {
 	initialized = true;
 
 	dogma_init_tables();
-
-	assert(DOGMA_MIN_SKILL_LEVEL <= DOGMA_MAX_SKILL_LEVEL);
 
 	return DOGMA_OK;
 }
@@ -123,7 +120,6 @@ int dogma_free_context(dogma_context_t* ctx) {
 
 
 int dogma_set_default_skill_level(dogma_context_t* ctx, uint8_t default_level) {
-	if(default_level < DOGMA_MIN_SKILL_LEVEL) default_level = DOGMA_MIN_SKILL_LEVEL;
 	if(default_level > DOGMA_MAX_SKILL_LEVEL) default_level = DOGMA_MAX_SKILL_LEVEL;
 
 	ctx->default_skill_level = default_level;
@@ -134,7 +130,6 @@ int dogma_set_default_skill_level(dogma_context_t* ctx, uint8_t default_level) {
 int dogma_set_skill_level(dogma_context_t* ctx, typeid_t skillid, uint8_t level) {
 	uint8_t* value;
 
-	if(level < DOGMA_MIN_SKILL_LEVEL) level = DOGMA_MIN_SKILL_LEVEL;
 	if(level > DOGMA_MAX_SKILL_LEVEL) level = DOGMA_MAX_SKILL_LEVEL;
 
 	JLI(value, ctx->skill_levels, skillid);

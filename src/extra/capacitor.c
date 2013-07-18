@@ -221,7 +221,7 @@ int dogma_get_capacitor(dogma_context_t* ctx, bool reload, double* delta, bool* 
 	/* Discriminant is (strictly) negative, so there are no real
 	 * roots. In this case, run a simulation of the capacitor
 	 * level over time and see how long it lasts. */
-	double t = 0, k1, k2, k3, k4, increment;
+	double t = 0, k1, k2, k3, k4, increment = 0;
 	double capacitor = capacity; /* Start simulation with full capacitor */
 
 	while(capacitor >= 0 && t < DOGMA_MAX_CAPACITOR_TIME) {
