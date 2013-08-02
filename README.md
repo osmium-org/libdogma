@@ -131,7 +131,7 @@ Release checklist
 * Update exported symbols in `src/libdogma.sym`
 
 * Update `version-info` in `Makefile.am`
-  ([doc](http://www.gnu.org/software/libtool/manual/libtool.html#Updating-version-info))
+  ([doc](http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html))
 
 * `make distclean && ./bootstrap && ./configure && make check`
 
