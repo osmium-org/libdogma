@@ -19,6 +19,7 @@
 #include "attribute.h"
 #include "tables.h"
 #include <assert.h>
+#include <math.h>
 
 #include "dogma-names.h"
 
@@ -52,7 +53,7 @@ static double penalized_coefficients[] = {
 static int dogma_apply_modifiers_from_env(dogma_context_t*, array_t, dogma_env_t*,
                                           double* penalized_positive, double* penalized_negative,
                                           size_t* penalized_pos_count, size_t* penalized_neg_count,
-                                          bool highisgood, double* singleton_val,
+                                          double* singleton_val,
                                           int* singleton_penalized, double* out);
 
 static int compare(const void* left, const void* right) {
@@ -112,8 +113,7 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 						ctx, *modifiers, env,
 						penalized_positive, penalized_negative,
 						&penalized_pos_count, &penalized_neg_count,
-						attr->highisgood, &singleton_val,
-						&singleton_penalized, out
+						&singleton_val,	&singleton_penalized, out
 					));
 				}
 			}
@@ -137,8 +137,7 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 						ctx, *modifiers, env,
 						penalized_positive, penalized_negative,
 						&penalized_pos_count, &penalized_neg_count,
-						attr->highisgood, &singleton_val,
-						&singleton_penalized, out
+						&singleton_val,	&singleton_penalized, out
 					));
 				}
 			}
@@ -222,7 +221,7 @@ int dogma_env_requires_skill(dogma_context_t* ctx, dogma_env_t* env, typeid_t sk
 static int dogma_apply_modifiers_from_env(dogma_context_t* ctx, array_t modifiers, dogma_env_t* env,
                                           double* penalized_positive, double* penalized_negative,
                                           size_t* penalized_pos_count, size_t* penalized_neg_count,
-                                          bool highisgood, double* singleton_val,
+                                          double* singleton_val,
                                           int* singleton_penalized, double* out) {
 	dogma_modifier_t** modifier;
 	key_t index = 0;
@@ -246,10 +245,10 @@ static int dogma_apply_modifiers_from_env(dogma_context_t* ctx, array_t modifier
 				*singleton_val = v;
 				*singleton_penalized = (*modifier)->penalized;
 			} else {
-				if(highisgood) {
-					if(v > *singleton_val) *singleton_val = v;
-				} else {
-					if(v < *singleton_val) *singleton_val = v;
+				/* XXX: using highisgood value gives somewhat bad
+				 * results, just use the "biggest" modifier */
+				if(fabs(v - 1.0) > fabs(*singleton_val - 1.0)) {
+					*singleton_val = v;
 				}
 
 				if(*singleton_penalized != (*modifier)->penalized) {
