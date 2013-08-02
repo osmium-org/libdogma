@@ -345,11 +345,12 @@ int dogma_remove_drone(dogma_context_t* ctx, typeid_t droneid) {
 
 	drone_env = (*value)->drone;
 	DOGMA_ASSUME_OK(dogma_set_env_state(ctx, drone_env, DOGMA_STATE_Unplugged));
-	JLD(ret, drone_env->parent->children, drone_env->index);
-	JLD(ret, ctx->drone_map, drone_env->id);
 
 	dogma_free_env(ctx, drone_env);
 	free(*value);
+
+	JLD(ret, drone_env->parent->children, drone_env->index);
+	JLD(ret, ctx->drone_map, droneid);
 
 	return DOGMA_OK;
 }
@@ -449,6 +450,7 @@ int dogma_get_location_env(dogma_context_t* ctx, location_t location, dogma_env_
 		JLG(drone_env1, ctx->drone_map, location.drone_typeid);
 		if(drone_env1 == NULL) return DOGMA_NOT_FOUND;
 		*env = (*drone_env1)->drone;
+		assert(*env != NULL);
 		return DOGMA_OK;
 
 	default:
