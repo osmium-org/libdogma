@@ -311,6 +311,50 @@ int dogma_type_has_overload_effects(dogma_typeid_t id, bool* overloadable) {
 	return DOGMA_OK;
 }
 
+bool dogma_expression_has_currenttarget(expressionid_t id) {
+	const dogma_expression_t* exp;
+
+	if(dogma_get_expression(id, &exp) == DOGMA_OK) {
+		if(exp->operand == DOGMA_DEFENVIDX && exp->envidx == DOGMA_ENVIDX_Target) {
+			/* Found our target */
+			return true;
+		}
+
+		return dogma_expression_has_currenttarget(exp->arg1) || dogma_expression_has_currenttarget(exp->arg2);
+	}
+
+	return false;
+}
+
+int dogma_type_has_projectable_effects(typeid_t id, bool* out) {
+	array_t effects;
+	const dogma_type_effect_t** te;
+	const dogma_effect_t* e;
+	key_t index = 0;
+
+	DOGMA_ASSUME_OK(dogma_get_type_effects(id, &effects));
+
+	JLF(te, effects, index);
+	while(te != NULL) {
+		DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
+
+		/* Sadly some projectable effects have no client expression
+		 * and have to be hardcoded here. :-( */
+		/* XXX this is probably incomplete */
+		if(e->id == EFFECT_EnergyDestabilizationNew
+		   || e->id == EFFECT_Leech
+		   || dogma_expression_has_currenttarget(e->preexpressionid)) {
+			*out = true;
+			return DOGMA_OK;
+		}
+
+		JLN(te, effects, index);
+	}
+
+	*out = false;
+	return DOGMA_OK;
+}
+
 int dogma_type_base_attribute(dogma_typeid_t id, dogma_attributeid_t att, double* out) {
 	return dogma_get_type_attribute(id, att, out);
 }

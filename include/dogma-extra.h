@@ -78,6 +78,10 @@ int dogma_type_has_active_effects(dogma_typeid_t, bool*);
  * overloaded state or higher. */
 int dogma_type_has_overload_effects(dogma_typeid_t, bool*);
 
+/* Checks if a certain type has effects which affect the target
+ * ship. */
+int dogma_type_has_projectable_effects(dogma_typeid_t, bool*);
+
 /* Get the base (ie without any modifiers) value of a type
  * attribute. */
 int dogma_type_base_attribute(dogma_typeid_t, dogma_attributeid_t, double*);

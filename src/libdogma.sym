@@ -45,6 +45,7 @@ dogma_free_affector_list
 dogma_type_has_effect
 dogma_type_has_active_effects
 dogma_type_has_overload_effects
+dogma_type_has_projectable_effects
 dogma_type_base_attribute
 dogma_get_number_of_module_cycles_before_reload
 dogma_get_capacitor

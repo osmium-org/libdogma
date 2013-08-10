@@ -135,6 +135,8 @@ Release checklist
 
 * `make distclean && ./bootstrap && ./configure && make check`
 
+* Update CHANGELOG
+
 * Commit, tag, push
 
 * `make dist`

@@ -21,7 +21,7 @@
 int main(void) {
 	dogma_context_t* ctx;
 	dogma_key_t slot;
-	bool able, hasit;
+	bool able, hasit, projectable;
 	int ncycles;
 	double out, duration, tracking, discharge, range, falloff, usagechance;
 	dogma_effectid_t eff;
@@ -51,6 +51,13 @@ int main(void) {
 	assert(able == true);
 	assert(dogma_type_has_overload_effects(TYPE_1MNAfterburnerII, &able) == DOGMA_OK);
 	assert(able == true);
+
+	assert(dogma_type_has_projectable_effects(TYPE_WarpScramblerI, &projectable) == DOGMA_OK);
+	assert(projectable == true);
+	assert(dogma_type_has_projectable_effects(TYPE_DamageControlII, &projectable) == DOGMA_OK);
+	assert(projectable == false);
+	assert(dogma_type_has_projectable_effects(TYPE_SmallNosferatuI, &projectable) == DOGMA_OK);
+	assert(projectable == true);
 
 	dogma_init_context(&ctx);
 
