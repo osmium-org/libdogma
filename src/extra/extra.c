@@ -343,6 +343,10 @@ int dogma_type_has_projectable_effects(typeid_t id, bool* out) {
 		/* XXX this is probably incomplete */
 		if(e->id == EFFECT_EnergyDestabilizationNew
 		   || e->id == EFFECT_Leech
+		   || e->id == EFFECT_TargetArmorRepair
+		   || e->id == EFFECT_ShieldTransfer
+		   || e->id == EFFECT_RemoteHullRepair
+		   || e->id == EFFECT_EnergyTransfer
 		   || dogma_expression_has_currenttarget(e->preexpressionid)) {
 			*out = true;
 			return DOGMA_OK;
