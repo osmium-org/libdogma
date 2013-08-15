@@ -64,7 +64,6 @@ static int rcompare(const void* left, const void* right) {
 }
 
 int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_t attributeid, double* out) {
-	const dogma_attribute_t* attr;
 	dogma_env_t* current_env;
 	dogma_fleet_context_t* fleet;
 	array_t* modifiers;
@@ -88,7 +87,6 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 		return DOGMA_OK;
 	}
 
-	DOGMA_ASSUME_OK(dogma_get_attribute(attributeid, &attr));
 	DOGMA_ASSUME_OK(dogma_get_type_attribute(env->id, attributeid, out));
 
 	/* Code below is somewhat similar to the traverse code in extra.c */
@@ -171,13 +169,10 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 
 		if(penalized_pos_count == 0 && penalized_neg_count == 0) continue;
 
-		if(attr->highisgood) {
-			qsort(penalized_positive, penalized_pos_count, sizeof(double), rcompare);
-			qsort(penalized_negative, penalized_neg_count, sizeof(double), rcompare);
-		} else {
-			qsort(penalized_positive, penalized_pos_count, sizeof(double), compare);
-			qsort(penalized_negative, penalized_neg_count, sizeof(double), compare);
-		}
+		/* Always apply "biggest" modifiers first ("biggest" means furthest from 1.0)
+		 * XXX: highisgood? */
+		qsort(penalized_positive, penalized_pos_count, sizeof(double), rcompare);
+		qsort(penalized_negative, penalized_neg_count, sizeof(double), compare);
 
 		for(size_t i = 0; i < penalized_pos_count; ++i) {
 			double p = penalized_coefficients[i];
@@ -245,8 +240,7 @@ static int dogma_apply_modifiers_from_env(dogma_context_t* ctx, array_t modifier
 				*singleton_val = v;
 				*singleton_penalized = (*modifier)->penalized;
 			} else {
-				/* XXX: using highisgood value gives somewhat bad
-				 * results, just use the "biggest" modifier */
+				/* Use the "biggest" modifier (XXX: highisgood?) */
 				if(fabs(v - 1.0) > fabs(*singleton_val - 1.0)) {
 					*singleton_val = v;
 				}
