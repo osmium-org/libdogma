@@ -42,7 +42,7 @@ static void assert_capacitor_stable(bool reload, double expected_delta,
 	assert(dogma_get_capacitor(ctx, reload, &global_delta, &stable, &param) == DOGMA_OK);
 	assertf(expected_delta, global_delta * 1000, 0.1);
 	assert(stable == true);
-	assertf(expected_percentage, param, 0.5);
+	assertf(expected_percentage, param, 5.0);
 }
 
 int main(void) {
@@ -105,13 +105,12 @@ int main(void) {
 	assert_capacitor_unstable(true, 4.76 * 8 - 21.3, 5, 53, 5000);
 
 	/* Now test cap boosters. Sadly Pyfa does not allow not including
-	 * recharge time for them. The stability percentage is also
-	 * calculated differently so there's no point in testing it. */
+	 * recharge time for them. */
 	dogma_add_module_sc(ctx, TYPE_HeavyCapacitorBoosterII, &slots[8], DOGMA_STATE_Active, TYPE_CapBooster800);
-	assert_capacitor_stable(true, 4.76 * 8 - 78.4, 100.0 /* 89.8 */);
+	assert_capacitor_stable(true, 4.76 * 8 - 78.4, 89.8);
 
 	dogma_add_charge(ctx, slots[8], TYPE_CapBooster400);
-	assert_capacitor_stable(true, 4.76 * 8 - 52.0, 81.8 /* 77.2 */);
+	assert_capacitor_stable(true, 4.76 * 8 - 52.0, 77.2);
 
 	dogma_add_charge(ctx, slots[8], TYPE_CapBooster200);
 	assert_capacitor_unstable(true, 4.76 * 8 - 37.3, 41, 37, 30000);

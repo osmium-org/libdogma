@@ -22,93 +22,346 @@
 #include "dogma_internal.h"
 #include "tables.h"
 #include <math.h>
+#include <assert.h>
 
 /* Number of milliseconds between each integration step, higher value
  * will mean a faster result, at the cost of accuracy. NB: The game
  * servers internally use ticks of 1 second. */
 #define DOGMA_CAPACITOR_STEP 5000
 
-/* Maximum time, in milliseconds, to simulate capacitor. Such a limit
- * is necessary because some fits may be cap-unstable but have
- * ridiculously long lasting time, also some fits may be detected as
- * unstable but may work out to be stable after all (because cap usage
- * is not continuous, and the sc_delta method assumes it is). */
-#define DOGMA_MAX_CAPACITOR_TIME (DOGMA_CAPACITOR_STEP * 5000)
 
-#define EFFECT_TOUCHES_ENERGY(e) ((e)->id == EFFECT_PowerBooster ||	\
-		((e)->dischargeattributeid != 0 && (e)->durationattributeid != 0))
+
+#define EFFECT_TOUCHES_ENERGY(e) (	  \
+	(e)->id == EFFECT_PowerBooster \
+	|| (e)->id == EFFECT_EnergyTransfer \
+	|| (e)->id == EFFECT_EnergyDestabilizationNew \
+	|| (e)->id == EFFECT_Leech \
+	|| ((e)->dischargeattributeid != 0 && (e)->durationattributeid != 0) \
+)
+
+
+
+struct dogma_simple_energy_pool_s {
+	double capacity; /* Maximum capacity */
+	double tau; /* Tau, defines how fast the pool naturally
+	             * recharges */
+
+	double current; /* The current level (0 <= current <= capacity) */
+	double delta; /* The amount of energy consumed by modules in one
+	               * second */
+
+	double max_affector_cycle_time; /* The longest duration of an
+	                                 * entity affecting this pool. */
+
+	bool starved; /* True when at least one entity could not be
+	               * activated because it did not have enough
+	               * capacitor. */
+};
+typedef struct dogma_simple_energy_pool_s dogma_simple_energy_pool_t;
+
+
+
+enum dogma_simple_energy_entity_type_e {
+	DOGMA_EENT_Simple,
+	DOGMA_EENT_Powerboost,
+	DOGMA_EENT_Transfer,
+	DOGMA_EENT_Neutralization,
+	DOGMA_EENT_Leech,
+};
+typedef enum dogma_simple_energy_entity_type_e dogma_simple_energy_entity_type_t;
+
+
 
 struct dogma_simple_energy_entity_s {
+	dogma_simple_energy_entity_type_t type;
+	dogma_simple_energy_pool_t* location;
+	dogma_simple_energy_pool_t* target;
 	double cycle_time;
 	double amount_used; /* Used energy per cycle, in GJ */
-	uint32_t num_cycles_per_reload; /* Typically the number of charges (except crystals) */
+	double other_amount; /* Amount restored, transferred, neutralized
+	                      * or leeched depending on type */
+	uint32_t num_cycles_per_reload; /* Typically the number of charges
+	                                 * (except crystals) */
 	double reload_time;
-
-	bool nooverflow; /* If true, don't do the action if it will
-	                  * overflow the capacitor (used by cap
-	                  * boosters) */
 	bool reloading; /* If true, the module is reloading */
-
-	uint32_t remaining_cycles; /* Remaining cycles before a reload triggers */
+	uint32_t remaining_cycles; /* Remaining cycles before a reload
+	                            * triggers */
 	double timer; /* Time left till end of cycle or reload */
 };
 typedef struct dogma_simple_energy_entity_s dogma_simple_energy_entity_t;
 
 
+
 static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
                                     const dogma_effect_t* e, bool reload,
                                     dogma_simple_energy_entity_t* ent) {
-	int num_cycles;
+	int num_cycles, ret;
 
 	DOGMA_ASSUME_OK(dogma_get_module_attribute(
 		ctx, source->index, e->durationattributeid, &(ent->cycle_time)
 	));
 
+	if(!reload) {
+		ent->num_cycles_per_reload = (uint32_t)-1;
+		ent->reload_time = .0;
+	} else {
+		DOGMA_ASSUME_OK(dogma_get_number_of_module_cycles_before_reload(ctx, source->index, &num_cycles));
 
-	/* TODO: projected energy transfers, projected energy
-	 * neutralizers, projected nosferatus (eek) */
-	if(e->id == EFFECT_PowerBooster) {
-		double bonus;
-		int ret;
+		if(num_cycles == -1) {
+			ent->num_cycles_per_reload = (uint32_t)-1;
+			ent->reload_time = .0;
+		} else {
+			ent->num_cycles_per_reload = num_cycles;
 
-		ret = dogma_get_charge_attribute(ctx, source->index, ATT_CapacitorBonus, &bonus);
+			DOGMA_ASSUME_OK(dogma_get_module_attribute(
+				ctx, source->index, ATT_ReloadTime, &(ent->reload_time)
+			));
+		}
+	}
+
+	switch(e->id) {
+
+	case EFFECT_PowerBooster:
+		ret = dogma_get_charge_attribute(ctx, source->index, ATT_CapacitorBonus, &(ent->other_amount));
 		if(ret == DOGMA_NOT_FOUND) {
-			bonus = 0;
+			ent->other_amount = 0;
 		} else if(ret != DOGMA_OK) {
 			return ret;
 		}
 
-		ent->amount_used = -bonus;
-		ent->nooverflow = true;
-	} else {
+		ent->type = DOGMA_EENT_Powerboost;
+		ent->amount_used = 0;
+		ent->location->delta -= ent->other_amount /
+			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+		break;
+
+	case EFFECT_EnergyTransfer:
 		DOGMA_ASSUME_OK(dogma_get_module_attribute(
 			ctx, source->index, e->dischargeattributeid, &(ent->amount_used)
 		));
-		ent->nooverflow = false;
+
+		DOGMA_ASSUME_OK(dogma_get_module_attribute(
+			ctx, source->index, ATT_PowerTransferAmount, &(ent->other_amount)
+		));
+
+		ent->type = DOGMA_EENT_Transfer;
+		ent->location->delta += ent->amount_used /
+			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+		if(ent->target != NULL) {
+			ent->target->delta -= ent->other_amount /
+			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+		}
+		break;
+
+	case EFFECT_EnergyDestabilizationNew: /* TODO: reflect thingy */
+		DOGMA_ASSUME_OK(dogma_get_module_attribute(
+			ctx, source->index, e->dischargeattributeid, &(ent->amount_used)
+		));
+
+		DOGMA_ASSUME_OK(dogma_get_module_attribute(
+			ctx, source->index, ATT_EnergyDestabilizationAmount, &(ent->other_amount)
+		));
+
+		ent->type = DOGMA_EENT_Neutralization;
+		ent->location->delta += ent->amount_used /
+			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+		if(ent->target != NULL) {
+			ent->target->delta += ent->other_amount /
+			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+		}
+		break;
+
+	case EFFECT_Leech: /* TODO: reflect thingy */
+		DOGMA_ASSUME_OK(dogma_get_module_attribute(
+			ctx, source->index, e->dischargeattributeid, &(ent->amount_used)
+		));
+
+		DOGMA_ASSUME_OK(dogma_get_module_attribute(
+			ctx, source->index, ATT_PowerTransferAmount, &(ent->other_amount)
+		));
+
+		ent->type = DOGMA_EENT_Leech;
+		ent->location->delta += ent->other_amount /
+			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+		if(ent->target != NULL) {
+			ent->target->delta -= ent->other_amount /
+			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+		}
+		break;
+
+	default:
+		DOGMA_ASSUME_OK(dogma_get_module_attribute(
+			ctx, source->index, e->dischargeattributeid, &(ent->amount_used)
+		));
+
+		ent->type = DOGMA_EENT_Simple;
+		ent->location->delta += ent->amount_used /
+			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+		break;
+
 	}
-
-	if(!reload) {
-		ent->num_cycles_per_reload = (uint32_t)-1;
-		ent->reload_time = .0;
-		return DOGMA_OK;
-	}
-
-	DOGMA_ASSUME_OK(dogma_get_number_of_module_cycles_before_reload(ctx, source->index, &num_cycles));
-
-	if(num_cycles == -1) {
-		ent->num_cycles_per_reload = (uint32_t)-1;
-		ent->reload_time = .0;
-		return DOGMA_OK;	
-	}
-
-	ent->num_cycles_per_reload = num_cycles;
-
-	DOGMA_ASSUME_OK(dogma_get_module_attribute(
-		ctx, source->index, ATT_ReloadTime, &(ent->reload_time)
-	));
 
 	return DOGMA_OK;
 }
+
+
+
+/* Count the number of entities and fills target maps.
+ *
+ * @param pool_map initialise to NULL, dogma_context_t* -> 0
+ * @param target_map initialise to NULL, dogma_env_t* -> dogma_context_t*
+ */
+static inline int dogma_capacitor_count_entities_and_pools(
+	dogma_context_t* ctx,
+	size_t* n_entities,
+	array_t* pool_map, array_t* target_map) {
+
+	key_t index = 0, sub;
+	dogma_env_t** m;
+	array_t effects;
+	const dogma_type_effect_t** te;
+	const dogma_effect_t* e;
+	void** v;
+	dogma_context_t** targeter;
+	dogma_context_t** ctxv;
+
+	JLG(v, *pool_map, (intptr_t)ctx);
+	if(v != NULL) {
+		/* Already went there */
+		return DOGMA_OK;
+	}
+
+	JLI(v, *pool_map, (intptr_t)ctx);
+	*v = NULL;
+
+	JLF(m, ctx->ship->children, index);
+	while(m != NULL) {
+		/* Check active effects of module with non-zero dischargeattributeid */
+		dogma_get_type_effects((*m)->id, &effects);
+
+		sub = 0;
+		JLF(te, effects, sub);
+		while(te != NULL) {
+			DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
+			if((((*m)->state >> e->category) & 1) && EFFECT_TOUCHES_ENERGY(e)) {
+				++(*n_entities);
+			}
+
+			JLN(te, effects, sub);
+		}
+
+		JLN(m, ctx->ship->children, index);
+	}
+
+	index = 0;
+	JLF(targeter, ctx->ship->targeted_by, index);
+	while(targeter != NULL) {
+		JLI(ctxv, *target_map, index);
+		*ctxv = ctx;
+
+		DOGMA_ASSUME_OK(dogma_capacitor_count_entities_and_pools(
+			*targeter, n_entities, pool_map, target_map
+		));
+
+		JLN(targeter, ctx->ship->targeted_by, index);
+	}
+
+	return DOGMA_OK;
+}
+
+static inline int dogma_capacitor_fill_entities_and_pools(
+	dogma_context_t* ctx, array_t* pool_map, array_t* target_map, bool reload,
+	dogma_simple_energy_pool_t* pools, dogma_simple_energy_entity_t* entities,
+	size_t* pool_offset, size_t* entity_offset) {
+
+	key_t index = 0, sub;
+	dogma_env_t** m;
+	array_t effects;
+	const dogma_type_effect_t** te;
+	const dogma_effect_t* e;
+	dogma_simple_energy_pool_t** v;
+	dogma_context_t** targeter;
+	dogma_simple_energy_pool_t* loc;
+
+	JLG(v, *pool_map, (intptr_t)ctx);
+	assert(v != NULL);
+
+	if(*v != NULL) {
+		return DOGMA_OK;
+	}
+
+	loc = *v = pools + *pool_offset;
+	DOGMA_ASSUME_OK(dogma_get_ship_attribute(
+		ctx, ATT_CapacitorCapacity, &(pools[*pool_offset].capacity)
+	));
+	DOGMA_ASSUME_OK(dogma_get_ship_attribute(
+		ctx, ATT_RechargeRate, &(pools[*pool_offset].tau)
+	));
+	pools[*pool_offset].tau *= .2;
+	pools[*pool_offset].current = pools[*pool_offset].capacity;
+	pools[*pool_offset].delta = 0.0;
+	pools[*pool_offset].max_affector_cycle_time = 0.0;
+	pools[*pool_offset].starved = false;
+
+	++(*pool_offset);
+
+	JLF(targeter, ctx->ship->targeted_by, index);
+	while(targeter != NULL) {
+		DOGMA_ASSUME_OK(dogma_capacitor_fill_entities_and_pools(
+			*targeter, pool_map, target_map, reload, pools, entities, pool_offset, entity_offset
+		));
+
+		JLN(targeter, ctx->ship->targeted_by, index);
+	}
+
+	index = 0;
+
+	JLF(m, ctx->ship->children, index);
+	while(m != NULL) {
+		dogma_get_type_effects((*m)->id, &effects);
+
+		sub = 0;
+		JLF(te, effects, sub);
+		while(te != NULL) {
+			DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
+			if((((*m)->state >> e->category) & 1) && EFFECT_TOUCHES_ENERGY(e)) {
+				entities[*entity_offset].location = loc;
+				entities[*entity_offset].reloading = false;
+				entities[*entity_offset].remaining_cycles = entities[*entity_offset].num_cycles_per_reload;
+				entities[*entity_offset].timer = 0;
+
+				if((*m)->target != NULL) {
+					dogma_context_t** ctxv;
+					dogma_simple_energy_pool_t** targetv;
+
+					JLG(ctxv, *target_map, (intptr_t)(*m));
+					assert(ctxv != NULL);
+
+					JLG(targetv, *pool_map, (intptr_t)(*ctxv));
+					assert(targetv != NULL);
+
+					entities[*entity_offset].target = *targetv;
+				} else {
+					entities[*entity_offset].target = NULL;
+				}
+
+				dogma_fill_entity(ctx, *m, e, reload, entities + *entity_offset);
+
+				++(*entity_offset);
+			}
+
+			JLN(te, effects, sub);
+		}
+
+		JLN(m, ctx->ship->children, index);
+	}
+
+	return DOGMA_OK;
+}
+
+
+
+
 
 static inline double runge_kutta_step(double capacitor, double capacity, double tau) {
 	double c = (capacitor > 0) ? (capacity > 0 ? (capacitor / capacity) : 0) : 0;
@@ -117,124 +370,58 @@ static inline double runge_kutta_step(double capacitor, double capacity, double 
 
 
 int dogma_get_capacitor(dogma_context_t* ctx, bool reload, double* delta, bool* stable, double* s) {
-	size_t nentities = 0, i = 0;
-	dogma_env_t** m;
-	key_t index = 0, sub ;
-	array_t effects;
-	const dogma_type_effect_t** te;
-	const dogma_effect_t* e;
-	double global_average_delta = 0, capacity, tau, st_delta, X;
+	size_t n_entities = 0, n_pools = 0, off_entity = 0, off_pool = 0;
+	array_t pool_map = NULL, target_map = NULL;
+	unsigned int changed;
+	double elapsed = 0, min, time_since_min;
+	double k1, k2, k3, k4;
 
 	/* Pass 1: count number of entities */
-	JLG(m, ctx->ship->children, index);
-	while(m != NULL) {
-		/* Check active effects of module with non-zero dischargeattributeid */
-		dogma_get_type_effects((*m)->id, &effects);
+	dogma_capacitor_count_entities_and_pools(ctx, &n_entities, &pool_map, &target_map);
+	JLC(n_pools, pool_map, 0, -1);
 
-		sub = 0;
-		JLF(te, effects, sub);
-		while(te != NULL) {
-			DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
-			if((((*m)->state >> e->category) & 1) && EFFECT_TOUCHES_ENERGY(e)) {
-				++nentities;
-			}
+	/* Pass 2: allocate VLAs */
+	dogma_simple_energy_pool_t pools[n_pools];
+	dogma_simple_energy_entity_t entities[n_entities];
 
-			JLN(te, effects, sub);
+	/* Pass 3: fill them! */
+	dogma_capacitor_fill_entities_and_pools(
+		ctx, &pool_map, &target_map, reload, pools, entities, &off_pool, &off_entity
+	);
+
+	/* Add peak capacitor regen to deltas */
+	for(size_t i = 0; i < n_pools; ++i) {
+		if(pools[i].tau == 0) pools[i].tau = 1.0;
+		pools[i].delta -= (sqrt(.25) - .25) * 2.0 * pools[i].capacity / pools[i].tau;
+	}
+
+	/* Compute the maximum durations of pool entities */
+	for(size_t i = 0; i < n_entities; ++i) {
+		if(entities[i].cycle_time > entities[i].location->max_affector_cycle_time) {
+			entities[i].location->max_affector_cycle_time = entities[i].cycle_time;
 		}
-
-		JLN(m, ctx->ship->children, index);
 	}
 
-	/* Pass 2: allocate VLA and fill it */
-	dogma_simple_energy_entity_t entities[nentities];
-	index = 0;
-	JLG(m, ctx->ship->children, index);
-	while(m != NULL) {
-		/* Check active effects of module with non-zero dischargeattributeid */
-		dogma_get_type_effects((*m)->id, &effects);
-
-		sub = 0;
-		JLF(te, effects, sub);
-		while(te != NULL) {
-			DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
-
-			if((((*m)->state >> e->category) & 1) && EFFECT_TOUCHES_ENERGY(e)) {
-				dogma_fill_entity(ctx, *m, e, reload, entities + i);
-				entities[i].reloading = false;
-				entities[i].remaining_cycles = entities[i].num_cycles_per_reload;
-				entities[i].timer = 0;
-				global_average_delta += entities[i].amount_used / (
-					entities[i].cycle_time + entities[i].reload_time / entities[i].num_cycles_per_reload
-				);
-				++i;
+	do {
+		changed = 0;
+		for(size_t i = 0; i < n_entities; ++i) {
+			if(entities[i].target == NULL) continue;
+			if(entities[i].location->max_affector_cycle_time > entities[i].target->max_affector_cycle_time) {
+				entities[i].target->max_affector_cycle_time = entities[i].location->max_affector_cycle_time;
+				++changed;
 			}
-
-			JLN(te, effects, sub);
 		}
+	} while(changed > 0);
 
-		JLN(m, ctx->ship->children, index);
-	}
+	/* Now the simulation */
 
-	/* Pass 3: math */
+	*delta = pools[0].delta;
+	min = pools[0].capacity;
+	time_since_min = 0;
 
-	/* Base formula taken from: http://wiki.eveuniversity.org/Capacitor_Recharge_Rate */
-	DOGMA_ASSUME_OK(dogma_get_ship_attribute(ctx, ATT_CapacitorCapacity, &capacity));
-	DOGMA_ASSUME_OK(dogma_get_ship_attribute(ctx, ATT_RechargeRate, &tau));
-	tau *= .2;
-	if(tau == 0.0) tau = 1.0;
-
-	/* I got the solution for cap stability by solving the quadratic equation:
-	   dC   /       C        C   \   2Cmax
-	   -- = |sqrt(-----) - ----- | x -----
-	   dt   \     Cmax     Cmax  /    Tau
-
-	           Cmax - X*Tau + sqrt(Cmax^2 - 2X*Tau*Cmax)          dC
-	   ==> C = ----------------------------------------- with X = --
-	                             2                                dt
-	   
-	   A simple check is that, for dC/dt = 0, the two solutions should be 0 and Cmax. */
-
-	X = (global_average_delta > 0) ? global_average_delta : 0.0;
-
-	/* Peak natural capacitor recharge rate, at 25% capacitor */
-	global_average_delta -= (sqrt(.25) - .25) * 2.0 * capacity / tau;
-	*delta = global_average_delta;
-
-	/* You may recognize the discriminant of the above equation */
-	st_delta = capacity * (capacity - 2 * tau * X);
-
-	/* Technically, if you have zero capacitor, any configuration will
-	 * be stable at any percentage, but we want to return false
-	 * if there is actual usage. */
-	if(capacity == 0.0 && global_average_delta > 0.0) st_delta = -1.0;
-
-	if(st_delta >= 0) {
-		/* Discriminant is positive, so there are roots (which are cap
-		 * stability points). We pick the highest one because most
-		 * users expect to be cap stable above 25% capacitor (but
-		 * there is also a stability point below 25%). */
-		*stable = true;
-		*s = (capacity > 0.0) ? (100 / capacity * (0.5 * (capacity - tau * X + sqrt(st_delta)))) : 100.0;
-		return DOGMA_OK;
-	}
-
-	/* Discriminant is (strictly) negative, so there are no real
-	 * roots. In this case, run a simulation of the capacitor
-	 * level over time and see how long it lasts. */
-	double t = 0, k1, k2, k3, k4, increment = 0;
-	double capacitor = capacity; /* Start simulation with full capacitor */
-
-	while(capacitor >= 0 && t < DOGMA_MAX_CAPACITOR_TIME) {
-		increment = 0;
-
-		for(i = 0; i < nentities; ++i) {
+	while(true) {
+		for(size_t i = 0; i < n_entities; ++i) {
 			dogma_simple_energy_entity_t* ent = entities + i;
-
-			/* Perform simulation…
-			 *
-			 * NOTE: the following algorithm will not work for values
-			 * of DOGMA_CAPACITOR_STEP so large that a module can
-			 * enter reload multiple times per step. */
 
 			ent->timer -= DOGMA_CAPACITOR_STEP;
 
@@ -246,14 +433,52 @@ int dogma_get_capacitor(dogma_context_t* ctx, bool reload, double* delta, bool* 
 
 			if(!ent->reloading) {
 				while(ent->timer <= 0 && ent->remaining_cycles > 0) {
-					if(ent->nooverflow) {
-						double newcap = capacitor + increment + ent->amount_used;
-						if(newcap < 0 || newcap > capacity) break;
+					if(ent->location->current < ent->amount_used) {
+						/* Not enough capacitor */
+						ent->location->starved = true;
+						break;
+					}
+
+					if(ent->type == DOGMA_EENT_Powerboost) {
+						if((ent->location->current + ent->other_amount) > ent->location->capacity) {
+							/* Not wasting a precious cap charge */
+							break;
+						}
+
+						ent->location->current += ent->other_amount;
+					}
+
+					else if(ent->type == DOGMA_EENT_Transfer && ent->target != NULL) {
+						ent->target->current += ent->other_amount;
+						if(ent->target->current > ent->target->capacity) {
+							ent->target->current = ent->target->capacity;
+						}
+					}
+
+					else if(ent->type == DOGMA_EENT_Neutralization && ent->target != NULL) {
+						ent->target->current -= ent->other_amount;
+						if(ent->target->current < 0) {
+							ent->target->current = 0;
+						}
+					}
+
+					else if(ent->type == DOGMA_EENT_Leech && ent->target != NULL) {
+						/* XXX: will change soon */
+						double locfrac = (ent->location->capacity > 0) ?
+							(ent->location->current / ent->location->capacity) : 0;
+						double targetfrac = (ent->target->capacity > 0) ?
+							(ent->target->current / ent->target->capacity) : 0;
+
+						if(locfrac < targetfrac) {
+							double transfer = (targetfrac - locfrac) * ent->target->capacity;
+							ent->location->current += transfer;
+							ent->target->current -= transfer;
+						}
 					}
 
 					--(ent->remaining_cycles);
 					ent->timer += ent->cycle_time;
-					increment -= ent->amount_used;
+					ent->location->current -= ent->amount_used;
 				}
 
 				if(ent->remaining_cycles == 0) {
@@ -264,33 +489,49 @@ int dogma_get_capacitor(dogma_context_t* ctx, bool reload, double* delta, bool* 
 			}
 		}
 
-		/* Use RK4 method, which in this case is very similar to the
-		 * Simpson's rule */
-		k1 = runge_kutta_step(capacitor                                  , capacity, tau);
-		k2 = runge_kutta_step(capacitor + 0.5 * DOGMA_CAPACITOR_STEP * k1, capacity, tau);
-		k3 = runge_kutta_step(capacitor + 0.5 * DOGMA_CAPACITOR_STEP * k2, capacity, tau);
-		k4 = runge_kutta_step(capacitor +       DOGMA_CAPACITOR_STEP * k3, capacity, tau);
-		increment += DOGMA_CAPACITOR_STEP * (k1 + k2 + k2 + k3 + k3 + k4) / 6;
+		if((pools[0].current <= 0 && pools[0].capacity > 0) || pools[0].starved) {
+			/* Ran out of capacitor */
+			*stable = false;
+			*s = elapsed;
+			return DOGMA_OK;
+		}
 
-		capacitor += increment;
-		t += DOGMA_CAPACITOR_STEP;
+		for(size_t i = 0; i < n_pools; ++i) {
+			dogma_simple_energy_pool_t* pool = pools + i;
+			k1 = runge_kutta_step(pool->current, pool->capacity, pool->tau);
+			k2 = runge_kutta_step(pool->current + .5 * DOGMA_CAPACITOR_STEP * k1, pool->capacity, pool->tau);
+			k3 = runge_kutta_step(pool->current + .5 * DOGMA_CAPACITOR_STEP * k2, pool->capacity, pool->tau);
+			k4 = runge_kutta_step(pool->current +      DOGMA_CAPACITOR_STEP * k3, pool->capacity, pool->tau);
+			pool->current += DOGMA_CAPACITOR_STEP * (k1 + k2 + k2 + k3 + k3 + k4) / 6.0;
+			if(pool->current > pool->capacity) pool->current = pool->capacity;
+		}
+
+		if(pools[0].current < min) {
+			min = pools[0].current;
+			time_since_min = 0;
+		} else {
+			time_since_min += DOGMA_CAPACITOR_STEP;
+			if(time_since_min > 32 * pools[0].max_affector_cycle_time) {
+				/* Very likely to be stable */
+				break;
+			}
+		}
+
+		elapsed += DOGMA_CAPACITOR_STEP;
 	}
 
-	/* Finally, use simple linear interpolation to refine the zero position:
-	 *
-	 * C(t - step) = capacitor - increment    ( ≥ 0 )
-	 * C(t)        = capacitor                ( < 0 )
-	 *
-	 * Assume C(x) = m*x+b in the [ t-step; t ] interval. Then m = increment / step.
-	 * Using it in the second line, we get:
-	 *
-	 * capacitor = (increment / step) * t + b  => b = capacitor - t * (increment / step)
-	 *
-	 * The zero of C(x) happens at x = -b/a, which is:
-	 * (t * (increment / step) - capacitor) * step / increment
-	 */
-	*s = (t * (increment / DOGMA_CAPACITOR_STEP) - capacitor) * DOGMA_CAPACITOR_STEP / increment;
-	*stable = false;
-	return DOGMA_OK;
+	if(pools[0].capacity > 0) {
+		*stable = true;
+		*s = 100 * min / pools[0].capacity;
+	} else {
+		if(pools[0].delta <= 0) {
+			*stable = true;
+			*s = 100;
+		} else {
+			*stable = false;
+			*s = 0;
+		}
+	}
 
+	return DOGMA_OK;
 }

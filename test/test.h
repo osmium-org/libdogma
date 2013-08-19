@@ -38,6 +38,7 @@
 #define failf(expected, result) do {	  \
 		fprintf(stderr, "%s:%i: Expected: %f, Got: %f\n", \
 		        __FILE__, __LINE__, (expected), (result)); \
+		assert(0); \
 		exit(1); \
 	} while(0)
 
