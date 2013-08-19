@@ -42,7 +42,9 @@ static void assert_capacitor_stable(bool reload, double expected_delta,
 	assert(dogma_get_capacitor(ctx, reload, &global_delta, &stable, &param) == DOGMA_OK);
 	assertf(expected_delta, global_delta * 1000, 0.1);
 	assert(stable == true);
-	assertf(expected_percentage, param, 5.0);
+	/* 10% absolute "error" on stability percentage. Looks big but it
+	 * can vary a lot depending on how it is calculated. */
+	assertf(expected_percentage, param, 10.0);
 }
 
 int main(void) {
@@ -113,7 +115,7 @@ int main(void) {
 	assert_capacitor_stable(true, 4.76 * 8 - 52.0, 77.2);
 
 	dogma_add_charge(ctx, slots[8], TYPE_CapBooster200);
-	assert_capacitor_unstable(true, 4.76 * 8 - 37.3, 41, 37, 30000);
+	assert_capacitor_unstable(true, 4.76 * 8 - 37.3, 41, 37, 60000);
 
 	dogma_add_charge(ctx, slots[8], TYPE_CapBooster100);
 	assert_capacitor_unstable(true, 4.76 * 8 - 29.4, 9, 41, 10000);
@@ -137,11 +139,7 @@ int main(void) {
 		dogma_add_module_sc(ctx, TYPE_NeutronBlasterCannonII, &slots[i], DOGMA_STATE_Active, TYPE_NullL);
 
 	assert_capacitor_stable(false, 2.25 * 7 - 21.7, 58.4);
-	/* Pyfa uses a different algorithm for determining cap stability,
-	 * and the difference really shows here. The global delta is
-	 * tested though, and that's what matters most (it dictates what
-	 * will or will not be stable). */
-	assert_capacitor_stable(true, 2.21 * 7 - 21.7, 58.9 /* 65.8 */);
+	assert_capacitor_stable(true, 2.21 * 7 - 21.7, 65.8);
 
 	dogma_free_context(ctx);
 	return 0;

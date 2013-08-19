@@ -52,6 +52,8 @@ struct dogma_simple_energy_pool_s {
 
 	double max_affector_cycle_time; /* The longest duration of an
 	                                 * entity affecting this pool. */
+	double min; /* Minimum level */
+	double time_since_min; /* When was min last reached? */
 
 	bool starved; /* True when at least one entity could not be
 	               * activated because it did not have enough
@@ -301,6 +303,8 @@ static inline int dogma_capacitor_fill_entities_and_pools(
 	pools[*pool_offset].current = pools[*pool_offset].capacity;
 	pools[*pool_offset].delta = 0.0;
 	pools[*pool_offset].max_affector_cycle_time = 0.0;
+	pools[*pool_offset].min = pools[*pool_offset].capacity;
+	pools[*pool_offset].time_since_min = 0.0;
 	pools[*pool_offset].starved = false;
 
 	++(*pool_offset);
@@ -326,9 +330,6 @@ static inline int dogma_capacitor_fill_entities_and_pools(
 			DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
 			if((((*m)->state >> e->category) & 1) && EFFECT_TOUCHES_ENERGY(e)) {
 				entities[*entity_offset].location = loc;
-				entities[*entity_offset].reloading = false;
-				entities[*entity_offset].remaining_cycles = entities[*entity_offset].num_cycles_per_reload;
-				entities[*entity_offset].timer = 0;
 
 				if((*m)->target != NULL) {
 					dogma_context_t** ctxv;
@@ -346,6 +347,10 @@ static inline int dogma_capacitor_fill_entities_and_pools(
 				}
 
 				dogma_fill_entity(ctx, *m, e, reload, entities + *entity_offset);
+
+				entities[*entity_offset].reloading = false;
+				entities[*entity_offset].remaining_cycles = entities[*entity_offset].num_cycles_per_reload;
+				entities[*entity_offset].timer = 0;
 
 				++(*entity_offset);
 			}
@@ -373,7 +378,7 @@ int dogma_get_capacitor(dogma_context_t* ctx, bool reload, double* delta, bool* 
 	size_t n_entities = 0, n_pools = 0, off_entity = 0, off_pool = 0;
 	array_t pool_map = NULL, target_map = NULL;
 	unsigned int changed;
-	double elapsed = 0, min, time_since_min;
+	double elapsed = 0;
 	double k1, k2, k3, k4;
 
 	/* Pass 1: count number of entities */
@@ -416,8 +421,6 @@ int dogma_get_capacitor(dogma_context_t* ctx, bool reload, double* delta, bool* 
 	/* Now the simulation */
 
 	*delta = pools[0].delta;
-	min = pools[0].capacity;
-	time_since_min = 0;
 
 	while(true) {
 		for(size_t i = 0; i < n_entities; ++i) {
@@ -498,6 +501,26 @@ int dogma_get_capacitor(dogma_context_t* ctx, bool reload, double* delta, bool* 
 
 		for(size_t i = 0; i < n_pools; ++i) {
 			dogma_simple_energy_pool_t* pool = pools + i;
+
+			if(pool->current < pool->min) {
+				pool->min = pool->current;
+				pool->time_since_min = 0;
+
+				do {
+					changed = 0;
+					for(size_t j = 0; j < n_entities; ++j) {
+						if(entities[j].target == NULL) continue;
+						if(entities[j].location->time_since_min == 0 && entities[j].target->time_since_min != 0) {
+							entities[j].target->time_since_min = 0;
+							++changed;
+						}
+					}
+				} while(changed > 0);
+			} else {
+				pool->time_since_min += DOGMA_CAPACITOR_STEP;
+			}
+
+			/* Regenerate capacitor */
 			k1 = runge_kutta_step(pool->current, pool->capacity, pool->tau);
 			k2 = runge_kutta_step(pool->current + .5 * DOGMA_CAPACITOR_STEP * k1, pool->capacity, pool->tau);
 			k3 = runge_kutta_step(pool->current + .5 * DOGMA_CAPACITOR_STEP * k2, pool->capacity, pool->tau);
@@ -506,15 +529,9 @@ int dogma_get_capacitor(dogma_context_t* ctx, bool reload, double* delta, bool* 
 			if(pool->current > pool->capacity) pool->current = pool->capacity;
 		}
 
-		if(pools[0].current < min) {
-			min = pools[0].current;
-			time_since_min = 0;
-		} else {
-			time_since_min += DOGMA_CAPACITOR_STEP;
-			if(time_since_min > 32 * pools[0].max_affector_cycle_time) {
-				/* Very likely to be stable */
-				break;
-			}
+		if(pools[0].time_since_min > 32 * pools[0].max_affector_cycle_time) {
+			/* Likely stable */
+			break;
 		}
 
 		elapsed += DOGMA_CAPACITOR_STEP;
@@ -522,7 +539,7 @@ int dogma_get_capacitor(dogma_context_t* ctx, bool reload, double* delta, bool* 
 
 	if(pools[0].capacity > 0) {
 		*stable = true;
-		*s = 100 * min / pools[0].capacity;
+		*s = 100 * pools[0].min / pools[0].capacity;
 	} else {
 		if(pools[0].delta <= 0) {
 			*stable = true;
