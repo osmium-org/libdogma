@@ -83,29 +83,43 @@ int main(void) {
 	dogma_simple_capacitor_t* list;
 	size_t len;
 
-	assert(dogma_get_capacitor_all(ctx[0], true, &list, &len) == DOGMA_OK);
-	assert(len == 4);
+	for(size_t i = 0; i < 4; ++i) {
+		assert(dogma_get_capacitor_all(ctx[i], true, &list, &len) == DOGMA_OK);
+		assert(len == 4);
 
-	for(size_t i = 0; i < len; ++i) {
-		/* Not much we can assert here, no other tools reliably
-		 * simulate capacitor in situations like this. If there's no
-		 * infinite loops or segfaults at least, that's a good
-		 * thing. */
-		printf(
-			"context:%p stable:%i capacity:%f delta:%f s:%f\n",
-			list[i].context,
-			list[i].stable,
-			list[i].capacity,
-			list[i].delta,
-			list[i].stable ? list[i].stable_fraction : list[i].depletion_time
-		);
+		for(size_t j = 0; j < len; ++j) {
+			printf(
+				"context:%p\tstable:%i\tcapacity:%f\tdelta:%f\ts:%f\n",
+				list[j].context,
+				list[j].stable,
+				list[j].capacity,
+				list[j].delta,
+				list[j].stable ? list[j].stable_fraction : list[j].depletion_time
+			);
+		}
+
+		dogma_free_capacitor_list(list);
 	}
-
-	dogma_free_capacitor_list(list);
 
 	for(size_t i = 0; i < 4; ++i) {
 		dogma_free_context(ctx[i]);
 	}
+
+	dogma_init_context(&ctx[0]);
+	dogma_init_context(&ctx[1]);
+
+	dogma_set_ship(ctx[0], TYPE_Dominix);
+	dogma_set_ship(ctx[1], TYPE_Guardian);
+	dogma_add_module_s(ctx[1], TYPE_LargeRemoteArmorRepairSystemII, &slots[0], DOGMA_STATE_Active);
+	dogma_target(ctx[1], MOD(0) ,ctx[0]);
+
+	assert(dogma_get_capacitor_all(ctx[0], true, &list, &len) == DOGMA_OK);
+	dogma_free_capacitor_list(list);
+	assert(dogma_get_capacitor_all(ctx[1], true, &list, &len) == DOGMA_OK);
+	dogma_free_capacitor_list(list);
+
+	dogma_free_context(ctx[0]);
+	dogma_free_context(ctx[1]);
 
 	return 0;
 }

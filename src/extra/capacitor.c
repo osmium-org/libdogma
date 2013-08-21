@@ -134,7 +134,7 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 		}
 
 		ent->type = DOGMA_EENT_Powerboost;
-		ent->amount_used = 0;
+		ent->amount_used = 0.0;
 		ent->location->delta -= ent->other_amount /
 			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
 		break;
@@ -177,14 +177,11 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 
 	case EFFECT_Leech: /* TODO: reflect thingy */
 		DOGMA_ASSUME_OK(dogma_get_module_attribute(
-			ctx, source->index, e->dischargeattributeid, &(ent->amount_used)
-		));
-
-		DOGMA_ASSUME_OK(dogma_get_module_attribute(
 			ctx, source->index, ATT_PowerTransferAmount, &(ent->other_amount)
 		));
 
 		ent->type = DOGMA_EENT_Leech;
+		ent->amount_used = 0.0;
 		ent->location->delta += ent->other_amount /
 			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
 		if(ent->target != NULL) {
@@ -199,6 +196,7 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 		));
 
 		ent->type = DOGMA_EENT_Simple;
+		ent->other_amount = 0.0;
 		ent->location->delta += ent->amount_used /
 			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
 		break;
@@ -212,7 +210,7 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 
 /* Count the number of entities and fills target maps.
  *
- * @param pool_map initialise to NULL, dogma_context_t* -> 0
+ * @param pool_map initialise to NULL, dogma_context_t* -> 0, later dogma_simple_energy_pool_t*
  * @param target_map initialise to NULL, dogma_env_t* -> dogma_context_t*
  */
 static inline int dogma_capacitor_count_entities_and_pools(
@@ -295,20 +293,17 @@ static inline int dogma_capacitor_fill_entities_and_pools(
 	}
 
 	loc = *v = pools + *pool_offset;
-	pools[*pool_offset].context = ctx;
-	DOGMA_ASSUME_OK(dogma_get_ship_attribute(
-		ctx, ATT_CapacitorCapacity, &(pools[*pool_offset].capacity)
-	));
-	DOGMA_ASSUME_OK(dogma_get_ship_attribute(
-		ctx, ATT_RechargeRate, &(pools[*pool_offset].tau)
-	));
-	pools[*pool_offset].tau *= .2;
-	pools[*pool_offset].current = pools[*pool_offset].capacity;
-	pools[*pool_offset].delta = 0.0;
-	pools[*pool_offset].max_affector_cycle_time = 0.0;
-	pools[*pool_offset].min = pools[*pool_offset].capacity;
-	pools[*pool_offset].time_since_min = 0.0;
-	pools[*pool_offset].starvation_time = -1.0;
+
+	loc->context = ctx;
+	DOGMA_ASSUME_OK(dogma_get_ship_attribute(ctx, ATT_CapacitorCapacity, &(loc->capacity)));
+	DOGMA_ASSUME_OK(dogma_get_ship_attribute(ctx, ATT_RechargeRate, &(loc->tau)));
+	loc->tau *= .2;
+	loc->current = loc->capacity;
+	loc->delta = 0.0;
+	loc->max_affector_cycle_time = 0.0;
+	loc->min = loc->capacity;
+	loc->time_since_min = 0.0;
+	loc->starvation_time = -1.0;
 
 	++(*pool_offset);
 
@@ -339,17 +334,20 @@ static inline int dogma_capacitor_fill_entities_and_pools(
 					dogma_simple_energy_pool_t** targetv;
 
 					JLG(ctxv, *target_map, (intptr_t)(*m));
-					assert(ctxv != NULL);
-
-					JLG(targetv, *pool_map, (intptr_t)(*ctxv));
-					assert(targetv != NULL);
-
-					entities[*entity_offset].target = *targetv;
+					if(ctxv == NULL) {
+						/* The target is isolated and its capacitor
+						 * doesn't matter for the simulation */
+						entities[*entity_offset].target = NULL;
+					} else {
+						JLG(targetv, *pool_map, (intptr_t)(*ctxv));
+						assert(targetv != NULL);
+						entities[*entity_offset].target = *targetv;
+					}
 				} else {
 					entities[*entity_offset].target = NULL;
 				}
 
-				dogma_fill_entity(ctx, *m, e, reload, entities + *entity_offset);
+				DOGMA_ASSUME_OK(dogma_fill_entity(ctx, *m, e, reload, entities + *entity_offset));
 
 				entities[*entity_offset].reloading = false;
 				entities[*entity_offset].remaining_cycles = entities[*entity_offset].num_cycles_per_reload;
@@ -410,24 +408,30 @@ int dogma_get_capacitor_all(dogma_context_t* ctx, bool reload, dogma_simple_capa
 	size_t n_entities = 0, n_pools = 0, off_entity = 0, off_pool = 0, n;
 	array_t pool_map = NULL, target_map = NULL;
 	unsigned int changed;
+	int ret;
 	double elapsed = 0;
 	double k1, k2, k3, k4;
 
 	/* Pass 1: count number of entities */
-	dogma_capacitor_count_entities_and_pools(ctx, &n_entities, &pool_map, &target_map);
+	DOGMA_ASSUME_OK(
+		dogma_capacitor_count_entities_and_pools(ctx, &n_entities, &pool_map, &target_map)
+	);
 	JLC(n_pools, pool_map, 0, -1);
 	*len = n_pools;
 
 	/* Pass 2: allocate stuff */
 	dogma_simple_energy_pool_t pools[n_pools];
 	dogma_simple_energy_entity_t entities[n_entities];
-	dogma_simple_capacitor_t* simple_pools = malloc(n_pools * sizeof(dogma_simple_capacitor_t));
-	*list = simple_pools;
 
 	/* Pass 3: fill them! */
-	dogma_capacitor_fill_entities_and_pools(
+	DOGMA_ASSUME_OK(dogma_capacitor_fill_entities_and_pools(
 		ctx, &pool_map, &target_map, reload, pools, entities, &off_pool, &off_entity
-	);
+	));
+
+	JLFA(ret, pool_map);
+	JLFA(ret, target_map);
+	assert(off_pool == n_pools);
+	assert(off_entity == n_entities);
 
 	/* Add peak capacitor regen to deltas */
 	for(size_t i = 0; i < n_pools; ++i) {
@@ -566,33 +570,35 @@ int dogma_get_capacitor_all(dogma_context_t* ctx, bool reload, dogma_simple_capa
 		if(n == n_pools) {
 			/* Simulation can be stopped, all pools are either starved
 			 * or stable enough */
-			for(size_t i = 0; i < n_pools; ++i) {
-				dogma_simple_energy_pool_t* pool = pools + i;
-				dogma_simple_capacitor_t* simple = simple_pools + i;
-
-				simple->context = pool->context;
-				simple->capacity = pool->capacity;
-				simple->delta = pool->delta;
-
-				if(pool->starvation_time >= 0) {
-					simple->stable = false;
-					simple->depletion_time = pool->starvation_time;
-				} else if(pool->capacity > 1e-300) {
-					simple->stable = true;
-					simple->stable_fraction = pool->min / pool->capacity;
-				} else if(pool->delta <= 0) {
-					simple->stable = true;
-					simple->stable_fraction = 1.0;
-				} else {
-					simple->stable = false;
-					simple->depletion_time = 0.0;
-				}
-			}
-
 			break;
 		}
 
 		elapsed += DOGMA_CAPACITOR_STEP;
+	}
+
+	dogma_simple_capacitor_t* simple_pools = malloc(n_pools * sizeof(dogma_simple_capacitor_t));
+	*list = simple_pools;
+	for(size_t i = 0; i < n_pools; ++i) {
+		dogma_simple_energy_pool_t* pool = pools + i;
+		dogma_simple_capacitor_t* simple = simple_pools + i;
+
+		simple->context = pool->context;
+		simple->capacity = pool->capacity;
+		simple->delta = pool->delta;
+
+		if(pool->starvation_time >= 0) {
+			simple->stable = false;
+			simple->depletion_time = pool->starvation_time;
+		} else if(pool->capacity > 1e-300) {
+			simple->stable = true;
+			simple->stable_fraction = pool->min / pool->capacity;
+		} else if(pool->delta <= 0) {
+			simple->stable = true;
+			simple->stable_fraction = 1.0;
+		} else {
+			simple->stable = false;
+			simple->depletion_time = 0.0;
+		}
 	}
 
 	return DOGMA_OK;
