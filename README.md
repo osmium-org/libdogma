@@ -71,7 +71,7 @@ Dependencies
 
 * A JSON cache dump of the game client (only if you are building from
   git, you can get one with
-  [`phobos`](http://jira.evefit.org/browse/PHOBOS));
+  [Phobos](https://github.com/DarkFenX/Phobos));
 
 * The GNU Autotools suite (only if you are building from git).
 
