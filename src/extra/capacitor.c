@@ -185,10 +185,10 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 
 		ent->type = DOGMA_EENT_Leech;
 		ent->amount_used = 0.0;
-		ent->location->delta += ent->other_amount /
+		ent->location->delta -= ent->other_amount /
 			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
 		if(ent->target != NULL) {
-			ent->target->delta -= ent->other_amount /
+			ent->target->delta += ent->other_amount /
 			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
 		}
 		break;
