@@ -511,7 +511,7 @@ int dogma_get_capacitor_all(dogma_context_t* ctx, bool reload, dogma_simple_capa
 							}
 
 							ent->location->current += leeched;
-							ent->location->current -= leeched;
+							ent->target->current -= leeched;
 
 							if(ent->location->current > ent->location->capacity) {
 								ent->location->current = ent->location->capacity;
