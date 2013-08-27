@@ -41,7 +41,7 @@ int dogma_free_env(dogma_context_t* ctx, dogma_env_t* env) {
 		JLF(targeter, env->targeted_by, index);
 		while(targeter != NULL) {
 			source = (dogma_env_t*)index;
-			assert(dogma_set_target(*targeter, source, NULL) == DOGMA_OK);
+			assert(dogma_set_target(*targeter, source, NULL, NULL) == DOGMA_OK);
 
 			JLN(targeter, env->targeted_by, index);
 		}
@@ -175,26 +175,28 @@ int dogma_inject_skill(dogma_context_t* ctx, typeid_t skillid) {
 	return DOGMA_OK;
 }
 
-int dogma_set_target(dogma_context_t* targeter, dogma_env_t* source, dogma_env_t* target) {
+int dogma_set_target(dogma_context_t* targeter, dogma_env_t* source,
+                     dogma_context_t* targetee, dogma_env_t* target) {
 	state_t s = source->state;
 
 	DOGMA_ASSUME_OK(dogma_set_env_state(targeter, source, DOGMA_STATE_Unplugged));
 
-	if(source->target != NULL) {
+	if(source->target.env != NULL) {
 		/* Remove targeter from targetee */
 		key_t index = (intptr_t)source;
 		int ret;
-		JLD(ret, source->target->targeted_by, index);
+		JLD(ret, source->target.env->targeted_by, index);
 		assert(ret == 1);
 	}
 
-	source->target = target;
+	source->target.context = targetee;
+	source->target.env = target;
 
-	if(source->target != NULL) {
+	if(source->target.env != NULL) {
 		/* Add targeter to targetee */
 		key_t index = (intptr_t)source;
 		dogma_context_t** val;
-		JLI(val, source->target->targeted_by, index);
+		JLI(val, source->target.env->targeted_by, index);
 		*val = targeter;
 	}
 

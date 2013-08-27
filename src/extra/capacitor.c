@@ -39,6 +39,9 @@
 	|| ((e)->dischargeattributeid != 0 && (e)->durationattributeid != 0) \
 )
 
+#define EFFECT_AFFECTED_BY_TARGET_CAPACITOR(e) (	  \
+	(e)->id == EFFECT_Leech \
+)
 
 
 struct dogma_simple_energy_pool_s {
@@ -57,9 +60,9 @@ struct dogma_simple_energy_pool_s {
 	double min; /* Minimum level */
 	double time_since_min; /* When was min last reached? */
 
-	double starvation_time; /* After how many time did this pool run
-	                         * out of capacitor? (Negative value if
-	                         * not applicable) */
+	double starvation_time; /* After how many milliseconds did this
+	                         * pool run out of capacitor? (Negative
+	                         * value if not applicable) */
 };
 typedef struct dogma_simple_energy_pool_s dogma_simple_energy_pool_t;
 
@@ -211,12 +214,11 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 /* Count the number of entities and fills target maps.
  *
  * @param pool_map initialise to NULL, dogma_context_t* -> 0, later dogma_simple_energy_pool_t*
- * @param target_map initialise to NULL, dogma_env_t* -> dogma_context_t*
  */
 static inline int dogma_capacitor_count_entities_and_pools(
 	dogma_context_t* ctx,
 	size_t* n_entities,
-	array_t* pool_map, array_t* target_map) {
+	array_t* pool_map) {
 
 	key_t index = 0, sub;
 	dogma_env_t** m;
@@ -225,7 +227,6 @@ static inline int dogma_capacitor_count_entities_and_pools(
 	const dogma_effect_t* e;
 	void** v;
 	dogma_context_t** targeter;
-	dogma_context_t** ctxv;
 
 	JLG(v, *pool_map, (intptr_t)ctx);
 	if(v != NULL) {
@@ -247,6 +248,12 @@ static inline int dogma_capacitor_count_entities_and_pools(
 			DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
 			if((((*m)->state >> e->category) & 1) && EFFECT_TOUCHES_ENERGY(e)) {
 				++(*n_entities);
+
+				if(EFFECT_AFFECTED_BY_TARGET_CAPACITOR(e) && (*m)->target.context != NULL) {
+					DOGMA_ASSUME_OK(dogma_capacitor_count_entities_and_pools(
+						(*m)->target.context, n_entities, pool_map
+					));
+				}
 			}
 
 			JLN(te, effects, sub);
@@ -258,11 +265,8 @@ static inline int dogma_capacitor_count_entities_and_pools(
 	index = 0;
 	JLF(targeter, ctx->ship->targeted_by, index);
 	while(targeter != NULL) {
-		JLI(ctxv, *target_map, index);
-		*ctxv = ctx;
-
 		DOGMA_ASSUME_OK(dogma_capacitor_count_entities_and_pools(
-			*targeter, n_entities, pool_map, target_map
+			*targeter, n_entities, pool_map
 		));
 
 		JLN(targeter, ctx->ship->targeted_by, index);
@@ -272,7 +276,7 @@ static inline int dogma_capacitor_count_entities_and_pools(
 }
 
 static inline int dogma_capacitor_fill_entities_and_pools(
-	dogma_context_t* ctx, array_t* pool_map, array_t* target_map, bool reload,
+	dogma_context_t* ctx, array_t* pool_map, bool reload,
 	dogma_simple_energy_pool_t* pools, dogma_simple_energy_entity_t* entities,
 	size_t* pool_offset, size_t* entity_offset) {
 
@@ -310,7 +314,7 @@ static inline int dogma_capacitor_fill_entities_and_pools(
 	JLF(targeter, ctx->ship->targeted_by, index);
 	while(targeter != NULL) {
 		DOGMA_ASSUME_OK(dogma_capacitor_fill_entities_and_pools(
-			*targeter, pool_map, target_map, reload, pools, entities, pool_offset, entity_offset
+			*targeter, pool_map, reload, pools, entities, pool_offset, entity_offset
 		));
 
 		JLN(targeter, ctx->ship->targeted_by, index);
@@ -327,22 +331,18 @@ static inline int dogma_capacitor_fill_entities_and_pools(
 		while(te != NULL) {
 			DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
 			if((((*m)->state >> e->category) & 1) && EFFECT_TOUCHES_ENERGY(e)) {
+				if(EFFECT_AFFECTED_BY_TARGET_CAPACITOR(e) && (*m)->target.context != NULL) {
+					DOGMA_ASSUME_OK(dogma_capacitor_fill_entities_and_pools(
+						(*m)->target.context, pool_map, reload, pools, entities, pool_offset, entity_offset
+					));
+				}
+
 				entities[*entity_offset].location = loc;
 
-				if((*m)->target != NULL) {
-					dogma_context_t** ctxv;
+				if((*m)->target.context != NULL) {
 					dogma_simple_energy_pool_t** targetv;
-
-					JLG(ctxv, *target_map, (intptr_t)(*m));
-					if(ctxv == NULL) {
-						/* The target is isolated and its capacitor
-						 * doesn't matter for the simulation */
-						entities[*entity_offset].target = NULL;
-					} else {
-						JLG(targetv, *pool_map, (intptr_t)(*ctxv));
-						assert(targetv != NULL);
-						entities[*entity_offset].target = *targetv;
-					}
+					JLG(targetv, *pool_map, (intptr_t)((*m)->target.context));
+					entities[*entity_offset].target = (targetv != NULL) ? *targetv : NULL;
 				} else {
 					entities[*entity_offset].target = NULL;
 				}
@@ -406,7 +406,7 @@ int dogma_get_capacitor(dogma_context_t* ctx, bool reload, double* delta, bool* 
 
 int dogma_get_capacitor_all(dogma_context_t* ctx, bool reload, dogma_simple_capacitor_t** list, size_t* len) {
 	size_t n_entities = 0, n_pools = 0, off_entity = 0, off_pool = 0, n;
-	array_t pool_map = NULL, target_map = NULL;
+	array_t pool_map = NULL;
 	unsigned int changed;
 	int ret;
 	double elapsed = 0;
@@ -414,7 +414,7 @@ int dogma_get_capacitor_all(dogma_context_t* ctx, bool reload, dogma_simple_capa
 
 	/* Pass 1: count number of entities */
 	DOGMA_ASSUME_OK(
-		dogma_capacitor_count_entities_and_pools(ctx, &n_entities, &pool_map, &target_map)
+		dogma_capacitor_count_entities_and_pools(ctx, &n_entities, &pool_map)
 	);
 	JLC(n_pools, pool_map, 0, -1);
 	*len = n_pools;
@@ -425,11 +425,10 @@ int dogma_get_capacitor_all(dogma_context_t* ctx, bool reload, dogma_simple_capa
 
 	/* Pass 3: fill them! */
 	DOGMA_ASSUME_OK(dogma_capacitor_fill_entities_and_pools(
-		ctx, &pool_map, &target_map, reload, pools, entities, &off_pool, &off_entity
+		ctx, &pool_map, reload, pools, entities, &off_pool, &off_entity
 	));
 
 	JLFA(ret, pool_map);
-	JLFA(ret, target_map);
 	assert(off_pool == n_pools);
 	assert(off_entity == n_entities);
 
@@ -505,16 +504,18 @@ int dogma_get_capacitor_all(dogma_context_t* ctx, bool reload, dogma_simple_capa
 					}
 
 					else if(ent->type == DOGMA_EENT_Leech && ent->target != NULL) {
-						/* XXX: will change soon */
-						double locfrac = (ent->location->capacity > 0) ?
-							(ent->location->current / ent->location->capacity) : 0;
-						double targetfrac = (ent->target->capacity > 0) ?
-							(ent->target->current / ent->target->capacity) : 0;
+						if(ent->location->current < ent->target->current) {
+							double leeched = ent->target->current - ent->location->current;
+							if(leeched > ent->other_amount) {
+								leeched = ent->other_amount;
+							}
 
-						if(locfrac < targetfrac) {
-							double transfer = (targetfrac - locfrac) * ent->target->capacity;
-							ent->location->current += transfer;
-							ent->target->current -= transfer;
+							ent->location->current += leeched;
+							ent->location->current -= leeched;
+
+							if(ent->location->current > ent->location->capacity) {
+								ent->location->current = ent->location->capacity;
+							}
 						}
 					}
 

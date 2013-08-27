@@ -486,7 +486,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 			break;
 
 		case DOGMA_ENVIDX_Target:
-			result->env_value = self->target;
+			result->env_value = self->target.env;
 			break;
 
 		case DOGMA_ENVIDX_Area:

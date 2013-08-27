@@ -390,14 +390,14 @@ int dogma_target(dogma_context_t* targeter, location_t loc, dogma_context_t* tar
 	dogma_env_t* targeter_env;
 
 	DOGMA_ASSUME_OK(dogma_get_location_env(targeter, loc, &targeter_env));
-	return dogma_set_target(targeter, targeter_env, targetee->ship);
+	return dogma_set_target(targeter, targeter_env, targetee, targetee->ship);
 }
 
 int dogma_clear_target(dogma_context_t* targeter, location_t loc) {
 	dogma_env_t* targeter_env;
 
 	DOGMA_ASSUME_OK(dogma_get_location_env(targeter, loc, &targeter_env));
-	return dogma_set_target(targeter, targeter_env, NULL);
+	return dogma_set_target(targeter, targeter_env, NULL, NULL);
 }
 
 

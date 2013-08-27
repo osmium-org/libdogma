@@ -40,7 +40,8 @@
 		(envptr)->id = (_typeid); \
 		(envptr)->parent = (_parent); \
 		(envptr)->owner = (_owner); \
-		(envptr)->target = NULL; \
+		(envptr)->target.context = NULL; \
+		(envptr)->target.env = NULL; \
 		(envptr)->index = (_index); \
 		(envptr)->state = 0; \
 		(envptr)->children = NULL; \
@@ -198,11 +199,17 @@ typedef struct dogma_context_s dogma_context_t;
 struct dogma_fleet_context_s;
 typedef struct dogma_fleet_context_s dogma_fleet_context_t;
 
+struct dogma_target_s {
+	dogma_context_t* context;
+	dogma_env_t* env;
+};
+typedef struct dogma_target_s dogma_target_t;
+
 struct dogma_env_s {
 	typeid_t id;
 	dogma_env_t* parent; /* Also known as location in dogma terminology */
 	dogma_context_t* owner;
-	dogma_env_t* target; /* NULL if no target */
+    dogma_target_t target; /* context and env set to NULL if no target */
 	key_t index; /* Index in parent->children array */
 	state_t state;
 	array_t children;
@@ -277,7 +284,7 @@ int dogma_set_env_state(dogma_context_t*, dogma_env_t*, state_t);
 int dogma_inject_skill(dogma_context_t*, typeid_t);
 
 /* Set a target. */
-int dogma_set_target(dogma_context_t*, dogma_env_t*, dogma_env_t*);
+int dogma_set_target(dogma_context_t*, dogma_env_t*, dogma_context_t*, dogma_env_t*);
 
 /* Get a dogma_env_t* based on its "simpler" location_t description. */
 int dogma_get_location_env(dogma_context_t*, location_t, dogma_env_t**);
