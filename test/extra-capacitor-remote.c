@@ -105,6 +105,8 @@ int main(void) {
 		dogma_free_context(ctx[i]);
 	}
 
+
+
 	dogma_init_context(&ctx[0]);
 	dogma_init_context(&ctx[1]);
 
@@ -118,6 +120,53 @@ int main(void) {
 	assert(dogma_get_capacitor_all(ctx[1], true, &list, &len) == DOGMA_OK);
 	dogma_free_capacitor_list(list);
 
+	dogma_free_context(ctx[0]);
+	dogma_free_context(ctx[1]);
+
+
+
+	dogma_init_context(&ctx[0]);
+	dogma_init_context(&ctx[1]);
+
+	dogma_set_ship(ctx[0], TYPE_Dominix);
+	dogma_set_ship(ctx[1], TYPE_Dominix);
+
+	dogma_add_module_s(ctx[0], TYPE_HeavyEnergyNeutralizerII, &slots[0], DOGMA_STATE_Active);
+	dogma_add_module_s(ctx[0], TYPE_HeavyNosferatuII, &slots[1], DOGMA_STATE_Active);
+	dogma_target(ctx[0], MOD(0), ctx[1]);
+	dogma_target(ctx[0], MOD(1), ctx[1]);
+
+	size_t len1, len2;
+	dogma_simple_capacitor_t *list1, *list2;
+
+	assert(dogma_get_capacitor_all(ctx[0], true, &list1, &len1) == DOGMA_OK);
+	assert(dogma_get_capacitor_all(ctx[1], true, &list2, &len2) == DOGMA_OK);
+
+	/* Test overall equality of result sets */
+	assert(len1 == len2);
+	size_t tested = 0;
+
+	for(size_t i = 0; i < len1; ++i) {
+		for(size_t j = 0; j < len1; ++j) {
+			dogma_simple_capacitor_t *p1, *p2;
+			p1 = list1 + i;
+			p2 = list2 + j;
+
+			if(p1->context != p2->context) continue;
+
+			assert(abs(p1->capacity - p2->capacity) < 1e-300);
+			assert(abs(p1->delta - p2->delta) < 1e-300);
+			assert(p1->stable == p2->stable);
+			assert((p1->stable_fraction - p2->stable_fraction) < 1e-300);
+
+			++tested;
+		}
+	}
+
+	assert(tested == len1);
+
+	dogma_free_capacitor_list(list1);
+	dogma_free_capacitor_list(list2);
 	dogma_free_context(ctx[0]);
 	dogma_free_context(ctx[1]);
 

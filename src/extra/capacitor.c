@@ -224,10 +224,11 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 			 * XXX: is the penalty applied to the max other amount, or to
 			 * the amount actually transferred on a per-cycle basis? */
 			ent->usage_penalty = (1.0 - ent->usage_penalty) * ent->other_amount;
+
+			ent->location->delta -= (ent->other_amount - ent->usage_penalty) / skewed_cycle_time;
 		} else {
 			ent->usage_penalty = 0.0;
 		}
-		ent->location->delta -= (ent->other_amount - ent->usage_penalty) / skewed_cycle_time;
 		break;
 
 	default:
@@ -367,13 +368,32 @@ static inline int dogma_capacitor_fill_entities_and_pools(
 		JLF(te, effects, sub);
 		while(te != NULL) {
 			DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
-			if((((*m)->state >> e->category) & 1) && EFFECT_TOUCHES_ENERGY(e)) {
-				if(EFFECT_AFFECTED_BY_TARGET_CAPACITOR(e) && (*m)->target.context != NULL) {
-					DOGMA_ASSUME_OK(dogma_capacitor_fill_entities_and_pools(
-						(*m)->target.context, pool_map, reload, pools, entities, pool_offset, entity_offset
-					));
-				}
+			if((((*m)->state >> e->category) & 1)
+			   && EFFECT_TOUCHES_ENERGY(e)
+			   && EFFECT_AFFECTED_BY_TARGET_CAPACITOR(e)
+			   && (*m)->target.context != NULL) {
+				DOGMA_ASSUME_OK(dogma_capacitor_fill_entities_and_pools(
+					(*m)->target.context, pool_map, reload, pools, entities, pool_offset, entity_offset
+				));
+			}
 
+			JLN(te, effects, sub);
+		}
+
+		JLN(m, ctx->ship->children, index);
+	}
+
+	index = 0;
+
+	JLF(m, ctx->ship->children, index);
+	while(m != NULL) {
+		dogma_get_type_effects((*m)->id, &effects);
+
+		sub = 0;
+		JLF(te, effects, sub);
+		while(te != NULL) {
+			DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
+			if((((*m)->state >> e->category) & 1) && EFFECT_TOUCHES_ENERGY(e)) {
 				entities[*entity_offset].location = loc;
 
 				if((*m)->target.context != NULL) {
