@@ -27,7 +27,22 @@
 /* Number of milliseconds between each integration step, higher value
  * will mean a faster result, at the cost of accuracy. NB: The game
  * servers internally use ticks of 1 second. */
-#define DOGMA_CAPACITOR_STEP 5000
+#define DOGMA_CAPACITOR_STEP 1000
+
+
+
+#define CLAMP_UP_1F(var, high) do {	  \
+		if((var) > (high)) (var) = (high); \
+	} while(0)
+
+#define CLAMP_DOWN_1F(var, low) do {	  \
+		if((var) < (low)) (var) = (low); \
+	} while(0)
+
+#define CLAMP_2F(var, low, high) do {	  \
+		CLAMP_UP_1F(var, high); \
+		CLAMP_DOWN_1F(var, low); \
+	} while(0)
 
 
 
@@ -84,9 +99,12 @@ struct dogma_simple_energy_entity_s {
 	dogma_simple_energy_pool_t* location;
 	dogma_simple_energy_pool_t* target;
 	double cycle_time;
-	double amount_used; /* Used energy per cycle, in GJ */
+	double amount_used; /* Used energy per cycle, in GJ. If the
+	                     * current capacitor level is below this, no
+	                     * cycle will be initiated. */
 	double other_amount; /* Amount restored, transferred, neutralized
 	                      * or leeched depending on type */
+	double usage_penalty; /* Used energy after a successful cycle */
 	uint32_t num_cycles_per_reload; /* Typically the number of charges
 	                                 * (except crystals) */
 	double reload_time;
@@ -103,6 +121,7 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
                                     const dogma_effect_t* e, bool reload,
                                     dogma_simple_energy_entity_t* ent) {
 	int num_cycles, ret;
+	double skewed_cycle_time;
 
 	DOGMA_ASSUME_OK(dogma_get_module_attribute(
 		ctx, source->index, e->durationattributeid, &(ent->cycle_time)
@@ -126,6 +145,8 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 		}
 	}
 
+	skewed_cycle_time = ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload;
+
 	switch(e->id) {
 
 	case EFFECT_PowerBooster:
@@ -138,8 +159,8 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 
 		ent->type = DOGMA_EENT_Powerboost;
 		ent->amount_used = 0.0;
-		ent->location->delta -= ent->other_amount /
-			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+		ent->usage_penalty = 0.0;
+		ent->location->delta -= ent->other_amount / skewed_cycle_time;
 		break;
 
 	case EFFECT_EnergyTransfer:
@@ -152,15 +173,14 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 		));
 
 		ent->type = DOGMA_EENT_Transfer;
-		ent->location->delta += ent->amount_used /
-			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+		ent->usage_penalty = 0.0;
+		ent->location->delta += ent->amount_used / skewed_cycle_time;
 		if(ent->target != NULL) {
-			ent->target->delta -= ent->other_amount /
-			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+			ent->target->delta -= ent->other_amount / skewed_cycle_time;
 		}
 		break;
 
-	case EFFECT_EnergyDestabilizationNew: /* TODO: reflect thingy */
+	case EFFECT_EnergyDestabilizationNew:
 		DOGMA_ASSUME_OK(dogma_get_module_attribute(
 			ctx, source->index, e->dischargeattributeid, &(ent->amount_used)
 		));
@@ -170,27 +190,44 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 		));
 
 		ent->type = DOGMA_EENT_Neutralization;
-		ent->location->delta += ent->amount_used /
-			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
 		if(ent->target != NULL) {
-			ent->target->delta += ent->other_amount /
-			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+			ent->target->delta += ent->other_amount / skewed_cycle_time;
+
+			DOGMA_ASSUME_OK(dogma_get_ship_attribute(
+				source->target.context, ATT_NeutReflectAmount, &(ent->usage_penalty)
+			));
+
+			/* XXX: this is guesswork (should be correct though) */
+			ent->usage_penalty = (1.0 - ent->usage_penalty) * ent->amount_used;
+		} else {
+			ent->usage_penalty = 0.0;
 		}
+		ent->location->delta += (ent->amount_used + ent->usage_penalty) / skewed_cycle_time;
 		break;
 
-	case EFFECT_Leech: /* TODO: reflect thingy */
+	case EFFECT_Leech:
 		DOGMA_ASSUME_OK(dogma_get_module_attribute(
 			ctx, source->index, ATT_PowerTransferAmount, &(ent->other_amount)
 		));
 
 		ent->type = DOGMA_EENT_Leech;
 		ent->amount_used = 0.0;
-		ent->location->delta -= ent->other_amount /
-			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
 		if(ent->target != NULL) {
-			ent->target->delta += ent->other_amount /
-			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+			ent->target->delta += ent->other_amount / skewed_cycle_time;
+
+			DOGMA_ASSUME_OK(dogma_get_ship_attribute(
+				source->target.context, ATT_NosReflectAmount, &(ent->usage_penalty)
+			));
+
+			/* XXX: this is guesswork
+			 * 
+			 * XXX: is the penalty applied to the max other amount, or to
+			 * the amount actually transferred on a per-cycle basis? */
+			ent->usage_penalty = (1.0 - ent->usage_penalty) * ent->other_amount;
+		} else {
+			ent->usage_penalty = 0.0;
 		}
+		ent->location->delta -= (ent->other_amount - ent->usage_penalty) / skewed_cycle_time;
 		break;
 
 	default:
@@ -200,8 +237,8 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 
 		ent->type = DOGMA_EENT_Simple;
 		ent->other_amount = 0.0;
-		ent->location->delta += ent->amount_used /
-			(ent->cycle_time + ent->reload_time / ent->num_cycles_per_reload);
+		ent->usage_penalty = 0.0;
+		ent->location->delta += ent->amount_used / skewed_cycle_time;
 		break;
 
 	}
@@ -491,37 +528,29 @@ int dogma_get_capacitor_all(dogma_context_t* ctx, bool reload, dogma_simple_capa
 
 					else if(ent->type == DOGMA_EENT_Transfer && ent->target != NULL) {
 						ent->target->current += ent->other_amount;
-						if(ent->target->current > ent->target->capacity) {
-							ent->target->current = ent->target->capacity;
-						}
+						CLAMP_UP_1F(ent->target->current, ent->target->capacity);
 					}
 
 					else if(ent->type == DOGMA_EENT_Neutralization && ent->target != NULL) {
 						ent->target->current -= ent->other_amount;
-						if(ent->target->current < 0) {
-							ent->target->current = 0;
-						}
+						CLAMP_DOWN_1F(ent->target->current, 0.0);
 					}
 
 					else if(ent->type == DOGMA_EENT_Leech && ent->target != NULL) {
 						if(ent->location->current < ent->target->current) {
 							double leeched = ent->target->current - ent->location->current;
-							if(leeched > ent->other_amount) {
-								leeched = ent->other_amount;
-							}
-
+							CLAMP_UP_1F(leeched, ent->other_amount);
 							ent->location->current += leeched;
 							ent->target->current -= leeched;
-
-							if(ent->location->current > ent->location->capacity) {
-								ent->location->current = ent->location->capacity;
-							}
+							CLAMP_UP_1F(ent->location->current, ent->location->capacity);
 						}
 					}
 
 					--(ent->remaining_cycles);
 					ent->timer += ent->cycle_time;
 					ent->location->current -= ent->amount_used;
+					ent->location->current -= ent->usage_penalty;
+					CLAMP_DOWN_1F(ent->location->current, 0.0);
 				}
 
 				if(ent->remaining_cycles == 0) {
@@ -549,7 +578,7 @@ int dogma_get_capacitor_all(dogma_context_t* ctx, bool reload, dogma_simple_capa
 			k3 = runge_kutta_step(pool->current + .5 * DOGMA_CAPACITOR_STEP * k2, pool->capacity, pool->tau);
 			k4 = runge_kutta_step(pool->current +      DOGMA_CAPACITOR_STEP * k3, pool->capacity, pool->tau);
 			pool->current += DOGMA_CAPACITOR_STEP * (k1 + k2 + k2 + k3 + k3 + k4) / 6.0;
-			if(pool->current > pool->capacity) pool->current = pool->capacity;
+			CLAMP_UP_1F(pool->current, pool->capacity);
 
 			if(pool->starvation_time >= 0 || pool->time_since_min > 32 * pool->max_affector_cycle_time) {
 				/* This pool doesn't need more computation */

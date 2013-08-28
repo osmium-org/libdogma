@@ -125,7 +125,7 @@ int main(void) {
 	/* XXX: this test is somewhat idiotic, considering it's impossible
 	 * to overload the booster for this long. */
 	dogma_set_module_state(ctx, slots[9], DOGMA_STATE_Overloaded);
-	assert_capacitor_unstable(true, 4.76 * 8 - 37.1, 37, 36, 40000);
+	assert_capacitor_unstable(true, 4.76 * 8 - 37.1, 37, 36, 60000);
 
 	dogma_free_context(ctx);
 	dogma_init_context(&ctx);
