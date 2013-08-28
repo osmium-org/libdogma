@@ -31,6 +31,11 @@ int dogma_free_env(dogma_context_t* ctx, dogma_env_t* env) {
 	array_t* modifiers2;
 	dogma_modifier_t** modifier;
 
+	/* Clear our own target */
+	if(env->target.context != NULL) {
+		assert(dogma_set_target(ctx, env, NULL, NULL) == DOGMA_OK);
+	}
+
 	/* Clear any targets of things that have what we're about do
 	 * delete as a target */
 	if(env->targeted_by != NULL) {
@@ -46,7 +51,10 @@ int dogma_free_env(dogma_context_t* ctx, dogma_env_t* env) {
 			JLN(targeter, env->targeted_by, index);
 		}
 
+		JLC(ret, env->targeted_by, 0, -1);
+		assert(ret == 0);
 		JLFA(ret, env->targeted_by);
+		assert(ret == 0);
 	}
 
 	/* Clear any chance-based effects */
