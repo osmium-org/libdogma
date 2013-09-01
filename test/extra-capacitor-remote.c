@@ -35,8 +35,8 @@ int main(void) {
 	for(size_t i = 0; i < 4; ++i) {
 		dogma_init_context(ctx + i);
 		dogma_set_ship(ctx[i], TYPE_Rifter);
-		dogma_add_module_s(ctx[i], TYPE_SmallEnergyTransferArrayII, slots + 5 * i, DOGMA_STATE_Active);
-		dogma_add_module_s(ctx[i], TYPE_SmallEnergyTransferArrayII, slots + 5 * i + 1, DOGMA_STATE_Active);
+		dogma_add_module_s(ctx[i], TYPE_SmallRemoteCapacitorTransmitterII, slots + 5 * i, DOGMA_STATE_Active);
+		dogma_add_module_s(ctx[i], TYPE_SmallRemoteCapacitorTransmitterII, slots + 5 * i + 1, DOGMA_STATE_Active);
 		dogma_add_module_s(ctx[i], TYPE_SmallCapacitorBatteryII, slots + 5 * i + 4, DOGMA_STATE_Online);
 	}
 
@@ -112,7 +112,7 @@ int main(void) {
 
 	dogma_set_ship(ctx[0], TYPE_Dominix);
 	dogma_set_ship(ctx[1], TYPE_Guardian);
-	dogma_add_module_s(ctx[1], TYPE_LargeRemoteArmorRepairSystemII, &slots[0], DOGMA_STATE_Active);
+	dogma_add_module_s(ctx[1], TYPE_LargeRemoteArmorRepairerII, &slots[0], DOGMA_STATE_Active);
 	dogma_target(ctx[1], MOD(0) ,ctx[0]);
 
 	assert(dogma_get_capacitor_all(ctx[0], true, &list, &len) == DOGMA_OK);

@@ -46,8 +46,8 @@ int main(void) {
 	assert(dogma_get_ship_attribute(ctx, ATT_CpuOutput, &value) == DOGMA_OK);
 	assertf(value, HARB_BaseCPU * 1.05, EPS);
 
-	assert(dogma_set_skill_level(ctx, TYPE_Electronics, 4) == DOGMA_OK);
-	assert(dogma_set_skill_level(ctx, TYPE_Engineering, 0) == DOGMA_OK);
+	assert(dogma_set_skill_level(ctx, TYPE_CPUManagement, 4) == DOGMA_OK);
+	assert(dogma_set_skill_level(ctx, TYPE_PowerGridManagement, 0) == DOGMA_OK);
 
 	assert(dogma_get_ship_attribute(ctx, ATT_PowerOutput, &value) == DOGMA_OK);
 	assertf(value, HARB_BasePG, EPS);

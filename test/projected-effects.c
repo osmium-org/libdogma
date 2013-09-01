@@ -44,9 +44,9 @@ int main(void) {
 	assertf(0.671744203407, v, 0.0000000000005);
 
 	dogma_set_ship(ctxB, TYPE_Rifter);
-	dogma_add_module_s(ctxB, TYPE_TrackingLinkII, &slots[10], DOGMA_STATE_Active);
-	dogma_add_module_s(ctxB, TYPE_TrackingLinkII, &slots[11], DOGMA_STATE_Active);
-	dogma_add_module_s(ctxB, TYPE_TrackingLinkII, &slots[12], DOGMA_STATE_Active);
+	dogma_add_module_s(ctxB, TYPE_RemoteTrackingComputerII, &slots[10], DOGMA_STATE_Active);
+	dogma_add_module_s(ctxB, TYPE_RemoteTrackingComputerII, &slots[11], DOGMA_STATE_Active);
+	dogma_add_module_s(ctxB, TYPE_RemoteTrackingComputerII, &slots[12], DOGMA_STATE_Active);
 	dogma_target(ctxB, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[10] }, ctxA);
 	dogma_target(ctxB, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[11] }, ctxA);
 	dogma_target(ctxB, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[12] }, ctxA);
@@ -67,11 +67,11 @@ int main(void) {
 	assertf(1.07326286262, v, 0.000000000005);
 
 	dogma_set_ship(ctxC, TYPE_Scimitar);
-	dogma_add_module_sc(ctxC, TYPE_TrackingLinkII, &slots[20], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
-	dogma_add_module_sc(ctxC, TYPE_TrackingLinkII, &slots[21], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
-	dogma_add_module_sc(ctxC, TYPE_TrackingLinkII, &slots[22], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
-	dogma_add_module_sc(ctxC, TYPE_TrackingLinkII, &slots[23], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
-	dogma_add_module_sc(ctxC, TYPE_TrackingLinkII, &slots[24], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
+	dogma_add_module_sc(ctxC, TYPE_RemoteTrackingComputerII, &slots[20], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
+	dogma_add_module_sc(ctxC, TYPE_RemoteTrackingComputerII, &slots[21], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
+	dogma_add_module_sc(ctxC, TYPE_RemoteTrackingComputerII, &slots[22], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
+	dogma_add_module_sc(ctxC, TYPE_RemoteTrackingComputerII, &slots[23], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
+	dogma_add_module_sc(ctxC, TYPE_RemoteTrackingComputerII, &slots[24], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
 	dogma_target(ctxC, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[20] }, ctxA);
 	dogma_target(ctxC, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[21] }, ctxA);
 	dogma_target(ctxC, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[22] }, ctxA);
