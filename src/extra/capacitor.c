@@ -78,6 +78,9 @@ struct dogma_simple_energy_pool_s {
 	double starvation_time; /* After how many milliseconds did this
 	                         * pool run out of capacitor? (Negative
 	                         * value if not applicable) */
+
+	double to_add; /* To add after this tick */
+	double to_sub; /* To remove after this tick */
 };
 typedef struct dogma_simple_energy_pool_s dogma_simple_energy_pool_t;
 
@@ -346,6 +349,8 @@ static inline int dogma_capacitor_fill_entities_and_pools(
 	loc->min = loc->capacity;
 	loc->time_since_min = 0.0;
 	loc->starvation_time = -1.0;
+	loc->to_add = 0.0;
+	loc->to_sub = 0.0;
 
 	++(*pool_offset);
 
@@ -543,34 +548,30 @@ int dogma_get_capacitor_all(dogma_context_t* ctx, bool reload, dogma_simple_capa
 							break;
 						}
 
-						ent->location->current += ent->other_amount;
+						ent->location->to_add += ent->other_amount;
 					}
 
 					else if(ent->type == DOGMA_EENT_Transfer && ent->target != NULL) {
-						ent->target->current += ent->other_amount;
-						CLAMP_UP_1F(ent->target->current, ent->target->capacity);
+						ent->target->to_add += ent->other_amount;
 					}
 
 					else if(ent->type == DOGMA_EENT_Neutralization && ent->target != NULL) {
-						ent->target->current -= ent->other_amount;
-						CLAMP_DOWN_1F(ent->target->current, 0.0);
+						ent->target->to_sub += ent->other_amount;
 					}
 
 					else if(ent->type == DOGMA_EENT_Leech && ent->target != NULL) {
 						if(ent->location->current < ent->target->current) {
 							double leeched = ent->target->current - ent->location->current;
 							CLAMP_UP_1F(leeched, ent->other_amount);
-							ent->location->current += leeched;
-							ent->target->current -= leeched;
-							CLAMP_UP_1F(ent->location->current, ent->location->capacity);
+							ent->location->to_add += leeched;
+							ent->target->to_sub += leeched;
 						}
 					}
 
 					--(ent->remaining_cycles);
 					ent->timer += ent->cycle_time;
-					ent->location->current -= ent->amount_used;
-					ent->location->current -= ent->usage_penalty;
-					CLAMP_DOWN_1F(ent->location->current, 0.0);
+					ent->location->to_sub += ent->amount_used;
+					ent->location->to_sub += ent->usage_penalty;
 				}
 
 				if(ent->remaining_cycles == 0) {
@@ -585,6 +586,9 @@ int dogma_get_capacitor_all(dogma_context_t* ctx, bool reload, dogma_simple_capa
 		for(size_t i = 0; i < n_pools; ++i) {
 			dogma_simple_energy_pool_t* pool = pools + i;
 
+			pool->current -= pool->to_sub;
+			CLAMP_DOWN_1F(pool->current, 0.0);
+
 			if(pool->current < pool->min) {
 				pool->min = pool->current;
 				pool->time_since_min = 0;
@@ -597,8 +601,12 @@ int dogma_get_capacitor_all(dogma_context_t* ctx, bool reload, dogma_simple_capa
 			k2 = runge_kutta_step(pool->current + .5 * DOGMA_CAPACITOR_STEP * k1, pool->capacity, pool->tau);
 			k3 = runge_kutta_step(pool->current + .5 * DOGMA_CAPACITOR_STEP * k2, pool->capacity, pool->tau);
 			k4 = runge_kutta_step(pool->current +      DOGMA_CAPACITOR_STEP * k3, pool->capacity, pool->tau);
-			pool->current += DOGMA_CAPACITOR_STEP * (k1 + k2 + k2 + k3 + k3 + k4) / 6.0;
+			pool->to_add += DOGMA_CAPACITOR_STEP * (k1 + k2 + k2 + k3 + k3 + k4) / 6.0;
+
+			pool->current += pool->to_add;
 			CLAMP_UP_1F(pool->current, pool->capacity);
+
+			pool->to_add = pool->to_sub = 0.0;
 
 			if(pool->starvation_time >= 0 || pool->time_since_min > 32 * pool->max_affector_cycle_time) {
 				/* This pool doesn't need more computation */
