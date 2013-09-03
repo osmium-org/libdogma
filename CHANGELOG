@@ -1,11 +1,12 @@
-staging
-=======
+Version 1.1.0, released 2013-09-03
+==================================
 
 * Added dogma_type_has_projectable_effects().
 
 * Added dogma_get_capacitor_all(). The dogma_get_capacitor() is still
   there but it has been deprecated (it is not faster than the _all()
   variant, and it returns less data).
+
 
 
 Version 1.0.0, released 2013-07-18
