@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([libdogma], [1.1.0])
+AC_INIT([libdogma], [1.1.1])
 AM_INIT_AUTOMAKE([no-dist-gzip dist-xz no-define foreign silent-rules subdir-objects color-tests])
 AM_SILENT_RULES([yes])
 LT_INIT
