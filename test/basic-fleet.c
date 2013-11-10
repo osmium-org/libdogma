@@ -42,10 +42,12 @@ int main(void) {
 
 	dogma_add_module_s(ctxA, TYPE_StripMinerI, &slots[0], DOGMA_STATE_Active);
 
-	/* Source: Pyfa-42efa48 (Jun 13 2013) */
+	/* Source: EFT 2.20.3 */
 
 	dogma_get_module_attribute(ctxA, slots[0], ATT_Duration, &v);
-	assertf(141187.5, v, 0.05);
+	assertf(133425, v, 0.5);
+
+	/* Source: Pyfa-42efa48 (Jun 13 2013) */
 
 	dogma_set_module_state(ctxB, slots[11], DOGMA_STATE_Online);
 	dogma_get_module_attribute(ctxA, slots[0], ATT_Duration, &v);

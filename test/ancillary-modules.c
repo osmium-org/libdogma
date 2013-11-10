@@ -51,6 +51,8 @@ int main(void) {
 
 	dogma_free_context(ctx);
 
+	/* Source: Pyfa-a4d72ca (Oct 7 2013) */
+
 	dogma_init_context(&ctx);
 	dogma_set_ship(ctx, TYPE_Kronos);
 	dogma_add_module(ctx, TYPE_LargeAncillaryArmorRepairer, &slot);
@@ -59,19 +61,19 @@ int main(void) {
 	dogma_get_module_attribute(ctx, slot, ATT_CapacitorNeed, &v);
 	assertf(400.0, v, 0.05);
 	dogma_get_module_attribute(ctx, slot, ATT_ArmorDamageAmount, &v);
-	assertf(618.75, v, 0.005);
+	assertf(712.25, v, 0.005);
 
 	dogma_add_charge(ctx, slot, TYPE_NaniteRepairPaste);
 	dogma_get_module_attribute(ctx, slot, ATT_CapacitorNeed, &v);
 	assertf(400.0, v, 0.05);
 	dogma_get_module_attribute(ctx, slot, ATT_ArmorDamageAmount, &v);
-	assertf(1856.25, v, 0.005);
+	assertf(2136.75, v, 0.005);
 
 	dogma_remove_charge(ctx, slot);
 	dogma_get_module_attribute(ctx, slot, ATT_CapacitorNeed, &v);
 	assertf(400.0, v, 0.05);
 	dogma_get_module_attribute(ctx, slot, ATT_ArmorDamageAmount, &v);
-	assertf(618.75, v, 0.005);
+	assertf(712.25, v, 0.005);
 
 	dogma_free_context(ctx);
 	return 0;

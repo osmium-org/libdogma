@@ -49,16 +49,16 @@ int main(void) {
 	dogma_add_module_s(ctxB, TYPE_ArmoredWarfareLinkRapidRepairII, &slots[10], DOGMA_STATE_Active);
 	dogma_add_module_s(ctxB, TYPE_ArmoredWarfareLinkDamageControlII, &slots[10], DOGMA_STATE_Active);
 
-	/* Source: Pyfa-42efa48 (Jun 13 2013) */
+	/* Source: Pyfa-a4d72ca (Oct 7 2013) */
 
 	dogma_get_ship_attribute(ctxA, ATT_ArmorEmDamageResonance, &v);
-	assertf(0.200852324044, v, 0.0000000000005);
+	assertf(0.201374351838, v, 0.0000000000005);
 	dogma_get_ship_attribute(ctxA, ATT_ArmorExplosiveDamageResonance, &v);
-	assertf(0.186459759416, v, 0.0000000000005);
+	assertf(0.186634205333, v, 0.0000000000005);
 	dogma_get_ship_attribute(ctxA, ATT_ArmorKineticDamageResonance, &v);
-	assertf(0.174806024452, v, 0.0000000000005);
+	assertf(0.174969567500, v, 0.0000000000005);
 	dogma_get_ship_attribute(ctxA, ATT_ArmorThermalDamageResonance, &v);
-	assertf(0.261108021257, v, 0.0000000000005);
+	assertf(0.261786657389, v, 0.0000000000005);
 
 	dogma_get_ship_attribute(ctxA, ATT_ArmorHP, &v);
 	assertf(6875.0, v, 0.05);

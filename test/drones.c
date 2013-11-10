@@ -26,7 +26,7 @@ int main(void) {
 	dogma_init();
 	dogma_init_context(&ctx);
 
-	/* Source: Pyfa-42efa48 (Jun 13 2013) */
+	/* Source: Pyfa-a4d72ca (Oct 7 2013) */
 
 	dogma_set_ship(ctx, TYPE_Dominix);
 	assert(dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_ArmorHP, &v) == DOGMA_NOT_FOUND);
@@ -52,9 +52,9 @@ int main(void) {
 
 	dogma_add_drone(ctx, TYPE_GardeII, 1);
 	dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_MaxRange, &v);
-	assertf(45000.0, v, 0.05);
+	assertf(41250.0, v, 0.05);
 	dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_TrackingSpeed, &v);
-	assertf(0.054, v, 0.0005);
+	assertf(0.0495, v, 0.00005);
 
 	dogma_add_module(ctx, TYPE_LargeSentryDamageAugmentorI, &slot0);
 	dogma_add_module(ctx, TYPE_DroneDamageAmplifierII, &slot1);
@@ -63,9 +63,9 @@ int main(void) {
 	dogma_set_module_state(ctx, slot1, DOGMA_STATE_Online);
 	dogma_set_module_state(ctx, slot2, DOGMA_STATE_Online);
 	dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_MaxRange, &v);
-	assertf(56250.0, v, 0.05);
+	assertf(51562.5, v, 0.05);
 	dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_TrackingSpeed, &v);
-	assertf(0.0675, v, 0.00005);
+	assertf(0.061875, v, 0.0000005);
 	dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_DamageMultiplier, &v);
 	assertf(9.625692655, v, 0.0000000005);
 

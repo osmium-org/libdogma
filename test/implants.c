@@ -28,7 +28,7 @@ int main(void) {
 	dogma_init();
 	dogma_init_context(&ctx);
 
-	/* Source: Pyfa-42efa48 (Jun 13 2013) */
+	/* Source: Pyfa-a4d72ca (Oct 7 2013) */
 
 	/* Let's test a whole implant set (which has bonuses affecting the
 	 * set as a whole), and see how it reacts with stacking penalized
@@ -50,7 +50,7 @@ int main(void) {
 	dogma_set_module_state(ctx, slot2, DOGMA_STATE_Online);
 
 	dogma_get_module_attribute(ctx, slot0, ATT_ShieldBonus, &v);
-	assertf(82.2947996695, v, 0.00000000005);
+	assertf(96.0105996145, v, 0.0000000005);
 
 	dogma_free_context(ctx);
 	dogma_init_context(&ctx);
@@ -84,7 +84,7 @@ int main(void) {
 	dogma_free_context(ctx);
 	dogma_init_context(&ctx);
 
-	/* Source: EFT 2.19.1 */
+	/* Source: EFT 2.20.3 */
 
 	dogma_add_implant(ctx, TYPE_StrongBluePillBooster, &impslot0);
 
@@ -103,7 +103,7 @@ int main(void) {
 	assertf(0.3, v, 0.05);
 
 	dogma_get_module_attribute(ctx, slot0, ATT_ShieldBonus, &v);
-	assertf(39, v, 0.5);
+	assertf(45.5, v, 0.5);
 	dogma_get_ship_attribute(ctx, ATT_ShieldCapacity, &v);
 	assertf(281.25, v, 0.005);
 	dogma_get_ship_attribute(ctx, ATT_CapacitorCapacity, &v);
@@ -112,7 +112,7 @@ int main(void) {
 	dogma_toggle_chance_based_effect(ctx, imploc0, EFFECT_BoosterShieldCapacityPenalty, true);
 
 	dogma_get_module_attribute(ctx, slot0, ATT_ShieldBonus, &v);
-	assertf(39, v, 0.5);
+	assertf(45.5, v, 0.5);
 	dogma_get_ship_attribute(ctx, ATT_ShieldCapacity, &v);
 	assertf(217.96875, v, 0.000005);
 	dogma_get_ship_attribute(ctx, ATT_CapacitorCapacity, &v);
@@ -121,7 +121,7 @@ int main(void) {
 	dogma_toggle_chance_based_effect(ctx, imploc0, EFFECT_BoosterCapacitorCapacityPenalty, true);
 
 	dogma_get_module_attribute(ctx, slot0, ATT_ShieldBonus, &v);
-	assertf(39, v, 0.5);
+	assertf(45.5, v, 0.5);
 	dogma_get_ship_attribute(ctx, ATT_ShieldCapacity, &v);
 	assertf(217.96875, v, 0.000005);
 	dogma_get_ship_attribute(ctx, ATT_CapacitorCapacity, &v);
@@ -130,7 +130,7 @@ int main(void) {
 	dogma_toggle_chance_based_effect(ctx, imploc0, EFFECT_BoosterShieldCapacityPenalty, false);
 
 	dogma_get_module_attribute(ctx, slot0, ATT_ShieldBonus, &v);
-	assertf(39, v, 0.5);
+	assertf(45.5, v, 0.5);
 	dogma_get_ship_attribute(ctx, ATT_ShieldCapacity, &v);
 	assertf(281.25, v, 0.005);
 	dogma_get_ship_attribute(ctx, ATT_CapacitorCapacity, &v);
@@ -139,7 +139,7 @@ int main(void) {
 	dogma_toggle_chance_based_effect(ctx, imploc0, EFFECT_BoosterCapacitorCapacityPenalty, false);
 
 	dogma_get_module_attribute(ctx, slot0, ATT_ShieldBonus, &v);
-	assertf(39, v, 0.5);
+	assertf(45.5, v, 0.5);
 	dogma_get_ship_attribute(ctx, ATT_ShieldCapacity, &v);
 	assertf(281.25, v, 0.005);
 	dogma_get_ship_attribute(ctx, ATT_CapacitorCapacity, &v);
