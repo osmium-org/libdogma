@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /* libdogma
- * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2014 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -47,7 +47,7 @@ function load_json($jsonpath) {
 		'effects' => 'dgmeffects.json',
 		'typeeffects' => 'dgmtypeeffects.json',
 		'expressions' => 'dgmexpressions.json',
-		'operands' => 'dogma_GetOperandsForChar.json',
+		'operands' => 'dogma()_GetOperandsForChar().json',
 	);
 	$json = array();
 
