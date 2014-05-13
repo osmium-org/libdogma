@@ -50,7 +50,7 @@ static double penalized_coefficients[] = {
 	0.0,
 };
 
-static int dogma_apply_modifiers_from_env(dogma_context_t*, array_t, dogma_env_t*,
+static int dogma_apply_modifiers_from_env(dogma_context_t*, dogma_array_t, dogma_env_t*,
                                           double* penalized_positive, double* penalized_negative,
                                           size_t* penalized_pos_count, size_t* penalized_neg_count,
                                           double* singleton_val,
@@ -63,10 +63,10 @@ static int rcompare(const void* left, const void* right) {
 	return *(double*)left < *(double*)right ? 1 : -1;
 }
 
-int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_t attributeid, double* out) {
+int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, dogma_attributeid_t attributeid, double* out) {
 	dogma_env_t* current_env;
 	dogma_fleet_context_t* fleet;
-	array_t* modifiers;
+	dogma_array_t* modifiers;
 	double penalized_positive[MAX_PENALIZED_MODIFIERS];
 	double penalized_negative[MAX_PENALIZED_MODIFIERS];
 	size_t penalized_pos_count, penalized_neg_count;
@@ -201,7 +201,7 @@ int dogma_get_env_attribute(dogma_context_t* ctx, dogma_env_t* env, attributeid_
 		} \
 	} while(0)
 
-int dogma_env_requires_skill(dogma_context_t* ctx, dogma_env_t* env, typeid_t skillid, bool* out) {
+int dogma_env_requires_skill(dogma_context_t* ctx, dogma_env_t* env, dogma_typeid_t skillid, bool* out) {
 	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill1);
 	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill2);
 	DOGMA_CHECK_SKILL_ATTRIBUTE(ATT_RequiredSkill3);
@@ -213,13 +213,13 @@ int dogma_env_requires_skill(dogma_context_t* ctx, dogma_env_t* env, typeid_t sk
 	return DOGMA_OK;
 }
 
-static int dogma_apply_modifiers_from_env(dogma_context_t* ctx, array_t modifiers, dogma_env_t* env,
+static int dogma_apply_modifiers_from_env(dogma_context_t* ctx, dogma_array_t modifiers, dogma_env_t* env,
                                           double* penalized_positive, double* penalized_negative,
                                           size_t* penalized_pos_count, size_t* penalized_neg_count,
                                           double* singleton_val,
                                           int* singleton_penalized, double* out) {
 	dogma_modifier_t** modifier;
-	key_t index = 0;
+	dogma_key_t index = 0;
 	bool applicable;
 
 	JLF(modifier, modifiers, index);

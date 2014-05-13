@@ -56,9 +56,9 @@ struct dogma_expctx_s {
 		char* string_value;
 
 		dogma_association_t assoc_value;
-		attributeid_t attributeid_value;
-		typeid_t typeid_value;
-		groupid_t groupid_value;
+		dogma_attributeid_t attributeid_value;
+		dogma_typeid_t typeid_value;
+		dogma_groupid_t groupid_value;
 
 		dogma_modifier_t modifier_value;
 	};
@@ -72,7 +72,7 @@ typedef struct dogma_expctx_s dogma_expctx_t;
 /* -------- Internal functions -------- */
 
 /* Evaluate an expression. */
-int dogma_eval_expression(dogma_context_t*, dogma_env_t*, expressionid_t, dogma_expctx_t*);
+int dogma_eval_expression(dogma_context_t*, dogma_env_t*, dogma_expressionid_t, dogma_expctx_t*);
 
 
 

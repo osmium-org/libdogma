@@ -25,12 +25,12 @@
 
 /* -------- General -------- */
 
-extern array_t types_by_id;
-extern array_t attributes_by_id;
-extern array_t effects_by_id;
-extern array_t expressions_by_id;
-extern array_t type_attributes_by_typeid;
-extern array_t type_effects_by_typeid;
+extern dogma_array_t types_by_id;
+extern dogma_array_t attributes_by_id;
+extern dogma_array_t effects_by_id;
+extern dogma_array_t expressions_by_id;
+extern dogma_array_t type_attributes_by_typeid;
+extern dogma_array_t type_effects_by_typeid;
 
 
 
@@ -42,36 +42,36 @@ extern array_t type_effects_by_typeid;
 void dogma_init_tables(void);
 
 /* Get a type by its typeid. */
-int dogma_get_type(typeid_t, const dogma_type_t**);
+int dogma_get_type(dogma_typeid_t, const dogma_type_t**);
 
 /* Get an attribute by its attributeid. */
-int dogma_get_attribute(attributeid_t, const dogma_attribute_t**);
+int dogma_get_attribute(dogma_attributeid_t, const dogma_attribute_t**);
 
 /* Get an effect by its effectid. */
-int dogma_get_effect(effectid_t, const dogma_effect_t**);
+int dogma_get_effect(dogma_effectid_t, const dogma_effect_t**);
 
 /* Get an expression by its expressionid. */
-int dogma_get_expression(expressionid_t, const dogma_expression_t**);
+int dogma_get_expression(dogma_expressionid_t, const dogma_expression_t**);
 
 
 
 /* Get an array of all overridden attributes of a type. */
-int dogma_get_type_attributes(typeid_t, array_t*);
+int dogma_get_type_attributes(dogma_typeid_t, dogma_array_t*);
 
 /* Get an attribute of a type. Uses the overridden value (if there is
  * one), or the default value. */
-int dogma_get_type_attribute(typeid_t, attributeid_t, double*);
+int dogma_get_type_attribute(dogma_typeid_t, dogma_attributeid_t, double*);
 
 /* Checks if a type has overridden an attribute. */
-int dogma_type_has_overridden_attribute(typeid_t, attributeid_t, bool*);
+int dogma_type_has_overridden_attribute(dogma_typeid_t, dogma_attributeid_t, bool*);
 
 
 
 /* Get an array of all effects of a type. */
-int dogma_get_type_effects(typeid_t, array_t*);
+int dogma_get_type_effects(dogma_typeid_t, dogma_array_t*);
 
 /* Get a typeeffect of a type. */
-int dogma_get_type_effect(typeid_t, effectid_t, const dogma_type_effect_t**);
+int dogma_get_type_effect(dogma_typeid_t, dogma_effectid_t, const dogma_type_effect_t**);
 
 
 

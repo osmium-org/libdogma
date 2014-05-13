@@ -59,43 +59,32 @@
 
 /* -------- Data types -------- */
 
-typedef uint16_t groupid_t;
-typedef uint8_t  categoryid_t;
-typedef int32_t expressionid_t;
+typedef uint16_t dogma_groupid_t;
+typedef uint8_t  dogma_categoryid_t;
+typedef int32_t dogma_expressionid_t;
 
-/* Shorter aliases for use in non-exported library code (the public
- * API always uses prefixed types because polluting the global
- * namespace is not a good idea in libraries) */
-typedef dogma_array_t array_t;
-typedef dogma_key_t key_t;
-typedef dogma_typeid_t typeid_t;
-typedef dogma_attributeid_t attributeid_t;
-typedef dogma_effectid_t effectid_t;
-typedef dogma_location_t location_t;
-typedef dogma_state_t state_t;
-
-_Static_assert(sizeof(key_t) >= sizeof(attributeid_t), "Must be able to use an attributeid as an array index");
-_Static_assert(sizeof(key_t) >= sizeof(effectid_t), "Must be able to use an effectid as an array index");
-_Static_assert(sizeof(key_t) >= sizeof(typeid_t), "Must be able to use a typeid as an array index");
-_Static_assert(sizeof(key_t) >= sizeof(intptr_t), "Must be able to use a pointer as an array index");
+_Static_assert(sizeof(dogma_key_t) >= sizeof(dogma_attributeid_t), "Must be able to use an attributeid as an array index");
+_Static_assert(sizeof(dogma_key_t) >= sizeof(dogma_effectid_t), "Must be able to use an effectid as an array index");
+_Static_assert(sizeof(dogma_key_t) >= sizeof(dogma_typeid_t), "Must be able to use a typeid as an array index");
+_Static_assert(sizeof(dogma_key_t) >= sizeof(intptr_t), "Must be able to use a pointer as an array index");
 _Static_assert(sizeof(Word_t) >= sizeof(void*), "Must be able to use a pointer as array value");
 
 
 
 struct dogma_type_s {
-	typeid_t id;
+	dogma_typeid_t id;
 	double volume;
 	double mass;
 	double capacity;
-	groupid_t groupid;
-	categoryid_t categoryid;
+	dogma_groupid_t groupid;
+	dogma_categoryid_t categoryid;
 };
 typedef struct dogma_type_s dogma_type_t;
 
 
 
 struct dogma_attribute_s {
-	attributeid_t id;
+	dogma_attributeid_t id;
 	double defaultvalue;
 	bool stackable;
 	bool highisgood;
@@ -105,24 +94,24 @@ typedef struct dogma_attribute_s dogma_attribute_t;
 
 
 struct dogma_effect_s {
-	effectid_t id;
+	dogma_effectid_t id;
 	uint8_t category;
-	expressionid_t preexpressionid;
-	expressionid_t postexpressionid;
-	attributeid_t durationattributeid;
-	attributeid_t trackingspeedattributeid;
-	attributeid_t dischargeattributeid;
-	attributeid_t rangeattributeid;
-	attributeid_t falloffattributeid;
-	attributeid_t fittingusagechanceattributeid;
+	dogma_expressionid_t preexpressionid;
+	dogma_expressionid_t postexpressionid;
+	dogma_attributeid_t durationattributeid;
+	dogma_attributeid_t trackingspeedattributeid;
+	dogma_attributeid_t dischargeattributeid;
+	dogma_attributeid_t rangeattributeid;
+	dogma_attributeid_t falloffattributeid;
+	dogma_attributeid_t fittingusagechanceattributeid;
 };
 typedef struct dogma_effect_s dogma_effect_t;
 
 
 
 struct dogma_type_attribute_s {
-	typeid_t typeid;
-	attributeid_t attributeid;
+	dogma_typeid_t typeid;
+	dogma_attributeid_t attributeid;
 	double value;
 };
 typedef struct dogma_type_attribute_s dogma_type_attribute_t;
@@ -130,8 +119,8 @@ typedef struct dogma_type_attribute_s dogma_type_attribute_t;
 
 
 struct dogma_type_effect_s {
-	typeid_t typeid;
-	effectid_t effectid;
+	dogma_typeid_t typeid;
+	dogma_effectid_t effectid;
 };
 typedef struct dogma_type_effect_s dogma_type_effect_t;
 
@@ -169,15 +158,15 @@ typedef enum dogma_env_index_e dogma_env_index_t;
 
 
 struct dogma_expression_s {
-	expressionid_t id;
+	dogma_expressionid_t id;
 	dogma_operand_t operand;
-	expressionid_t arg1;
-	expressionid_t arg2;
+	dogma_expressionid_t arg1;
+	dogma_expressionid_t arg2;
 
 	union {
-		groupid_t groupid;
-		attributeid_t attributeid;
-		typeid_t typeid;
+		dogma_groupid_t groupid;
+		dogma_attributeid_t attributeid;
+		dogma_typeid_t typeid;
 		dogma_association_t assoctype;
 		dogma_env_index_t envidx;
 		double floatv;
@@ -206,16 +195,16 @@ struct dogma_target_s {
 typedef struct dogma_target_s dogma_target_t;
 
 struct dogma_env_s {
-	typeid_t id;
+	dogma_typeid_t id;
 	dogma_env_t* parent; /* Also known as location in dogma terminology */
 	dogma_context_t* owner;
-    dogma_target_t target; /* context and env set to NULL if no target */
-	key_t index; /* Index in parent->children array */
-	state_t state;
-	array_t children;
-	array_t modifiers; /* targetattribute -> assoctype -> (index) -> modifier */
-	array_t chance_effects;
-	array_t targeted_by; /* dogma_env_t* -> dogma_context_t* */
+	dogma_target_t target; /* context and env set to NULL if no target */
+	dogma_key_t index; /* Index in parent->children array */
+	dogma_state_t state;
+	dogma_array_t children;
+	dogma_array_t modifiers; /* targetattribute -> assoctype -> (index) -> modifier */
+	dogma_array_t chance_effects;
+	dogma_array_t targeted_by; /* dogma_env_t* -> dogma_context_t* */
 };
 
 struct dogma_drone_context_s {
@@ -244,12 +233,12 @@ struct dogma_context_s {
 	dogma_env_t* area;
 
 	uint8_t default_skill_level;
-	array_t skill_levels; /* typeid_t -> uint8_t */
+	dogma_array_t skill_levels; /* dogma_typeid_t -> uint8_t */
 
 	/* Drones are children of character, with unpredictable
 	 * indexes. This is a map where keys are drone typeids, and the
 	 * values are pointers to dogma_drone_context_t. */
-	array_t drone_map;
+	dogma_array_t drone_map;
 };
 
 struct dogma_fleet_context_s {
@@ -258,11 +247,11 @@ struct dogma_fleet_context_s {
 	                           * context (or its subfleets) */
 
 	dogma_fleet_context_t* parent;
-	key_t index; /* Index in parent->subfleets, typically the
-	              * squad/wing number */
-	array_t subfleets; /* Wings, squads, etc. */
-	array_t members; /* Array of dogma_context_t* (keys are the same
-	                  * as values to enforce uniqueness) */
+	dogma_key_t index; /* Index in parent->subfleets, typically the
+	                    * squad/wing number */
+	dogma_array_t subfleets; /* Wings, squads, etc. */
+	dogma_array_t members; /* Array of dogma_context_t* (keys are the same
+	                        * as values to enforce uniqueness) */
 };
 
 
@@ -278,19 +267,19 @@ int dogma_free_env(dogma_context_t*, dogma_env_t*);
 
 /* Set state of an environment and evaluate needed expressions based
  * on effect categories. */
-int dogma_set_env_state(dogma_context_t*, dogma_env_t*, state_t);
+int dogma_set_env_state(dogma_context_t*, dogma_env_t*, dogma_state_t);
 
 /* Inject a skill in character. */
-int dogma_inject_skill(dogma_context_t*, typeid_t);
+int dogma_inject_skill(dogma_context_t*, dogma_typeid_t);
 
 /* Set a target. */
 int dogma_set_target(dogma_context_t*, dogma_env_t*, dogma_context_t*, dogma_env_t*);
 
-/* Get a dogma_env_t* based on its "simpler" location_t description. */
-int dogma_get_location_env(dogma_context_t*, location_t, dogma_env_t**);
+/* Get a dogma_env_t* based on its "simpler" dogma_location_t description. */
+int dogma_get_location_env(dogma_context_t*, dogma_location_t, dogma_env_t**);
 
 /* Toggle a chance based effect on or off. */
-int dogma_toggle_chance_based_effect_env(dogma_context_t*, dogma_env_t*, effectid_t, bool);
+int dogma_toggle_chance_based_effect_env(dogma_context_t*, dogma_env_t*, dogma_effectid_t, bool);
 
 
 

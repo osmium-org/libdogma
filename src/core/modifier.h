@@ -57,21 +57,21 @@ struct dogma_filter_s {
 	uint8_t type;
 
 	union {
-		groupid_t groupid;
-		typeid_t typeid;
+		dogma_groupid_t groupid;
+		dogma_typeid_t typeid;
 	};
 };
 typedef struct dogma_filter_s dogma_filter_t;
 
 struct dogma_modifier_s {
-	attributeid_t targetattribute;
+	dogma_attributeid_t targetattribute;
 	dogma_env_t* targetenv;
 	dogma_association_t assoctype;
 	bool penalized;
 	bool singleton; /* Of all modifiers with singleton set to true
 	                 * affecting the same attribute, only the "best"
 	                 * will be chosen. (Used for gang bonuses.) */
-	attributeid_t sourceattribute;
+	dogma_attributeid_t sourceattribute;
 	dogma_env_t* sourceenv;
 	dogma_filter_t filter;
 	dogma_scope_t scope;

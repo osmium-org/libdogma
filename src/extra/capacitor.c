@@ -259,11 +259,11 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 static inline int dogma_capacitor_count_entities_and_pools(
 	dogma_context_t* ctx,
 	size_t* n_entities,
-	array_t* pool_map) {
+	dogma_array_t* pool_map) {
 
-	key_t index = 0, sub;
+	dogma_key_t index = 0, sub;
 	dogma_env_t** m;
-	array_t effects;
+	dogma_array_t effects;
 	const dogma_type_effect_t** te;
 	const dogma_effect_t* e;
 	void** v;
@@ -317,13 +317,13 @@ static inline int dogma_capacitor_count_entities_and_pools(
 }
 
 static inline int dogma_capacitor_fill_entities_and_pools(
-	dogma_context_t* ctx, array_t* pool_map, bool reload,
+	dogma_context_t* ctx, dogma_array_t* pool_map, bool reload,
 	dogma_simple_energy_pool_t* pools, dogma_simple_energy_entity_t* entities,
 	size_t* pool_offset, size_t* entity_offset) {
 
-	key_t index = 0, sub;
+	dogma_key_t index = 0, sub;
 	dogma_env_t** m;
-	array_t effects;
+	dogma_array_t effects;
 	const dogma_type_effect_t** te;
 	const dogma_effect_t* e;
 	dogma_simple_energy_pool_t** v;
@@ -468,7 +468,7 @@ int dogma_get_capacitor(dogma_context_t* ctx, bool reload, double* delta, bool* 
 
 int dogma_get_capacitor_all(dogma_context_t* ctx, bool reload, dogma_simple_capacitor_t** list, size_t* len) {
 	size_t n_entities = 0, n_pools = 0, off_entity = 0, off_pool = 0, n;
-	array_t pool_map = NULL;
+	dogma_array_t pool_map = NULL;
 	unsigned int changed;
 	int ret;
 	double elapsed = 0;

@@ -30,11 +30,11 @@ dogma_key_t module_slot, implant_slot;
 
 static void try_all_char_attribs(void);
 static void try_all_implant_attribs(void);
-static void try_all_skill_attribs(typeid_t);
+static void try_all_skill_attribs(dogma_typeid_t);
 static void try_all_ship_attribs(void);
 static void try_all_module_attribs(void);
 static void try_all_charge_attribs(void);
-static void try_all_drone_attribs(typeid_t);
+static void try_all_drone_attribs(dogma_typeid_t);
 
 int main(void) {
 	int i;
@@ -68,13 +68,13 @@ int main(void) {
 		/* Try all chance-based attributes (booster side effects) */
 		const dogma_type_effect_t** te;
 		const dogma_effect_t* e;
-		array_t effects;
-		key_t index = 0;
+		dogma_array_t effects;
+		dogma_key_t index = 0;
 
 		dogma_get_type_effects(dogma_table_types[i].id, &effects);
 		JLF(te, effects, index);
 		while(te != NULL) {
-			const location_t loc = {
+			const dogma_location_t loc = {
 				.type = DOGMA_LOC_Implant,
 				.implant_index = implant_slot,
 			};
@@ -161,7 +161,7 @@ static void try_all_implant_attribs(void) {
 	}
 }
 
-static void try_all_skill_attribs(typeid_t id) {
+static void try_all_skill_attribs(dogma_typeid_t id) {
 	int i;
 	double v;
 
@@ -198,7 +198,7 @@ static void try_all_charge_attribs(void) {
 	}
 }
 
-static void try_all_drone_attribs(typeid_t drone) {
+static void try_all_drone_attribs(dogma_typeid_t drone) {
 	int i;
 	double v;
 

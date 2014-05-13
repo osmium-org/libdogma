@@ -36,11 +36,11 @@ int dogma_get_affectors(dogma_context_t* ctx, dogma_location_t loc, dogma_simple
 	dogma_env_t* current_env;
 	dogma_env_t* loc_env;
 	dogma_fleet_context_t* fleet;
-	array_t *modifiers1, *modifiers2;
+	dogma_array_t *modifiers1, *modifiers2;
 	dogma_modifier_t** modifier;
-	key_t attributeid;
-	key_t assoctype;
-	key_t index;
+	dogma_key_t attributeid;
+	dogma_key_t assoctype;
+	dogma_key_t index;
 	bool applicable;
 
 	DOGMA_ASSUME_OK(dogma_get_location_env(ctx, loc, &loc_env));
@@ -246,7 +246,7 @@ int dogma_free_affector_list(dogma_simple_affector_t* list) {
 
 
 
-int dogma_type_has_effect(dogma_typeid_t id, dogma_state_t s, effectid_t effect, bool* hasit) {
+int dogma_type_has_effect(dogma_typeid_t id, dogma_state_t s, dogma_effectid_t effect, bool* hasit) {
 	const dogma_type_effect_t* te;
 	int ret;
 
@@ -266,10 +266,10 @@ int dogma_type_has_effect(dogma_typeid_t id, dogma_state_t s, effectid_t effect,
 }
 
 int dogma_type_has_active_effects(dogma_typeid_t id, bool* activable) {
-	array_t effects;
+	dogma_array_t effects;
 	const dogma_type_effect_t** te;
 	const dogma_effect_t* e;
-	key_t index = 0;
+	dogma_key_t index = 0;
 
 	DOGMA_ASSUME_OK(dogma_get_type_effects(id, &effects));
 
@@ -289,10 +289,10 @@ int dogma_type_has_active_effects(dogma_typeid_t id, bool* activable) {
 }
 
 int dogma_type_has_overload_effects(dogma_typeid_t id, bool* overloadable) {
-	array_t effects;
+	dogma_array_t effects;
 	const dogma_type_effect_t** te;
 	const dogma_effect_t* e;
-	key_t index = 0;
+	dogma_key_t index = 0;
 
 	DOGMA_ASSUME_OK(dogma_get_type_effects(id, &effects));
 
@@ -311,7 +311,7 @@ int dogma_type_has_overload_effects(dogma_typeid_t id, bool* overloadable) {
 	return DOGMA_OK;
 }
 
-bool dogma_expression_has_currenttarget(expressionid_t id) {
+bool dogma_expression_has_currenttarget(dogma_expressionid_t id) {
 	const dogma_expression_t* exp;
 
 	if(dogma_get_expression(id, &exp) == DOGMA_OK) {
@@ -326,11 +326,11 @@ bool dogma_expression_has_currenttarget(expressionid_t id) {
 	return false;
 }
 
-int dogma_type_has_projectable_effects(typeid_t id, bool* out) {
-	array_t effects;
+int dogma_type_has_projectable_effects(dogma_typeid_t id, bool* out) {
+	dogma_array_t effects;
 	const dogma_type_effect_t** te;
 	const dogma_effect_t* e;
-	key_t index = 0;
+	dogma_key_t index = 0;
 
 	DOGMA_ASSUME_OK(dogma_get_type_effects(id, &effects));
 
@@ -365,19 +365,19 @@ int dogma_type_base_attribute(dogma_typeid_t id, dogma_attributeid_t att, double
 
 
 
-int dogma_get_number_of_module_cycles_before_reload(dogma_context_t* ctx, key_t loc, int* out) {
+int dogma_get_number_of_module_cycles_before_reload(dogma_context_t* ctx, dogma_key_t loc, int* out) {
 	double charges_per_cycle, crystal_uses = 1, charge_volume, module_capacity;
 	dogma_env_t* env;
 	bool override_chargerate, override_crystalsgetdamaged;
 	int ret;
 
 	DOGMA_ASSUME_OK(dogma_get_location_env(
-		ctx, (location_t){ .type = DOGMA_LOC_Module, .module_index = loc }, &env
+		ctx, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = loc }, &env
 	));
 	DOGMA_ASSUME_OK(dogma_type_has_overridden_attribute(env->id, ATT_ChargeRate, &override_chargerate));
 
 	ret = dogma_get_location_env(
-		ctx, (location_t){ .type = DOGMA_LOC_Charge, .module_index = loc }, &env
+		ctx, (dogma_location_t){ .type = DOGMA_LOC_Charge, .module_index = loc }, &env
 	);
 	if(ret == DOGMA_NOT_FOUND) {
 		/* No charge */
@@ -459,10 +459,10 @@ int dogma_get_number_of_module_cycles_before_reload(dogma_context_t* ctx, key_t 
 
 
 int dogma_get_nth_type_effect_with_attributes(dogma_typeid_t t, unsigned int n, dogma_effectid_t* out) {
-	array_t effects;
+	dogma_array_t effects;
 	const dogma_type_effect_t** te;
 	const dogma_effect_t* e;
-	key_t index = 0;
+	dogma_key_t index = 0;
 	unsigned int i = 0;
 
 	DOGMA_ASSUME_OK(dogma_get_type_effects(t, &effects));

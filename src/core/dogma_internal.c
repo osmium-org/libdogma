@@ -25,10 +25,10 @@
 
 int dogma_free_env(dogma_context_t* ctx, dogma_env_t* env) {
 	int ret;
-	key_t index = -1, index2, index3;
+	dogma_key_t index = -1, index2, index3;
 	dogma_env_t** child;
-	array_t* modifiers;
-	array_t* modifiers2;
+	dogma_array_t* modifiers;
+	dogma_array_t* modifiers2;
 	dogma_modifier_t** modifier;
 
 	/* Clear our own target */
@@ -39,7 +39,7 @@ int dogma_free_env(dogma_context_t* ctx, dogma_env_t* env) {
 	/* Clear any targets of things that have what we're about do
 	 * delete as a target */
 	if(env->targeted_by != NULL) {
-		key_t index = 0;
+		dogma_key_t index = 0;
 		dogma_context_t** targeter;
 		dogma_env_t* source;
 
@@ -59,7 +59,7 @@ int dogma_free_env(dogma_context_t* ctx, dogma_env_t* env) {
 
 	/* Clear any chance-based effects */
 	if(env->chance_effects != NULL) {
-		key_t effectid = 0;
+		dogma_key_t effectid = 0;
 		bool* val;
 
 		JLF(val, env->chance_effects, effectid);
@@ -105,9 +105,9 @@ int dogma_free_env(dogma_context_t* ctx, dogma_env_t* env) {
 	return DOGMA_OK;
 }
 
-int dogma_set_env_state(dogma_context_t* ctx, dogma_env_t* env, state_t newstate) {
-	array_t enveffects;
-	key_t index = 0;
+int dogma_set_env_state(dogma_context_t* ctx, dogma_env_t* env, dogma_state_t newstate) {
+	dogma_array_t enveffects;
+	dogma_key_t index = 0;
 	const dogma_type_effect_t** te;
 	const dogma_effect_t* e;
 	dogma_expctx_t result;
@@ -167,7 +167,7 @@ int dogma_set_env_state(dogma_context_t* ctx, dogma_env_t* env, state_t newstate
 	return DOGMA_OK;
 }
 
-int dogma_inject_skill(dogma_context_t* ctx, typeid_t skillid) {
+int dogma_inject_skill(dogma_context_t* ctx, dogma_typeid_t skillid) {
 	dogma_env_t* skill_env = malloc(sizeof(dogma_env_t));
 	dogma_env_t** value;
 
@@ -185,13 +185,13 @@ int dogma_inject_skill(dogma_context_t* ctx, typeid_t skillid) {
 
 int dogma_set_target(dogma_context_t* targeter, dogma_env_t* source,
                      dogma_context_t* targetee, dogma_env_t* target) {
-	state_t s = source->state;
+	dogma_state_t s = source->state;
 
 	DOGMA_ASSUME_OK(dogma_set_env_state(targeter, source, DOGMA_STATE_Unplugged));
 
 	if(source->target.env != NULL) {
 		/* Remove targeter from targetee */
-		key_t index = (intptr_t)source;
+		dogma_key_t index = (intptr_t)source;
 		int ret;
 		JLD(ret, source->target.env->targeted_by, index);
 		assert(ret == 1);
@@ -202,7 +202,7 @@ int dogma_set_target(dogma_context_t* targeter, dogma_env_t* source,
 
 	if(source->target.env != NULL) {
 		/* Add targeter to targetee */
-		key_t index = (intptr_t)source;
+		dogma_key_t index = (intptr_t)source;
 		dogma_context_t** val;
 		JLI(val, source->target.env->targeted_by, index);
 		*val = targeter;
@@ -213,7 +213,7 @@ int dogma_set_target(dogma_context_t* targeter, dogma_env_t* source,
 	return DOGMA_OK;
 }
 
-int dogma_toggle_chance_based_effect_env(dogma_context_t* ctx, dogma_env_t* env, effectid_t id, bool on) {
+int dogma_toggle_chance_based_effect_env(dogma_context_t* ctx, dogma_env_t* env, dogma_effectid_t id, bool on) {
 	const dogma_type_effect_t* te;
 	const dogma_effect_t* e;
 	bool* val;

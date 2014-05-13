@@ -29,8 +29,8 @@
 #define DOGMA_MAX_SKILL_LEVEL 5
 
 static int dogma_add_env_generic(dogma_context_t*, dogma_env_t*, dogma_context_t*,
-                                 typeid_t, key_t*, state_t);
-static int dogma_remove_env_generic(dogma_context_t*, dogma_env_t*, key_t);
+                                 dogma_typeid_t, dogma_key_t*, dogma_state_t);
+static int dogma_remove_env_generic(dogma_context_t*, dogma_env_t*, dogma_key_t);
 
 
 
@@ -52,7 +52,7 @@ int dogma_init(void) {
 int dogma_init_context(dogma_context_t** ctx) {
 	dogma_context_t* new_ctx = malloc(sizeof(dogma_context_t));
 	dogma_env_t** value;
-	key_t index = 0;
+	dogma_key_t index = 0;
 	const dogma_type_t** type;
 
 	new_ctx->gang = malloc(sizeof(dogma_env_t));
@@ -69,8 +69,8 @@ int dogma_init_context(dogma_context_t** ctx) {
 	*value = new_ctx->ship;
 
 	new_ctx->default_skill_level = DOGMA_MAX_SKILL_LEVEL;
-	new_ctx->skill_levels = (array_t)NULL;
-	new_ctx->drone_map = (array_t)NULL;
+	new_ctx->skill_levels = (dogma_array_t)NULL;
+	new_ctx->drone_map = (dogma_array_t)NULL;
 
 	*ctx = new_ctx;
 
@@ -89,7 +89,7 @@ int dogma_init_context(dogma_context_t** ctx) {
 
 int dogma_free_context(dogma_context_t* ctx) {
 	dogma_drone_context_t** value;
-	key_t index = 0;
+	dogma_key_t index = 0;
 	int ret;
 
 	if(ctx->fleet != NULL) {
@@ -127,7 +127,7 @@ int dogma_set_default_skill_level(dogma_context_t* ctx, uint8_t default_level) {
 	return DOGMA_OK;
 }
 
-int dogma_set_skill_level(dogma_context_t* ctx, typeid_t skillid, uint8_t level) {
+int dogma_set_skill_level(dogma_context_t* ctx, dogma_typeid_t skillid, uint8_t level) {
 	uint8_t* value;
 
 	if(level > DOGMA_MAX_SKILL_LEVEL) level = DOGMA_MAX_SKILL_LEVEL;
@@ -151,7 +151,7 @@ int dogma_reset_skill_levels(dogma_context_t* ctx) {
 
 static inline int dogma_add_env_generic(dogma_context_t* ctx,
                                         dogma_env_t* location, dogma_context_t* owner,
-                                        typeid_t id, key_t* index, state_t state) {
+                                        dogma_typeid_t id, dogma_key_t* index, dogma_state_t state) {
 	dogma_env_t* new_env = malloc(sizeof(dogma_env_t));
 	dogma_env_t** value;
 	int result;
@@ -168,7 +168,7 @@ static inline int dogma_add_env_generic(dogma_context_t* ctx,
 
 static inline int dogma_remove_env_generic(dogma_context_t* ctx,
                                            dogma_env_t* location,
-                                           key_t index) {
+                                           dogma_key_t index) {
 	dogma_env_t** env;
 	int result;
 
@@ -187,7 +187,7 @@ static inline int dogma_remove_env_generic(dogma_context_t* ctx,
 
 
 
-int dogma_set_ship(dogma_context_t* ctx, typeid_t ship_typeid) {
+int dogma_set_ship(dogma_context_t* ctx, dogma_typeid_t ship_typeid) {
 	if(ship_typeid == ctx->ship->id) {
 		/* Be lazy */
 		return DOGMA_OK;
@@ -204,7 +204,7 @@ int dogma_set_ship(dogma_context_t* ctx, typeid_t ship_typeid) {
 
 
 
-int dogma_add_module(dogma_context_t* ctx, typeid_t module_typeid, key_t* out_index) {
+int dogma_add_module(dogma_context_t* ctx, dogma_typeid_t module_typeid, dogma_key_t* out_index) {
 	*out_index = DOGMA_SAFE_SHIP_INDEXES;
 	return dogma_add_env_generic(
 		ctx,
@@ -213,27 +213,27 @@ int dogma_add_module(dogma_context_t* ctx, typeid_t module_typeid, key_t* out_in
 	);
 }
 
-int dogma_add_module_s(dogma_context_t* ctx, typeid_t id, key_t* index, state_t s) {
+int dogma_add_module_s(dogma_context_t* ctx, dogma_typeid_t id, dogma_key_t* index, dogma_state_t s) {
 	DOGMA_ASSUME_OK(dogma_add_module(ctx, id, index));
 	return dogma_set_module_state(ctx, *index, s);
 }
 
-int dogma_add_module_c(dogma_context_t* ctx, typeid_t id, key_t* index, typeid_t charge) {
+int dogma_add_module_c(dogma_context_t* ctx, dogma_typeid_t id, dogma_key_t* index, dogma_typeid_t charge) {
 	DOGMA_ASSUME_OK(dogma_add_module(ctx, id, index));
 	return dogma_add_charge(ctx, *index, charge);
 }
 
-int dogma_add_module_sc(dogma_context_t* ctx, typeid_t id, key_t* index, state_t s, typeid_t charge) {
+int dogma_add_module_sc(dogma_context_t* ctx, dogma_typeid_t id, dogma_key_t* index, dogma_state_t s, dogma_typeid_t charge) {
 	DOGMA_ASSUME_OK(dogma_add_module(ctx, id, index));
 	DOGMA_ASSUME_OK(dogma_set_module_state(ctx, *index, s));
 	return dogma_add_charge(ctx, *index, charge);
 }
 
-int dogma_remove_module(dogma_context_t* ctx, key_t index) {
+int dogma_remove_module(dogma_context_t* ctx, dogma_key_t index) {
 	return dogma_remove_env_generic(ctx, ctx->ship, index);
 }
 
-int dogma_set_module_state(dogma_context_t* ctx, key_t index, state_t new_state) {
+int dogma_set_module_state(dogma_context_t* ctx, dogma_key_t index, dogma_state_t new_state) {
 	dogma_env_t** module_env;
 
 	JLG(module_env, ctx->ship->children, index);
@@ -246,9 +246,9 @@ int dogma_set_module_state(dogma_context_t* ctx, key_t index, state_t new_state)
 
 
 
-int dogma_add_charge(dogma_context_t* ctx, key_t index, typeid_t chargeid) {
+int dogma_add_charge(dogma_context_t* ctx, dogma_key_t index, dogma_typeid_t chargeid) {
 	dogma_env_t** module_env;
-	key_t charge_index = 0;
+	dogma_key_t charge_index = 0;
 
 	JLG(module_env, ctx->ship->children, index);
 	if(module_env == NULL) return DOGMA_NOT_FOUND;
@@ -263,7 +263,7 @@ int dogma_add_charge(dogma_context_t* ctx, key_t index, typeid_t chargeid) {
 	);
 }
 
-int dogma_remove_charge(dogma_context_t* ctx, key_t index) {
+int dogma_remove_charge(dogma_context_t* ctx, dogma_key_t index) {
 	dogma_env_t** module_env;
 	int count;
 
@@ -281,12 +281,12 @@ int dogma_remove_charge(dogma_context_t* ctx, key_t index) {
 
 
 
-int dogma_add_drone(dogma_context_t* ctx, typeid_t droneid, unsigned int quantity) {
+int dogma_add_drone(dogma_context_t* ctx, dogma_typeid_t droneid, unsigned int quantity) {
 	dogma_env_t** value1;
 	dogma_drone_context_t** value2;
 	dogma_drone_context_t* drone_ctx;
 	dogma_env_t* drone_env;
-	key_t index = DOGMA_SAFE_CHAR_INDEXES;
+	dogma_key_t index = DOGMA_SAFE_CHAR_INDEXES;
 	int ret;
 
 	if(quantity == 0) return DOGMA_OK;
@@ -320,7 +320,7 @@ int dogma_add_drone(dogma_context_t* ctx, typeid_t droneid, unsigned int quantit
 	return dogma_set_env_state(ctx, drone_env, DOGMA_STATE_Active);
 }
 
-int dogma_remove_drone_partial(dogma_context_t* ctx, typeid_t droneid, unsigned int quantity) {
+int dogma_remove_drone_partial(dogma_context_t* ctx, dogma_typeid_t droneid, unsigned int quantity) {
 	dogma_drone_context_t** value;
 
 	JLG(value, ctx->drone_map, droneid);
@@ -335,7 +335,7 @@ int dogma_remove_drone_partial(dogma_context_t* ctx, typeid_t droneid, unsigned 
 	}
 }
 
-int dogma_remove_drone(dogma_context_t* ctx, typeid_t droneid) {
+int dogma_remove_drone(dogma_context_t* ctx, dogma_typeid_t droneid) {
 	dogma_drone_context_t** value;
 	dogma_env_t* drone_env;
 	int ret;
@@ -359,7 +359,7 @@ int dogma_remove_drone(dogma_context_t* ctx, typeid_t droneid) {
 
 
 
-int dogma_add_implant(dogma_context_t* ctx, typeid_t id, key_t* index) {
+int dogma_add_implant(dogma_context_t* ctx, dogma_typeid_t id, dogma_key_t* index) {
 	*index = DOGMA_SAFE_CHAR_INDEXES;
 	return dogma_add_env_generic(
 		ctx,
@@ -368,7 +368,7 @@ int dogma_add_implant(dogma_context_t* ctx, typeid_t id, key_t* index) {
 	);
 }
 
-int dogma_remove_implant(dogma_context_t* ctx, key_t index) {
+int dogma_remove_implant(dogma_context_t* ctx, dogma_key_t index) {
 	return dogma_remove_env_generic(ctx, ctx->character, index);
 }
 
@@ -376,7 +376,7 @@ int dogma_remove_implant(dogma_context_t* ctx, key_t index) {
 
 
 
-int dogma_toggle_chance_based_effect(dogma_context_t* ctx, location_t loc, effectid_t id, bool on) {
+int dogma_toggle_chance_based_effect(dogma_context_t* ctx, dogma_location_t loc, dogma_effectid_t id, bool on) {
 	dogma_env_t* loc_env;
 	DOGMA_ASSUME_OK(dogma_get_location_env(ctx, loc, &loc_env));
 	return dogma_toggle_chance_based_effect_env(ctx, loc_env, id, on);
@@ -386,14 +386,14 @@ int dogma_toggle_chance_based_effect(dogma_context_t* ctx, location_t loc, effec
 
 
 
-int dogma_target(dogma_context_t* targeter, location_t loc, dogma_context_t* targetee) {
+int dogma_target(dogma_context_t* targeter, dogma_location_t loc, dogma_context_t* targetee) {
 	dogma_env_t* targeter_env;
 
 	DOGMA_ASSUME_OK(dogma_get_location_env(targeter, loc, &targeter_env));
 	return dogma_set_target(targeter, targeter_env, targetee, targetee->ship);
 }
 
-int dogma_clear_target(dogma_context_t* targeter, location_t loc) {
+int dogma_clear_target(dogma_context_t* targeter, dogma_location_t loc) {
 	dogma_env_t* targeter_env;
 
 	DOGMA_ASSUME_OK(dogma_get_location_env(targeter, loc, &targeter_env));
@@ -404,11 +404,11 @@ int dogma_clear_target(dogma_context_t* targeter, location_t loc) {
 
 
 
-int dogma_get_location_env(dogma_context_t* ctx, location_t location, dogma_env_t** env) {
+int dogma_get_location_env(dogma_context_t* ctx, dogma_location_t location, dogma_env_t** env) {
 	dogma_env_t** env1;
 	dogma_env_t** env2;
 	dogma_drone_context_t** drone_env1;
-	key_t index = 0;
+	dogma_key_t index = 0;
 
 	switch(location.type) {
 
@@ -459,67 +459,67 @@ int dogma_get_location_env(dogma_context_t* ctx, location_t location, dogma_env_
 	}
 }
 
-int dogma_get_location_attribute(dogma_context_t* ctx, location_t location,
-                                 attributeid_t attributeid, double* out) {
+int dogma_get_location_attribute(dogma_context_t* ctx, dogma_location_t location,
+                                 dogma_attributeid_t attributeid, double* out) {
 	dogma_env_t* loc_env;
 	DOGMA_ASSUME_OK(dogma_get_location_env(ctx, location, &loc_env));
 	return dogma_get_env_attribute(ctx, loc_env, attributeid, out);
 }
 
-int dogma_get_character_attribute(dogma_context_t* ctx, attributeid_t attributeid, double* out) {
+int dogma_get_character_attribute(dogma_context_t* ctx, dogma_attributeid_t attributeid, double* out) {
 	return dogma_get_env_attribute(ctx, ctx->character, attributeid, out);
 }
 
-int dogma_get_implant_attribute(dogma_context_t* ctx, key_t index, attributeid_t attributeid, double* out) {
+int dogma_get_implant_attribute(dogma_context_t* ctx, dogma_key_t index, dogma_attributeid_t attributeid, double* out) {
 	return dogma_get_location_attribute(
 		ctx,
-		(location_t){ .type = DOGMA_LOC_Implant, .implant_index = index },
+		(dogma_location_t){ .type = DOGMA_LOC_Implant, .implant_index = index },
 		attributeid,
 		out
 	);
 }
 
-int dogma_get_skill_attribute(dogma_context_t* ctx, typeid_t id, attributeid_t attributeid, double* out) {
+int dogma_get_skill_attribute(dogma_context_t* ctx, dogma_typeid_t id, dogma_attributeid_t attributeid, double* out) {
 	return dogma_get_location_attribute(
 		ctx,
-		(location_t){ .type = DOGMA_LOC_Skill, .skill_typeid = id },
+		(dogma_location_t){ .type = DOGMA_LOC_Skill, .skill_typeid = id },
 		attributeid,
 		out
 	);
 }
 
-int dogma_get_ship_attribute(dogma_context_t* ctx, attributeid_t attributeid, double* out) {
+int dogma_get_ship_attribute(dogma_context_t* ctx, dogma_attributeid_t attributeid, double* out) {
 	return dogma_get_env_attribute(ctx, ctx->ship, attributeid, out);
 }
 
-int dogma_get_module_attribute(dogma_context_t* ctx, key_t index, attributeid_t attributeid, double* out) {
+int dogma_get_module_attribute(dogma_context_t* ctx, dogma_key_t index, dogma_attributeid_t attributeid, double* out) {
 	return dogma_get_location_attribute(
 		ctx,
-		(location_t){ .type = DOGMA_LOC_Module, .module_index = index },
+		(dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = index },
 		attributeid,
 		out
 	);
 }
 
-int dogma_get_charge_attribute(dogma_context_t* ctx, key_t index, attributeid_t attributeid, double* out) {
+int dogma_get_charge_attribute(dogma_context_t* ctx, dogma_key_t index, dogma_attributeid_t attributeid, double* out) {
 	return dogma_get_location_attribute(
 		ctx,
-		(location_t){ .type = DOGMA_LOC_Charge, .module_index = index },
+		(dogma_location_t){ .type = DOGMA_LOC_Charge, .module_index = index },
 		attributeid,
 		out
 	);
 }
 
-int dogma_get_drone_attribute(dogma_context_t* ctx, typeid_t droneid, attributeid_t attributeid, double* out) {
+int dogma_get_drone_attribute(dogma_context_t* ctx, dogma_typeid_t droneid, dogma_attributeid_t attributeid, double* out) {
 	return dogma_get_location_attribute(
 		ctx,
-		(location_t){ .type = DOGMA_LOC_Drone, .drone_typeid = droneid },
+		(dogma_location_t){ .type = DOGMA_LOC_Drone, .drone_typeid = droneid },
 		attributeid,
 		out
 	);
 }
 
-int dogma_get_chance_based_effect_chance(dogma_context_t* ctx, location_t loc, effectid_t id, double* out) {
+int dogma_get_chance_based_effect_chance(dogma_context_t* ctx, dogma_location_t loc, dogma_effectid_t id, double* out) {
 	dogma_env_t* loc_env;
 	const dogma_type_effect_t* te;
 	const dogma_effect_t* e;

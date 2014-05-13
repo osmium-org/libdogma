@@ -28,10 +28,10 @@
 
 /* Get an attribute value of an environment, applying all relevant
  * modifiers to it. */
-int dogma_get_env_attribute(dogma_context_t*, dogma_env_t*, attributeid_t, double*);
+int dogma_get_env_attribute(dogma_context_t*, dogma_env_t*, dogma_attributeid_t, double*);
 
 /* Checks whether an environment requires a skill. */
-int dogma_env_requires_skill(dogma_context_t*, dogma_env_t*, typeid_t, bool*);
+int dogma_env_requires_skill(dogma_context_t*, dogma_env_t*, dogma_typeid_t, bool*);
 
 
 

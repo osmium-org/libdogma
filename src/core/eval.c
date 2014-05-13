@@ -23,7 +23,7 @@
 
 int dogma_eval_expression(dogma_context_t* ctx,
                           dogma_env_t* self,
-                          expressionid_t id,
+                          dogma_expressionid_t id,
                           dogma_expctx_t* result) {
 	const dogma_expression_t* exp;
 	dogma_expctx_t resarg1, resarg2;

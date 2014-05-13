@@ -18,7 +18,7 @@
 
 #include "fleet.h"
 
-static dogma_fleet_context_t* dogma_get_subfleet(dogma_fleet_context_t*, key_t);
+static dogma_fleet_context_t* dogma_get_subfleet(dogma_fleet_context_t*, dogma_key_t);
 
 static int dogma_add_subfleet_commander(dogma_fleet_context_t* subfctx, dogma_context_t*);
 
@@ -32,7 +32,7 @@ int dogma_init_fleet_context(dogma_fleet_context_t** fctx) {
 int dogma_free_fleet_context(dogma_fleet_context_t* fctx) {
 	dogma_fleet_context_t** subfctx;
 	dogma_context_t** memberctx;
-	key_t index = 0;
+	dogma_key_t index = 0;
 	int ret;
 
 	if(fctx->parent != NULL) {
@@ -69,14 +69,14 @@ int dogma_add_fleet_commander(dogma_fleet_context_t* fctx, dogma_context_t* ctx)
 	return dogma_add_subfleet_commander(fctx, ctx);
 }
 
-int dogma_add_wing_commander(dogma_fleet_context_t* fctx, key_t wing, dogma_context_t* ctx) {
+int dogma_add_wing_commander(dogma_fleet_context_t* fctx, dogma_key_t wing, dogma_context_t* ctx) {
 	return dogma_add_subfleet_commander(
 		dogma_get_subfleet(fctx, wing),
 		ctx
 	);
 }
 
-int dogma_add_squad_commander(dogma_fleet_context_t* fctx, key_t wing, key_t squad, dogma_context_t* ctx) {
+int dogma_add_squad_commander(dogma_fleet_context_t* fctx, dogma_key_t wing, dogma_key_t squad, dogma_context_t* ctx) {
 	return dogma_add_subfleet_commander(
 		dogma_get_subfleet(
 			dogma_get_subfleet(fctx, wing),
@@ -86,8 +86,8 @@ int dogma_add_squad_commander(dogma_fleet_context_t* fctx, key_t wing, key_t squ
 	);
 }
 
-int dogma_add_squad_member(dogma_fleet_context_t* fctx, key_t wing, key_t squad, dogma_context_t* ctx) {
-	key_t index = (intptr_t)ctx;
+int dogma_add_squad_member(dogma_fleet_context_t* fctx, dogma_key_t wing, dogma_key_t squad, dogma_context_t* ctx) {
+	dogma_key_t index = (intptr_t)ctx;
 	dogma_context_t** memberctx;
 	dogma_fleet_context_t* subfctx = dogma_get_subfleet(
 		dogma_get_subfleet(fctx, wing),
@@ -114,7 +114,7 @@ int dogma_add_squad_member(dogma_fleet_context_t* fctx, key_t wing, key_t squad,
 }
 
 int dogma_remove_fleet_member(dogma_fleet_context_t* fctx, dogma_context_t* ctx, bool* found) {
-	key_t index = (intptr_t)ctx;
+	dogma_key_t index = (intptr_t)ctx;
 	dogma_fleet_context_t** subfleetctx;
 	int ret;
 
@@ -157,13 +157,13 @@ int dogma_set_fleet_booster(dogma_fleet_context_t* fctx, dogma_context_t* ctx) {
 	return DOGMA_OK;
 }
 
-int dogma_set_wing_booster(dogma_fleet_context_t* fctx, key_t wing, dogma_context_t* ctx) {
+int dogma_set_wing_booster(dogma_fleet_context_t* fctx, dogma_key_t wing, dogma_context_t* ctx) {
 	dogma_fleet_context_t* wing_fctx = dogma_get_subfleet(fctx, wing);
 	wing_fctx->booster = ctx;
 	return DOGMA_OK;
 }
 
-int dogma_set_squad_booster(dogma_fleet_context_t* fctx, key_t wing, key_t squad, dogma_context_t* ctx) {
+int dogma_set_squad_booster(dogma_fleet_context_t* fctx, dogma_key_t wing, dogma_key_t squad, dogma_context_t* ctx) {
 	dogma_fleet_context_t* squad_fctx = dogma_get_subfleet(
 		dogma_get_subfleet(fctx, wing),
 		squad
@@ -173,7 +173,7 @@ int dogma_set_squad_booster(dogma_fleet_context_t* fctx, key_t wing, key_t squad
 	return DOGMA_OK;
 }
 
-static dogma_fleet_context_t* dogma_get_subfleet(dogma_fleet_context_t* fctx, key_t subidx) {
+static dogma_fleet_context_t* dogma_get_subfleet(dogma_fleet_context_t* fctx, dogma_key_t subidx) {
 	dogma_fleet_context_t** sub_fctx;
 	JLG(sub_fctx, fctx->subfleets, subidx);
 	if(sub_fctx == NULL) {

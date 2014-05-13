@@ -51,10 +51,10 @@ static bool dogma_modifier_is_penalized(dogma_modifier_t* modifier) {
 }
 
 int dogma_add_modifier(dogma_modifier_t* modifier) {
-	key_t index = 0;
+	dogma_key_t index = 0;
 	int result;
-	array_t* modifiers_by_assoctype;
-	array_t* modifiers;
+	dogma_array_t* modifiers_by_assoctype;
+	dogma_array_t* modifiers;
 	dogma_modifier_t** modifier_value;
 	dogma_modifier_t* copy;
 
@@ -84,10 +84,10 @@ int dogma_add_modifier(dogma_modifier_t* modifier) {
 }
 
 int dogma_remove_modifier(dogma_modifier_t* modifier) {
-	key_t index = 0;
+	dogma_key_t index = 0;
 	int result;
-	array_t* modifiers_by_assoctype;
-	array_t* modifiers;
+	dogma_array_t* modifiers_by_assoctype;
+	dogma_array_t* modifiers;
 	dogma_modifier_t** modifier_value;
 
 	if(modifier->targetenv == NULL) return DOGMA_OK;
