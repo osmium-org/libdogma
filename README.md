@@ -47,8 +47,9 @@ Missing features / Known issues
 Credits
 -------
 
-libdogma is released under the GNU General Public License, version 3
-(or later). You can see the full license text in the `COPYING` file.
+libdogma is released under the GNU Affero General Public License,
+version 3 (or later). You can see the full license text in the
+`COPYING` file.
 
 For the full list of libdogma contributors, see the `CREDITS` file.
 
