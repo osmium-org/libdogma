@@ -36,7 +36,7 @@
 #define stringify2(s) #s
 
 #define failf(expected, result) do {	  \
-		fprintf(stderr, "%s:%i: Expected: %f, Got: %f\n", \
+		fprintf(stderr, "%s:%i: Expected: %.15f, Got: %.15f\n", \
 		        __FILE__, __LINE__, (expected), (result)); \
 		assert(0); \
 		exit(1); \

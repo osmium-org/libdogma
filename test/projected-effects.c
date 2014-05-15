@@ -28,20 +28,21 @@ int main(void) {
 	dogma_init_context(&ctxB);
 	dogma_init_context(&ctxC);
 
+	/* Source: Pyfa-1.1.22 (2014-03-15) */
+
 	/* In this test, we have a Rifter with one autocannon and tracking
 	 * enhancers. It is being targeted by another Rifter, and a
 	 * Scimitar each with the maximum number of tracking links. */
 
+	/* 587:1999;3:2873;1:: */
 	dogma_set_ship(ctxA, TYPE_Rifter);
 	dogma_add_module_sc(ctxA, TYPE_125mmGatlingAutoCannonII, &slots[0], DOGMA_STATE_Active, TYPE_BarrageS);
 	dogma_add_module_s(ctxA, TYPE_TrackingEnhancerII, &slots[1], DOGMA_STATE_Online);
 	dogma_add_module_s(ctxA, TYPE_TrackingEnhancerII, &slots[2], DOGMA_STATE_Online);
 	dogma_add_module_s(ctxA, TYPE_TrackingEnhancerII, &slots[3], DOGMA_STATE_Online);
 
-	/* Source: Pyfa-42efa48 (Jun 13 2013) */
-
 	dogma_get_module_attribute(ctxA, slots[0], ATT_TrackingSpeed, &v);
-	assertf(0.671744203407, v, 0.0000000000005);
+	assertf(0.488541238842, v, 0.0000000000005);
 
 	dogma_set_ship(ctxB, TYPE_Rifter);
 	dogma_add_module_s(ctxB, TYPE_RemoteTrackingComputerII, &slots[10], DOGMA_STATE_Active);
@@ -51,21 +52,17 @@ int main(void) {
 	dogma_target(ctxB, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[11] }, ctxA);
 	dogma_target(ctxB, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[12] }, ctxA);
 
-	/* Source: Pyfa-42efa48 (Jun 13 2013) */
-	/* Source: EFT 2.19.1 */
-
 	dogma_get_module_attribute(ctxA, slots[0], ATT_TrackingSpeed, &v);
-	assertf(0.789040584043, v, 0.0000000000005);
+	assertf(0.573847697486, v, 0.0000000000005);
 
 	dogma_add_charge(ctxB, slots[10], TYPE_TrackingSpeedScript);
 	dogma_add_charge(ctxB, slots[11], TYPE_TrackingSpeedScript);
 	dogma_add_charge(ctxB, slots[12], TYPE_TrackingSpeedScript);
 
-	/* Source: Pyfa-42efa48 (Jun 13 2013) */
-
 	dogma_get_module_attribute(ctxA, slots[0], ATT_TrackingSpeed, &v);
-	assertf(1.07326286262, v, 0.000000000005);
+	assertf(0.780554809178, v, 0.000000000005);
 
+	/* 11978:2104;5:: */
 	dogma_set_ship(ctxC, TYPE_Scimitar);
 	dogma_add_module_sc(ctxC, TYPE_RemoteTrackingComputerII, &slots[20], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
 	dogma_add_module_sc(ctxC, TYPE_RemoteTrackingComputerII, &slots[21], DOGMA_STATE_Active, TYPE_TrackingSpeedScript);
@@ -78,10 +75,8 @@ int main(void) {
 	dogma_target(ctxC, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[23] }, ctxA);
 	dogma_target(ctxC, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[24] }, ctxA);
 
-	/* Source: Pyfa-42efa48 (Jun 13 2013) */
-
 	dogma_get_module_attribute(ctxA, slots[0], ATT_TrackingSpeed, &v);
-	assertf(1.62757988293, v, 0.000000000005);
+	assertf(1.18369446031, v, 0.000000000005);
 
 	dogma_clear_target(ctxC, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[20] });
 	dogma_clear_target(ctxC, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[21] });
@@ -91,7 +86,7 @@ int main(void) {
 	dogma_free_context(ctxC);
 
 	dogma_get_module_attribute(ctxA, slots[0], ATT_TrackingSpeed, &v);
-	assertf(1.07326286262, v, 0.000000000005);
+	assertf(0.780554809178, v, 0.000000000005);
 
 	dogma_free_context(ctxA); /* Free the targetee context before the
 	                           * targeter context. Oops! */

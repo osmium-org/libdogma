@@ -31,7 +31,7 @@ int main(void) {
 
 	dogma_set_ship(ctx, TYPE_Harbinger);
 
-	/* Source: Pyfa-42efa48 (Jun 13 2013) */
+	/* Source: Pyfa-1.1.22 (2014-03-15) */
 
 	dogma_add_fleet_commander(fctx, ctx);
 
@@ -83,7 +83,7 @@ int main(void) {
 	 * obtained by duplicating the fit then projecting one on the
 	 * other */
 	dogma_get_module_attribute(ctx, slots[0], ATT_MaxRange, &v);
-	assertf(8940.02670286, v, 0.000000005);
+	assertf(10449.2132416, v, 0.00000005);
 
 	dogma_free_context(ctx);
 	dogma_free_fleet_context(fctx);

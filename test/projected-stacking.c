@@ -27,24 +27,23 @@ int main(void) {
 	dogma_init_context(&ctxA);
 	dogma_init_context(&ctxB);
 
+	/* 24700:31055;3:: */
 	dogma_set_ship(ctxA, TYPE_Myrmidon);
-	dogma_set_ship(ctxB, TYPE_Kronos);
-
 	dogma_add_module_s(ctxA, TYPE_MediumTrimarkArmorPumpI, &key[0], DOGMA_STATE_Online);
 	dogma_add_module_s(ctxA, TYPE_MediumTrimarkArmorPumpI, &key[1], DOGMA_STATE_Online);
 	dogma_add_module_s(ctxA, TYPE_MediumTrimarkArmorPumpI, &key[2], DOGMA_STATE_Online);
 
+	/* 17740:14268;1:: */
+	dogma_set_ship(ctxB, TYPE_Vindicator);
 	dogma_add_module_s(ctxB, TYPE_TrueSanshaStasisWebifier, &key[3], DOGMA_STATE_Active);
 
-	/* Source: Pyfa-96bb1b1 (Jul 30 2013) */
+	/* Source: Pyfa-1.1.22 (2014-03-15) */
 	dogma_get_ship_attribute(ctxA, ATT_MaxVelocity, &mv);
-	assertf(160.006, mv, 0.0005);
+	assertf(160.00602761, mv, 0.000000005);
 
-	/* Source: Pyfa-96bb1b1 (Jul 30 2013) */
-	/* Source: EFT-2.19.1 */
 	dogma_target(ctxB, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = key[3] }, ctxA);
 	dogma_get_ship_attribute(ctxA, ATT_MaxVelocity, &mv);
-	assertf(28.5, mv, 1); /* Pyfa says 29.05779, EFT says 28.00105 */
+	assertf(29.0577923081, mv, 0.00000000005);
 
 	dogma_free_context(ctxA);
 	dogma_free_context(ctxB);
