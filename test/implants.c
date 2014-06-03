@@ -34,12 +34,12 @@ int main(void) {
 	 * set as a whole), and see how it reacts with stacking penalized
 	 * modules. */
 
-	dogma_add_implant(ctx, TYPE_CrystalAlpha, &impslot0);
-	dogma_add_implant(ctx, TYPE_CrystalBeta, &impslot1);
-	dogma_add_implant(ctx, TYPE_CrystalGamma, &impslot2);
-	dogma_add_implant(ctx, TYPE_CrystalDelta, &impslot3);
-	dogma_add_implant(ctx, TYPE_CrystalEpsilon, &impslot4);
-	dogma_add_implant(ctx, TYPE_CrystalOmega, &impslot5);
+	dogma_add_implant(ctx, TYPE_HighgradeCrystalAlpha, &impslot0);
+	dogma_add_implant(ctx, TYPE_HighgradeCrystalBeta, &impslot1);
+	dogma_add_implant(ctx, TYPE_HighgradeCrystalGamma, &impslot2);
+	dogma_add_implant(ctx, TYPE_HighgradeCrystalDelta, &impslot3);
+	dogma_add_implant(ctx, TYPE_HighgradeCrystalEpsilon, &impslot4);
+	dogma_add_implant(ctx, TYPE_HighgradeCrystalOmega, &impslot5);
 
 	dogma_set_ship(ctx, TYPE_Venture);
 	dogma_add_module(ctx, TYPE_SmallShieldBoosterII, &slot0);
@@ -61,12 +61,12 @@ int main(void) {
 	/* Some sources say the Snake set is stacking penalized. This is
 	 * not the case (unless both Pyfa and EFT are wrong). */
 
-	dogma_add_implant(ctx, TYPE_SnakeAlpha, &impslot0);
-	dogma_add_implant(ctx, TYPE_SnakeBeta, &impslot1);
-	dogma_add_implant(ctx, TYPE_SnakeGamma, &impslot2);
-	dogma_add_implant(ctx, TYPE_SnakeDelta, &impslot3);
-	dogma_add_implant(ctx, TYPE_SnakeEpsilon, &impslot4);
-	dogma_add_implant(ctx, TYPE_SnakeOmega, &impslot5);
+	dogma_add_implant(ctx, TYPE_HighgradeSnakeAlpha, &impslot0);
+	dogma_add_implant(ctx, TYPE_HighgradeSnakeBeta, &impslot1);
+	dogma_add_implant(ctx, TYPE_HighgradeSnakeGamma, &impslot2);
+	dogma_add_implant(ctx, TYPE_HighgradeSnakeDelta, &impslot3);
+	dogma_add_implant(ctx, TYPE_HighgradeSnakeEpsilon, &impslot4);
+	dogma_add_implant(ctx, TYPE_HighgradeSnakeOmega, &impslot5);
 
 	dogma_set_ship(ctx, TYPE_Venture);
 	dogma_add_module(ctx, TYPE_OverdriveInjectorSystemII, &slot0);
