@@ -28,3 +28,4 @@ test-driver
 test-suite.log
 libdogma-*.tar.xz
 libdogma.pc
+core.*
