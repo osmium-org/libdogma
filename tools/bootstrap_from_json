@@ -76,10 +76,15 @@ function strip_index_types(&$json) {
 	foreach($json['types'] as $t) {
 		$t['categoryID'] = $groupsbyid[$t['groupID']]['categoryID'];
 
-		if($t['published'] !== true || $groupsbyid[$t['groupID']]['published'] !== true
-		   || !in_array($t['categoryID'], array(6, 7, 8, 16, 18, 20, 32), true)) {
+		/* XXX: Oceanus fucked this up by unpublishing modules still
+		 * being used on TQ. */
+		if(/*$t['published'] !== true || $groupsbyid[$t['groupID']]['published'] !== true
+		     || */ !in_array($t['categoryID'], array(6, 7, 8, 16, 18, 20, 32), true)) {
 			continue;
 		}
+
+		/* XXX: don't include Dust types */
+		if($t['typeID'] >= 350000) continue;
 
 		$types[$t['typeID']] = $t;
 	}

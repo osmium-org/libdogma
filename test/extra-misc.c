@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2013, 2014 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -99,7 +99,7 @@ int main(void) {
 	assertf(falloff, 1875.0, 0.05);
 
 	dogma_remove_module(ctx, slot);
-	dogma_add_module_sc(ctx, TYPE_ExperimentalTE2100LightMissileLauncher,
+	dogma_add_module_sc(ctx, TYPE_CompactLightMissileLauncher,
 	                    &slot, DOGMA_STATE_Active, TYPE_NovaLightMissile);
 	assert(dogma_get_number_of_module_cycles_before_reload(ctx, slot, &ncycles) == DOGMA_OK);
 	assert(ncycles == 46);
