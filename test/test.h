@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 
 /* This header is intended to be used for test programs and debugging
  * only. Do not use it in your applications! */

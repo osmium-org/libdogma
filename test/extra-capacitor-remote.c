@@ -154,8 +154,8 @@ int main(void) {
 
 			if(p1->context != p2->context) continue;
 
-			assert(abs(p1->capacity - p2->capacity) < 1e-300);
-			assert(abs(p1->delta - p2->delta) < 1e-300);
+			assert(fabs(p1->capacity - p2->capacity) < 1e-300);
+			assert(fabs(p1->delta - p2->delta) < 1e-300);
 			assert(p1->stable == p2->stable);
 			assert((p1->stable_fraction - p2->stable_fraction) < 1e-300);
 
