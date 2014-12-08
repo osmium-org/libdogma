@@ -253,6 +253,20 @@ function query_or_insert_expression(&$json, array $exprfilter) {
     return $lowestid;
 }
 
+function combine_expressions(&$json, array $expressionids) {
+    while(count($expressionids) > 1) {
+        $a = array_pop($expressionids);
+        $b = array_pop($expressionids);
+        $expressionids[] = query_or_insert_expression($json, [
+            'operandID' => 17, /* COMBINE */
+            'arg1' => $a,
+            'arg2' => $b,
+        ]);
+    }
+
+    return array_pop($expressionids);
+}
+
 /* ---------------- */
 
 if($argc !== 2) {
@@ -448,26 +462,12 @@ foreach($json['effects'] as &$effect) {
         ]);
     }
 
-    while(count($info) > 1) {
-        $a = array_pop($info);
-        $b = array_pop($info);
-        $info[] = [
-            'preExpression' => query_or_insert_expression($json, [
-                'operandID' => 17, /* COMBINE */
-                'arg1' => $a['preExpression'],
-                'arg2' => $b['preExpression'],
-            ]),
-            'postExpression' => query_or_insert_expression($json, [
-                'operandID' => 17, /* COMBINE */
-                'arg1' => $a['postExpression'],
-                'arg2' => $b['postExpression'],
-            ]),
-        ];
-    }
-
-    $exprs = array_pop($info);
-    $effect['preExpression'] = $exprs['preExpression'];
-    $effect['postExpression'] = $exprs['postExpression'];
+    $effect['preExpression'] = combine_expressions($json, array_column(
+        $info, 'preExpression'
+    ));
+    $effect['postExpression'] = combine_expressions($json, array_column(
+        $info, 'postExpression'
+    ));
 }
 
 /* Expression for the AAR charge:
@@ -534,6 +534,84 @@ $json['typeeffects'][] = array(
 	'effectID' => -10,
 );
 
+/* warpDisruptSphere: guess the expression from description. Units
+ * suggest it's using PostPercent for everything. */
+$makeWDSModifier = function($func, $destattribute, $srcattribute) use(&$json) {
+    return query_or_insert_expression($json, [
+        'operandID' => $func,
+        'arg1' => query_or_insert_expression($json, [
+            'operandID' => 31, /* EFF */
+            'arg1' => query_or_insert_expression($json, [
+                'operandID' => 21, /* DEFASSOCIATION */
+                'expressionValue' => 'PostPercent',
+            ]),
+            'arg2' => query_or_insert_expression($json, [
+                'operandID' => 12, /* ATT */
+                'arg1' => query_or_insert_expression($json, [
+                    'operandID' => 24, /* DEFENVIDX */
+                    'expressionValue' => 'Ship',
+                ]),
+                'arg2' => query_or_insert_expression($json, [
+                    'operandID' => 22, /* DEFATTRIBUTE */
+                    'expressionAttributeID' => $destattribute,
+                ]),
+            ]),
+        ]),
+        'arg2' => query_or_insert_expression($json, [
+            'operandID' => 22, /* DEFATTRIBUTE */
+            'expressionAttributeID' => $srcattribute,
+        ]),
+    ]);
+};
+
+$makeWDSGroupModifier = function($func, $groupid, $destattribute, $srcattribute) use(&$json) {
+    return query_or_insert_expression($json, [
+        'operandID' => $func,
+        'arg1' => query_or_insert_expression($json, [
+            'operandID' => 31, /* EFF */
+            'arg1' => query_or_insert_expression($json, [
+                'operandID' => 21, /* DEFASSOCIATION */
+                'expressionValue' => 'PostPercent',
+            ]),
+            'arg2' => query_or_insert_expression($json, [
+                'operandID' => 12, /* ATT */
+                'arg1' => query_or_insert_expression($json, [
+                    'operandID' => 48, /* LG */
+                    'arg1' => query_or_insert_expression($json, [
+                        'operandID' => 24, /* DEFENVIDX */
+                        'expressionValue' => 'Ship',
+                    ]),
+                    'arg2' => query_or_insert_expression($json, [
+                        'operandID' => 26, /* DEFGROUP */
+                        'expressionGroupID' => $groupid,
+                    ]),
+                ]),
+                'arg2' => query_or_insert_expression($json, [
+                    'operandID' => 22, /* DEFATTRIBUTE */
+                    'expressionAttributeID' => $destattribute,
+                ]),
+            ]),
+        ]),
+        'arg2' => query_or_insert_expression($json, [
+            'operandID' => 22, /* DEFATTRIBUTE */
+            'expressionAttributeID' => $srcattribute,
+        ]),
+    ]);
+};
+
+$json['effects'][3380]['preExpression'] = combine_expressions($json, [
+    $makeWDSModifier(6 /* AIM */, 4, 1131), /* Mass */
+    $makeWDSModifier(6 /* AIM */, 552, 554), /* Signature radius */
+    $makeWDSGroupModifier(7 /* ALGM */, 46, 567, 1270), /* AB and MWD Thrust */
+    $makeWDSGroupModifier(7 /* ALGM */, 46, 20, 1164), /* AB and MWD Max velocity */
+]);
+$json['effects'][3380]['postExpression'] = combine_expressions($json, [
+    $makeWDSModifier(58 /* RIM */, 4, 1131), /* Mass */
+    $makeWDSModifier(58 /* RIM */, 552, 554), /* Signature radius */
+    $makeWDSGroupModifier(59 /* RLGM */, 46, 567, 1270), /* AB and MWD Thrust */
+    $makeWDSGroupModifier(59 /* RLGM */, 46, 20, 1164), /* AB and MWD Max velocity */
+]);
+
 /* skillEffect: bogus/unknown DEFASSOCIATION, skills are handled
  * correctly without it anyway */
 $json['effects'][132]['preExpression'] = -1;
@@ -554,8 +632,6 @@ $json['effects'][42]['postExpression'] = 305;
 /* launcherFitted: skip the hardpoint check */
 $json['effects'][40]['preExpression'] = 318;
 $json['effects'][40]['postExpression'] = 319;
-
-/* TODO: penalties (AB/MWD, agility/sigradius) of warpDisruptSphere */
 
 /* maxRangeHiddenPreAssignmentWarpScrambleRange: not sure what this is or what it does, get rid of it */
 $json['effects'][4894]['preExpression'] = -1;
