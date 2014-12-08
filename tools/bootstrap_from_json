@@ -346,8 +346,13 @@ foreach($json['effects'] as &$effect) {
     $info = yaml_parse($effect['modifierInfo']);
 
     foreach($info as &$modifier) {
-        /* Lots of code to create, tediously, something looking like:
+        /* Lots of code to create, tediously, an expression that looks like:
+
+           For ItemModifiers:
            (($domain->$modifiedAttributeID).($operator)).$func($modifyingAttributeID)
+
+           For LocationRequiredSkillModifiers:
+           (($domain[$skillTypeID]->$modifiedAttributeID).($operator)).$func($modifyingAttributeID)
          */
 
         switch($modifier['domain']) {
@@ -362,6 +367,33 @@ foreach($json['effects'] as &$effect) {
         default:
             fatal("modifierInfo has unknown domain: ".$modifier['domain']);
             
+        }
+
+        switch($modifier['func']) {
+
+        case 'ItemModifier':
+            $add = 6; /* AIM */
+            $remove = 58; /* RIM */
+            break;
+
+        case 'LocationRequiredSkillModifier':
+            $add = 9; /* ALRSM */
+            $remove = 61; /* RLRSM */
+
+            $domain = query_or_insert_expression($json, [
+                'operandID' => 49, /* LS */
+                'arg1' => $domain,
+                'arg2' => query_or_insert_expression($json, [
+                    'operandID' => 29, /* DEFTYPEID */
+                    'expressionTypeID' => $modifier['skillTypeID'],
+                ]),
+            ]);
+            
+            break;
+            
+        default:
+            fatal("modifierInfo has unknown func: ".$modifier['func']);
+
         }
 
         $modifiedattribute = query_or_insert_expression($json, [
@@ -402,23 +434,6 @@ foreach($json['effects'] as &$effect) {
             'operandID' => 22, /* DEFATTRIBUTE */
             'expressionAttributeID' => $modifier['modifyingAttributeID'],
         ]);
-
-        switch($modifier['func']) {
-
-        case 'ItemModifier':
-            $add = 6; /* AIM */
-            $remove = 58; /* RIM */
-            break;
-
-        case 'LocationRequiredSkillModifier':
-            $add = 9; /* ALRSM */
-            $remove = 61; /* RLRSM */
-            break;
-            
-        default:
-            fatal("modifierInfo has unknown func: ".$modifier['func']);
-
-        }
 
         $modifier['preExpression'] = query_or_insert_expression($json, [
             'operandID' => $add,
