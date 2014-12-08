@@ -33,6 +33,11 @@ function warn($message) {
 	fwrite(STDERR, $argv[0].": WARNING ".$message."\n");
 }
 
+function info($message) {
+    global $argv;
+    fwrite(STDOUT, $argv[0].": INFO ".$message."\n");
+}
+
 function escape_c_string($str) {
 	return '"'.str_replace('"', '\"', $str).'"';
 }
@@ -215,6 +220,39 @@ function strip_index_expressions(&$json) {
 	}
 }
 
+function query_or_insert_expression(&$json, array $exprfilter) {
+    $lowestid = 0;
+    
+    foreach($json['expressions'] as $expr) {
+        foreach($exprfilter as $k => $v) {            
+            if(!isset($expr[$k]) || $expr[$k] !== $v) {
+                if($lowestid > $expr['expressionID'])
+                    $lowestid = $expr['expressionID'];
+                
+                continue 2;
+            }
+        }
+
+        return $expr['expressionID'];
+    }
+
+    /* Insert expression */
+    $lowestid--;
+    $exprfilter += [
+        'operandID' => -1,
+        'expressionValue' => null,
+        'expressionAttributeID' => null,
+        'expressionGroupID' => null,
+        'expressionTypeID' => null,
+        'arg1' => null,
+        'arg2' => null,
+    ];
+    $exprfilter['expressionID'] = $lowestid;
+    $json['expressions'][$lowestid] = $exprfilter;
+
+    return $lowestid;
+}
+
 /* ---------------- */
 
 if($argc !== 2) {
@@ -300,6 +338,122 @@ fwrite($c, "};\n");
 /* -------- Effects -------- */
 
 strip_index_effects($json);
+
+foreach($json['effects'] as &$effect) {
+    if(!$effect['modifierInfo']) continue;
+    
+    info("overwriting expressions of effect ".$effect['effectName']." using modifierInfo");
+    $info = yaml_parse($effect['modifierInfo']);
+
+    foreach($info as &$modifier) {
+        /* Lots of code to create, tediously, something looking like:
+           (($domain->$modifiedAttributeID).($operator)).$func($modifyingAttributeID)
+         */
+
+        switch($modifier['domain']) {
+            
+        case 'shipID':
+            $domain = query_or_insert_expression($json, [
+                'operandID' => 24, /* DEFENVIDX */
+                'expressionValue' => 'Ship',
+            ]);
+            break;
+
+        default:
+            fatal("modifierInfo has unknown domain: ".$modifier['domain']);
+            
+        }
+
+        $modifiedattribute = query_or_insert_expression($json, [
+            'operandID' => 22, /* DEFATTRIBUTE */
+            'expressionAttributeID' => $modifier['modifiedAttributeID'],
+        ]);
+
+        $att = query_or_insert_expression($json, [
+            'operandID' => 12, /* ATT */
+            'arg1' => $domain,
+            'arg2' => $modifiedattribute,
+        ]);
+
+        switch($modifier['operator']) {
+
+        case 5:
+            /* XXX: this is guesswork */
+            $assocstring = 'PostDiv';
+            break;
+            
+        default:
+            fatal("modifierInfo has unknown operator: ".$modifier['operator']);
+            
+        }
+
+        $association = query_or_insert_expression($json, [
+            'operandID' => 21, /* DEFASSOCIATION */
+            'expressionValue' => $assocstring,
+        ]);
+
+        $eff = query_or_insert_expression($json, [
+            'operandID' => 31, /* EFF */
+            'arg1' => $association,
+            'arg2' => $att,
+        ]);
+
+        $modifyingattribute = query_or_insert_expression($json, [
+            'operandID' => 22, /* DEFATTRIBUTE */
+            'expressionAttributeID' => $modifier['modifyingAttributeID'],
+        ]);
+
+        switch($modifier['func']) {
+
+        case 'ItemModifier':
+            $add = 6; /* AIM */
+            $remove = 58; /* RIM */
+            break;
+
+        case 'LocationRequiredSkillModifier':
+            $add = 9; /* ALRSM */
+            $remove = 61; /* RLRSM */
+            break;
+            
+        default:
+            fatal("modifierInfo has unknown func: ".$modifier['func']);
+
+        }
+
+        $modifier['preExpression'] = query_or_insert_expression($json, [
+            'operandID' => $add,
+            'arg1' => $eff,
+            'arg2' => $modifyingattribute,
+        ]);
+
+        $modifier['postExpression'] = query_or_insert_expression($json, [
+            'operandID' => $remove,
+            'arg1' => $eff,
+            'arg2' => $modifyingattribute,
+        ]);
+    }
+
+    while(count($info) > 1) {
+        $a = array_pop($info);
+        $b = array_pop($info);
+        $info[] = [
+            'preExpression' => query_or_insert_expression($json, [
+                'operandID' => 17, /* COMBINE */
+                'arg1' => $a['preExpression'],
+                'arg2' => $b['preExpression'],
+            ]),
+            'postExpression' => query_or_insert_expression($json, [
+                'operandID' => 17, /* COMBINE */
+                'arg1' => $a['postExpression'],
+                'arg2' => $b['postExpression'],
+            ]),
+        ];
+    }
+
+    $exprs = array_pop($info);
+    $effect['preExpression'] = $exprs['preExpression'];
+    $effect['postExpression'] = $exprs['postExpression'];
+}
 
 /* Effect for the Nanite Repair Paste when used in an Ancillary Armor Repairer */
 $json['effects'][-10] = array(
