@@ -221,7 +221,7 @@ function strip_index_expressions(&$json) {
 }
 
 function query_or_insert_expression(&$json, array $exprfilter) {
-    $lowestid = 0;
+    $lowestid = -1;
     
     foreach($json['expressions'] as $expr) {
         foreach($exprfilter as $k => $v) {            
@@ -470,13 +470,56 @@ foreach($json['effects'] as &$effect) {
     $effect['postExpression'] = $exprs['postExpression'];
 }
 
+/* Expression for the AAR charge:
+ * ((CurrentOther->armorDamageAmount).(PreMul)).AddItemModifier (CurrentOther->chargedArmorDamageMultiplier)
+ */
+
+$source = query_or_insert_expression($json, [
+    'operandID' => 31, /* EFF */
+    'arg1' => query_or_insert_expression($json, [
+        'operandID' => 21, /* DEFASSOCIATION */
+        'expressionValue' => 'PreMul',
+    ]),
+    'arg2' => query_or_insert_expression($json, [
+        'operandID' => 12, /* ATT */
+        'arg1' => query_or_insert_expression($json, [
+            'operandID' => 24, /* DEFENVIDX */
+            'expressionValue' => 'Other',
+        ]),
+        'arg2' => query_or_insert_expression($json, [
+            'operandID' => 22, /* DEFATTRIBUTE */
+            'expressionAttributeID' => 84, /* armorDamageAmount */
+        ]),
+    ]),
+]);
+
+$target = query_or_insert_expression($json, [
+    'operandID' => 12, /* ATT */
+    'arg1' => query_or_insert_expression($json, [
+        'operandID' => 24, /* DEFENVIDX */
+        'expressionValue' => 'Other',
+    ]),
+    'arg2' => query_or_insert_expression($json, [
+        'operandID' => 22, /* DEFATTRIBUTE */
+        'expressionAttributeID' => 1886, /* chargedArmorDamageMultiplier */
+    ]),
+]);
+
 /* Effect for the Nanite Repair Paste when used in an Ancillary Armor Repairer */
 $json['effects'][-10] = array(
 	'effectName' => 'internalAAREffect',
 	'effectID' => -10,
 	'effectCategory' => 0,
-	'preExpression' => -10,
-	'postExpression' => -9,
+	'preExpression' => query_or_insert_expression($json, [
+        'operandID' => 6, /* AIM */
+        'arg1' => $source,
+        'arg2' => $target,
+    ]),
+	'postExpression' => query_or_insert_expression($json, [
+        'operandID' => 58, /* RIM */
+        'arg1' => $source,
+        'arg2' => $target,
+    ]),
 	'durationAttributeID' => null,
 	'trackingSpeedAttributeID' => null,
 	'dischargeAttributeID' => null,
@@ -615,72 +658,6 @@ $json['expressions'][-1] = array(
 	'operandID' => 23, /* DEFBOOL */
 	'expressionValue' => '0',
 	'expressionAttributeID' => null,
-	'expressionGroupID' => null,
-	'expressionTypeID' => null,
-	'arg1' => null,
-	'arg2' => null,
-);
-
-/* Ancillary Armor Repairer charge expression:
- * ((CurrentOther->armorDamageAmount).(PostMul)).AddItemModifier (CurrentOther->chargedArmorDamageMultiplier)
- */
-$json['expressions'][-10] = array(
-	'expressionID' => -10,
-	'operandID' => 6, /* AIM */
-	'expressionValue' => null,
-	'expressionAttributeID' => null,
-	'expressionGroupID' => null,
-	'expressionTypeID' => null,
-	'arg1' => -7, /* (CurrentOther->armorDamageAmount).(PostMul) */
-	/* NOTE: "real" dogma would not expect ATT here, it would probably
-	 * assume a DEFATTRIBUTE */
-	'arg2' => -6, /* CurrentOther->chargedArmorDamageMultiplier */ 
-);
-$json['expressions'][-9] = array(
-	'expressionID' => -9,
-	'operandID' => 58, /* RIM */
-	'expressionValue' => null,
-	'expressionAttributeID' => null,
-	'expressionGroupID' => null,
-	'expressionTypeID' => null,
-	'arg1' => -7, /* (CurrentOther->armorDamageAmount).(PostMul) */
-	'arg2' => -6, /* CurrentOther->chargedArmorDamageMultiplier */ 
-);
-$json['expressions'][-8] = array(
-	'expressionID' => -8,
-	'operandID' => 12, /* ATT */
-	'expressionValue' => null,
-	'expressionAttributeID' => null,
-	'expressionGroupID' => null,
-	'expressionTypeID' => null,
-	'arg1' => 3043, /* CurrentOther */
-	'arg2' => 234, /* armorDamageAmount */
-);
-$json['expressions'][-7] = array(
-	'expressionID' => -7,
-	'operandID' => 31, /* EFF */
-	'expressionValue' => null,
-	'expressionAttributeID' => null,
-	'expressionGroupID' => null,
-	'expressionTypeID' => null,
-	'arg1' => 5, /* PreMul */
-	'arg2' => -8, /* CurrentOther->armorDamageAmount */
-);
-$json['expressions'][-6] = array(
-	'expressionID' => -6,
-	'operandID' => 12, /* ATT */
-	'expressionValue' => null,
-	'expressionAttributeID' => null,
-	'expressionGroupID' => null,
-	'expressionTypeID' => null,
-	'arg1' => 3043, /* CurrentOther */
-	'arg2' => -5, /* chargedArmorDamageMultiplier */
-);
-$json['expressions'][-5] = array(
-	'expressionID' => -5,
-	'operandID' => 22, /* DEFATTRIBUTE */
-	'expressionValue' => null,
-	'expressionAttributeID' => 1886,
 	'expressionGroupID' => null,
 	'expressionTypeID' => null,
 	'arg1' => null,
