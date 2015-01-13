@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /* libdogma
- * Copyright (C) 2012, 2013, 2014 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2014, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -371,6 +371,13 @@ foreach($json['effects'] as &$effect) {
 
         switch($modifier['domain']) {
             
+        case 'charID':
+            $domain = query_or_insert_expression($json, [
+                'operandID' => 24, /* DEFENVIDX */
+                'expressionValue' => 'Char',
+            ]);
+            break;
+            
         case 'shipID':
             $domain = query_or_insert_expression($json, [
                 'operandID' => 24, /* DEFENVIDX */
@@ -390,9 +397,30 @@ foreach($json['effects'] as &$effect) {
             $remove = 58; /* RIM */
             break;
 
+        case 'LocationGroupModifier':
+	        $add = 7; /* ALGM */
+	        $remove = 59; /* RLGM */
+
+            $domain = query_or_insert_expression($json, [
+                'operandID' => 48, /* LG */
+                'arg1' => $domain,
+                'arg2' => query_or_insert_expression($json, [
+                    'operandID' => 26, /* DEFGROUP */
+                    'expressionGroupID' => $modifier['groupID'],
+                ]),
+            ]);
+            
+	        break;
+
         case 'LocationRequiredSkillModifier':
-            $add = 9; /* ALRSM */
-            $remove = 61; /* RLRSM */
+        case 'OwnerRequiredSkillModifier':
+	        if($modifier['func'] === 'LocationRequiredSkillModifier') {
+		        $add = 9; /* ALRSM */
+		        $remove = 61; /* RLRSM */
+	        } else {
+		        $add = 11; /* AORSM */
+		        $remove = 62; /* RORSM */
+	        }
 
             $domain = query_or_insert_expression($json, [
                 'operandID' => 49, /* LS */
@@ -421,12 +449,20 @@ foreach($json['effects'] as &$effect) {
             'arg2' => $modifiedattribute,
         ]);
 
+        /* XXX: this is guesswork */
         switch($modifier['operator']) {
 
+        case 2:
+            $assocstring = 'ModAdd';
+            break;
+
         case 5:
-            /* XXX: this is guesswork */
             $assocstring = 'PostDiv';
             break;
+
+        case 6:
+	        $assocstring = 'PostPercent';
+	        break;
             
         default:
             fatal("modifierInfo has unknown operator: ".$modifier['operator']);
