@@ -26,18 +26,18 @@ int main(void) {
 	dogma_init();
 	dogma_init_context(&ctx);
 
-	/* Source: Pyfa-1.1.22 (2014-03-15) */
+	/* Source: Pyfa-1.10.0 */
 
 	/* 645:4405;1:24438;1:25920;1:28211;1:: */
 	dogma_set_ship(ctx, TYPE_Dominix);
 	assert(dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_ArmorHP, &v) == DOGMA_NOT_FOUND);
 
 	dogma_add_drone(ctx, TYPE_GardeII, 2);
-	assert(dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_ArmorHP, &v) == DOGMA_OK);
+	assertok(dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_ArmorHP, &v));
 	assertf(1800.0, v, 0.05);
 
 	dogma_remove_drone_partial(ctx, TYPE_GardeII, 1);
-	assert(dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_ArmorHP, &v) == DOGMA_OK);
+	assertok(dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_ArmorHP, &v));
 	assertf(1800.0, v, 0.05);
 
 	dogma_remove_drone_partial(ctx, TYPE_GardeII, 1);
@@ -68,7 +68,7 @@ int main(void) {
 	dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_TrackingSpeed, &v);
 	assertf(0.0495, v, 0.0000005);
 	dogma_get_drone_attribute(ctx, TYPE_GardeII, ATT_DamageMultiplier, &v);
-	assertf(9.625692655, v, 0.0000000005);
+	assertf(7.03126768158, v, 0.000000000005);
 
 	dogma_free_context(ctx);
 

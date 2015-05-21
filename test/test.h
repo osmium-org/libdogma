@@ -51,17 +51,24 @@
 	} while(0)
 
 #define assertok(call) do {	  \
-		switch(call) { \
-		case DOGMA_NOT_FOUND: \
-			fprintf(stderr, "%s:%i: DOGMA_NOT_FOUND", __FILE__, __LINE__); \
-			assert(0); \
-			exit(1); \
-	case DOGMA_NOT_APPLICABLE: \
-		fprintf(stderr, "%s:%i: DOGMA_NOT_APPLICABLE", __FILE__, __LINE__); \
+		int ret = (call); \
+		switch(ret) { \
+	case DOGMA_OK: \
+		break; \
+	case DOGMA_NOT_FOUND: \
+		fprintf(stderr, "%s:%i: DOGMA_NOT_FOUND\n", __FILE__, __LINE__); \
 		        assert(0); \
 		        exit(1); \
-		        } \
-		        } while(0)
+		case DOGMA_NOT_APPLICABLE: \
+		        fprintf(stderr, "%s:%i: DOGMA_NOT_APPLICABLE\n", __FILE__, __LINE__); \
+		        assert(0); \
+		        exit(1); \
+		default: \
+		        fprintf(stderr, "%s:%i: dogma_*() call did not return a DOGMA_* constant (%i)\n", __FILE__, __LINE__, ret); \
+		        assert(0); \
+		        exit(1); \
+	} \
+	} while(0)
 
 #define debug_affectors(ctx, location) do {	  \
 		dogma_simple_affector_t* aff; \
