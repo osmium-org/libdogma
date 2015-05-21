@@ -29,7 +29,7 @@ int main(void) {
 	assert(dogma_set_ship(ctx, TYPE_Confessor) == DOGMA_OK);
 
 	assert(dogma_get_ship_attribute(ctx, ATT_MaxVelocity, &v0) == DOGMA_OK);
-	assert(dogma_add_module_s(ctx, TYPE_AmarrTacticalDestroyerPropulsionMode, &k, DOGMA_STATE_Online) == DOGMA_OK);
+	assert(dogma_add_module_s(ctx, TYPE_ConfessorPropulsionMode, &k, DOGMA_STATE_Online) == DOGMA_OK);
 	assert(dogma_get_ship_attribute(ctx, ATT_MaxVelocity, &v1) == DOGMA_OK);
 
 	printf("%f %f\n", v0, v1);

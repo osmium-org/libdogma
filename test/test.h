@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -48,6 +48,26 @@
 		if(!((e - r <= eps) && (r - e <= eps))) { \
 			failf(e, r); \
 		} \
+	} while(0)
+
+#define assertok(call) do {	  \
+		int ret = (call); \
+		switch(ret) { \
+	case DOGMA_OK: \
+		break; \
+	case DOGMA_NOT_FOUND: \
+		fprintf(stderr, "%s:%i: DOGMA_NOT_FOUND\n", __FILE__, __LINE__); \
+		        assert(0); \
+		        exit(1); \
+		case DOGMA_NOT_APPLICABLE: \
+		        fprintf(stderr, "%s:%i: DOGMA_NOT_APPLICABLE\n", __FILE__, __LINE__); \
+		        assert(0); \
+		        exit(1); \
+		default: \
+		        fprintf(stderr, "%s:%i: dogma_*() call did not return a DOGMA_* constant (%i)\n", __FILE__, __LINE__, ret); \
+		        assert(0); \
+		        exit(1); \
+	} \
 	} while(0)
 
 #define debug_affectors(ctx, location) do {	  \

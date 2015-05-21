@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2013, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -29,9 +29,10 @@ int main(void) {
 	dogma_init_context(&ctx);
 	dogma_init_fleet_context(&fctx);
 
+	/* 24696:1978;2:2109;2:3520;1:28999;2:29005;2:12818;1:: */
 	dogma_set_ship(ctx, TYPE_Harbinger);
 
-	/* Source: Pyfa-1.1.22 (2014-03-15) */
+	/* Source: Pyfa-1.10.0 */
 
 	dogma_add_fleet_commander(fctx, ctx);
 
@@ -73,7 +74,7 @@ int main(void) {
 	dogma_add_module_sc(ctx, TYPE_TrackingDisruptorII, &slots[4], DOGMA_STATE_Active, TYPE_OptimalRangeDisruptionScript);
 
 	dogma_get_module_attribute(ctx, slots[0], ATT_MaxRange, &v);
-	assertf(29248.2719255, v, 0.00000005);
+	assertf(28663.306487, v, 0.0000005);
 
 	/* Self-projected fit, see if anything blows up! */
 	dogma_target(ctx, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slots[3] }, ctx);
@@ -83,7 +84,7 @@ int main(void) {
 	 * obtained by duplicating the fit then projecting one on the
 	 * other */
 	dogma_get_module_attribute(ctx, slots[0], ATT_MaxRange, &v);
-	assertf(10449.2132416, v, 0.00000005);
+	assertf(10240.2289768, v, 0.00000005);
 
 	dogma_free_context(ctx);
 	dogma_free_fleet_context(fctx);

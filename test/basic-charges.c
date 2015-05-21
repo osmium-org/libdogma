@@ -38,21 +38,21 @@ int main(void) {
 	assert(dogma_init() == DOGMA_OK);
 	assert(dogma_init_context(&ctx) == DOGMA_OK);
 
-	/* Source: Pyfa-1.1.22 (2014-03-15) */
+	/* Source: Pyfa-1.10.0 */
 
 	/* 587:2873;1:: */
 	assert(dogma_set_ship(ctx, TYPE_Rifter) == DOGMA_OK);
 	assert(dogma_add_module_s(ctx, TYPE_125mmGatlingAutoCannonII, &slot, DOGMA_STATE_Active) == DOGMA_OK);
-	expect_optimal_falloff_tracking(1200.0, 7500.0, 0.52125);
+	expect_optimal_falloff_tracking(1200.0, 8062.5, 0.52125);
 
 	assert(dogma_add_charge(ctx, slot, TYPE_EMPS) == DOGMA_OK);
-	expect_optimal_falloff_tracking(600.0, 7500.0, 0.52125);
+	expect_optimal_falloff_tracking(600.0, 8062.5, 0.52125);
 
 	assert(dogma_add_charge(ctx, slot, TYPE_NuclearS) == DOGMA_OK);
-	expect_optimal_falloff_tracking(1920.0, 7500.0, 0.5473125);
+	expect_optimal_falloff_tracking(1920.0, 8062.5, 0.5473125);
 
 	assert(dogma_add_charge(ctx, slot, TYPE_BarrageS) == DOGMA_OK);
-	expect_optimal_falloff_tracking(1200.0, 11250.0, 0.3909375);
+	expect_optimal_falloff_tracking(1200.0, 11287.5, 0.3909375);
 
 	assert(dogma_free_context(ctx) == DOGMA_OK);
 	return 0;

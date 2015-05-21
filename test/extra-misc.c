@@ -91,7 +91,7 @@ int main(void) {
 		ctx, (dogma_location_t){ .type = DOGMA_LOC_Module, .module_index = slot }, eff,
 		&duration, &tracking, &discharge, &range, &falloff, &usagechance
 	) == DOGMA_OK);
-	/* Source: Pyfa-c67034e (2013-07-01) */
+	/* Source: Pyfa-1.10.0 */
 	assertf(1440.0, duration, 0.05);
 	assertf(0.5475, tracking, 0.00005);
 	assertf(0.374262, discharge, 0.0000005);
@@ -99,10 +99,10 @@ int main(void) {
 	assertf(falloff, 1875.0, 0.05);
 
 	dogma_remove_module(ctx, slot);
-	dogma_add_module_sc(ctx, TYPE_CompactLightMissileLauncher,
+	dogma_add_module_sc(ctx, TYPE_ArbalestCompactLightMissileLauncher,
 	                    &slot, DOGMA_STATE_Active, TYPE_NovaLightMissile);
 	assert(dogma_get_number_of_module_cycles_before_reload(ctx, slot, &ncycles) == DOGMA_OK);
-	assert(ncycles == 46);
+	assert(ncycles == 40);
 
 	dogma_remove_module(ctx, slot);
 	dogma_add_module_sc(ctx, TYPE_TrackingComputerII, &slot, DOGMA_STATE_Active, TYPE_TrackingSpeedScript);

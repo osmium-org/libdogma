@@ -25,8 +25,8 @@ int main(void) {
 	size_t llength;
 
 	dogma_init();
-	dogma_init_context(&ctxa[0]);
-	dogma_init_context(&ctxa[1]);
+	dogma_init_context(&ctxa[0]); /* 23915:3616;3:12219;2:: */
+	dogma_init_context(&ctxa[1]); /* 23915:3616;3:12219;2:: */
 
 	for(int i = 0; i < 2; ++i) {
 		dogma_context_t* ctx = ctxa[i];
