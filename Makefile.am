@@ -19,8 +19,9 @@ include_HEADERS=include/dogma.h include/dogma-names.h	\
 
 check_PROGRAMS=test/trivial test/basic-attributes			\
 	test/basic-skill-levels test/basic-charges test/basic-fleet	\
-	test/stacking-penalties test/ancillary-modules test/drones	\
-	test/implants test/projected-effects test/projected-stacking	\
+	test/basic-area test/stacking-penalties				\
+	test/ancillary-modules test/drones test/implants		\
+	test/projected-effects test/projected-stacking			\
 	test/fleet-stacking test/self-on-self test/extra-misc		\
 	test/extra-capacitor test/extra-capacitor-remote		\
 	test/extra-side-effects test/bug-zero-powergrid			\

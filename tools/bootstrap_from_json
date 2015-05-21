@@ -85,7 +85,11 @@ function strip_index_types(&$json) {
 		 * being used on TQ. */
 		if(/*$t['published'] !== true || $groupsbyid[$t['groupID']]['published'] !== true
 		     || */ !in_array($t['categoryID'], array(6, 7, 8, 16, 18, 20, 32), true)) {
-			continue;
+
+			/* Keep effect beacons */
+			if($t['categoryID'] !== 2 || $t['groupID'] !== 920) {
+				continue;
+			}
 		}
 
 		/* XXX: don't include Dust types */

@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -58,13 +58,17 @@ int dogma_init_context(dogma_context_t** ctx) {
 	new_ctx->gang = malloc(sizeof(dogma_env_t));
 	new_ctx->character = malloc(sizeof(dogma_env_t));
 	new_ctx->ship = malloc(sizeof(dogma_env_t));
-	new_ctx->area = NULL;
+	new_ctx->area = malloc(sizeof(dogma_env_t));
 	new_ctx->fleet = NULL;
 
 	DOGMA_INIT_ENV(new_ctx->gang, 0, NULL, 0, new_ctx);
-	DOGMA_INIT_ENV(new_ctx->character, 0, NULL, 0, new_ctx);
+	DOGMA_INIT_ENV(new_ctx->area, 0, NULL, 0, new_ctx);
+	
+	DOGMA_INIT_ENV(new_ctx->character, 1379, new_ctx->area, 0, new_ctx);
+	JLI(value, new_ctx->area->children, 0);
+	*value = new_ctx->character;
+	
 	DOGMA_INIT_ENV(new_ctx->ship, 0, new_ctx->character, 0, new_ctx);
-
 	JLI(value, new_ctx->character->children, 0);
 	*value = new_ctx->ship;
 
@@ -98,7 +102,7 @@ int dogma_free_context(dogma_context_t* ctx) {
 		assert(found == true && ctx->fleet == NULL);
 	}
 
-	dogma_free_env(ctx, ctx->character);
+	dogma_free_env(ctx, ctx->area);
 	dogma_free_env(ctx, ctx->gang);
 	dogma_reset_skill_levels(ctx);
 
@@ -370,6 +374,26 @@ int dogma_add_implant(dogma_context_t* ctx, dogma_typeid_t id, dogma_key_t* inde
 
 int dogma_remove_implant(dogma_context_t* ctx, dogma_key_t index) {
 	return dogma_remove_env_generic(ctx, ctx->character, index);
+}
+
+
+
+
+
+int dogma_add_area_beacon(dogma_context_t* ctx, dogma_typeid_t id, dogma_key_t* index) {
+	*index = 1;
+	/* State -1 is 0b1111…1111, so ALL effects (regardless of
+	 * their category) will be applied. */
+	return dogma_add_env_generic(
+		ctx,
+		ctx->area, ctx,
+		id, index, -1
+	);
+
+}
+
+int dogma_remove_area_beacon(dogma_context_t* ctx, dogma_key_t index) {
+	return dogma_remove_env_generic(ctx, ctx->area, index);
 }
 
 

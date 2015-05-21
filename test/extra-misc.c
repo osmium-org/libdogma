@@ -99,7 +99,7 @@ int main(void) {
 	assertf(falloff, 1875.0, 0.05);
 
 	dogma_remove_module(ctx, slot);
-	dogma_add_module_sc(ctx, TYPE_CompactLightMissileLauncher,
+	dogma_add_module_sc(ctx, TYPE_ArbalestCompactLightMissileLauncher,
 	                    &slot, DOGMA_STATE_Active, TYPE_NovaLightMissile);
 	assert(dogma_get_number_of_module_cycles_before_reload(ctx, slot, &ncycles) == DOGMA_OK);
 	assert(ncycles == 46);

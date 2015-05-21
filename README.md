@@ -33,6 +33,8 @@ Features
 
 * Supports fleet/gang bonuses
 
+* Supports effect beacons (wormhole feature effects, etc.)
+
 Missing features / Known issues
 -------------------------------
 
@@ -41,8 +43,6 @@ Missing features / Known issues
   42 squads each, bonuses will be applied anyway. (Same goes if you
   have a character with no skills as fleet commander.) Whether this is
   a bug or a feature, you decide.
-
-* Area effects (like wormhole effects) are not supported yet.
 
 Credits
 -------

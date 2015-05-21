@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -221,16 +221,17 @@ struct dogma_context_s {
 
 	dogma_env_t* gang; /* Where gang modifiers live */
 
-	/* The root environment of this context. Contains the ship,
-	 * skillbooks, drones and implants as direct children. */
+	/* The root environment. Contains the character at index 0 and
+	 * possibly more effect beacons. */
+	dogma_env_t* area;
+
+	/* The character piloting the ship. Contains the ship at index
+	 * 0, skillbooks (index is the skill typeid), drones and
+	 * implants as direct children. */
 	dogma_env_t* character;
 
-	/* The ship is actually a child of character, and it has index
-	 * 0. This pointer is just an alias, for convenience. */
+	/* The ship being piloted. Contains the modules… */
 	dogma_env_t* ship;
-
-	/* Unused for now */
-	dogma_env_t* area;
 
 	uint8_t default_skill_level;
 	dogma_array_t skill_levels; /* dogma_typeid_t -> uint8_t */

@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2014 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -20,22 +20,22 @@
 
 int main(void) {
 	dogma_context_t* ctx;
-	dogma_key_t k;
-	double v0, v1;
+	dogma_key_t beacon;
+	double value;
 
-	assert(dogma_init() == DOGMA_OK);
-	assert(dogma_init_context(&ctx) == DOGMA_OK);
+	assertok(dogma_init());
+	assertok(dogma_init_context(&ctx));
+	assertok(dogma_set_ship(ctx, TYPE_AmarrShuttle));
 
-	assert(dogma_set_ship(ctx, TYPE_Confessor) == DOGMA_OK);
+	assertok(dogma_get_ship_attribute(ctx, ATT_MaxTargetRange, &value));
+	assertf(43750, value, 0);
 
-	assert(dogma_get_ship_attribute(ctx, ATT_MaxVelocity, &v0) == DOGMA_OK);
-	assert(dogma_add_module_s(ctx, TYPE_ConfessorPropulsionMode, &k, DOGMA_STATE_Online) == DOGMA_OK);
-	assert(dogma_get_ship_attribute(ctx, ATT_MaxVelocity, &v1) == DOGMA_OK);
+	assertok(dogma_add_area_beacon(ctx, TYPE_MagnetarEffectBeaconClass5, &beacon));
 
-	printf("%f %f\n", v0, v1);
-	
-	assert(v1 > v0);
+	assertok(dogma_get_ship_attribute(ctx, ATT_MaxTargetRange, &value));
+	assertf(24937.5, value, 0);
 
-	assert(dogma_free_context(ctx) == DOGMA_OK);
+	assertok(dogma_remove_area_beacon(ctx, beacon));
+	assertok(dogma_free_context(ctx));
 	return 0;
 }

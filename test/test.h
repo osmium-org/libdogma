@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -49,6 +49,19 @@
 			failf(e, r); \
 		} \
 	} while(0)
+
+#define assertok(call) do {	  \
+		switch(call) { \
+		case DOGMA_NOT_FOUND: \
+			fprintf(stderr, "%s:%i: DOGMA_NOT_FOUND", __FILE__, __LINE__); \
+			assert(0); \
+			exit(1); \
+	case DOGMA_NOT_APPLICABLE: \
+		fprintf(stderr, "%s:%i: DOGMA_NOT_APPLICABLE", __FILE__, __LINE__); \
+		        assert(0); \
+		        exit(1); \
+		        } \
+		        } while(0)
 
 #define debug_affectors(ctx, location) do {	  \
 		dogma_simple_affector_t* aff; \
