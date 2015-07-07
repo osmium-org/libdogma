@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -154,10 +154,16 @@ int dogma_modifier_is_applicable(dogma_context_t* ctx, dogma_env_t* env,
 
 	case DOGMA_SCOPE_Location:
 		/* Location modifiers only affect environments with a certain
-		 * location (parent) */
-		if(env->parent != modifier->targetenv) {
-			*applicable = false;
-			return DOGMA_OK;
+		 * location */
+		
+		/* traverse all grandparents, not just the parent */
+		while(env->parent != modifier->targetenv) {
+			env = env->parent;
+
+			if(env == NULL) {
+				*applicable = false;
+				return DOGMA_OK;
+			}
 		}
 		break;
 
