@@ -8,8 +8,9 @@ Reverse-engineered to be a **bottom-up** implementation of the real
 dogma engine (*probably*), with slight alterations to make it suitable
 for use in fitting simulation tools.
 
-Unofficial, ready-to-build tarballs are available at
-<http://artefact2.com/files/libdogma/>.
+See the [Github
+releases](https://github.com/osmium-org/libdogma/releases) for
+ready-to-build tarballs.
 
 Features
 --------
