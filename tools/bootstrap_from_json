@@ -44,9 +44,9 @@ function escape_c_string($str) {
 
 function load_json($jsonpath) {
 	static $neededjson = array(
-		'categories' => 'invcategories.json',
-		'groups' => 'invgroups.json',
-		'types' => 'invtypes.json',
+		'categories' => 'evecategories.json',
+		'groups' => 'evegroups.json',
+		'types' => 'evetypes.json',
 		'attribs' => 'dgmattribs.json',
 		'typeattribs' => 'dgmtypeattribs.json',
 		'effects' => 'dgmeffects.json',

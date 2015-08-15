@@ -27,7 +27,8 @@ check_PROGRAMS=test/trivial test/basic-attributes			\
 	test/extra-side-effects test/bug-zero-powergrid			\
 	test/bug-drones-segfault					\
 	test/bug-capacitor-projected-0percentstable			\
-	test/tactical-destroyer-modes test/bruteforce
+	test/tactical-destroyer-modes test/missile-module		\
+	test/bruteforce
 
 LDADD=libdogma.la
 TESTS=$(check_PROGRAMS)
