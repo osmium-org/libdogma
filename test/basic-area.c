@@ -35,6 +35,10 @@ int main(void) {
 	assertok(dogma_get_ship_attribute(ctx, ATT_MaxTargetRange, &value));
 	assertf(24937.5, value, 0);
 
+	value = 0;
+	assertok(dogma_get_area_beacon_attribute(ctx, beacon, ATT_MaxTargetRangeMultiplier, &value));
+	assert(value > 0);
+	
 	assertok(dogma_remove_area_beacon(ctx, beacon));
 	assertok(dogma_free_context(ctx));
 	return 0;

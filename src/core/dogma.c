@@ -440,12 +440,6 @@ int dogma_get_location_env(dogma_context_t* ctx, dogma_location_t location, dogm
 		*env = ctx->character;
 		return DOGMA_OK;
 
-	case DOGMA_LOC_Implant:
-		JLG(env1, ctx->character->children, location.implant_index);
-		if(env1 == NULL) return DOGMA_NOT_FOUND;
-		*env = *env1;
-		return DOGMA_OK;
-
 	case DOGMA_LOC_Skill:
 		JLG(env1, ctx->character->children, location.skill_typeid);
 		if(env1 == NULL) return DOGMA_NOT_FOUND;
@@ -477,6 +471,18 @@ int dogma_get_location_env(dogma_context_t* ctx, dogma_location_t location, dogm
 		assert(*env != NULL);
 		return DOGMA_OK;
 
+	case DOGMA_LOC_Implant:
+		JLG(env1, ctx->character->children, location.implant_index);
+		if(env1 == NULL) return DOGMA_NOT_FOUND;
+		*env = *env1;
+		return DOGMA_OK;
+
+	case DOGMA_LOC_Area_Beacon:
+		JLG(env1, ctx->area->children, location.area_beacon_index);
+		if(env1 == NULL) return DOGMA_NOT_FOUND;
+		*env = *env1;
+		return DOGMA_OK;
+
 	default:
 		return DOGMA_NOT_FOUND;
 
@@ -488,6 +494,15 @@ int dogma_get_location_attribute(dogma_context_t* ctx, dogma_location_t location
 	dogma_env_t* loc_env;
 	DOGMA_ASSUME_OK(dogma_get_location_env(ctx, location, &loc_env));
 	return dogma_get_env_attribute(ctx, loc_env, attributeid, out);
+}
+
+int dogma_get_area_beacon_attribute(dogma_context_t* ctx, dogma_key_t index, dogma_attributeid_t attributeid, double* out) {
+	return dogma_get_location_attribute(
+		ctx,
+		(dogma_location_t){ .type = DOGMA_LOC_Area_Beacon, .area_beacon_index = index },
+		attributeid,
+		out
+	);
 }
 
 int dogma_get_character_attribute(dogma_context_t* ctx, dogma_attributeid_t attributeid, double* out) {

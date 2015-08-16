@@ -16,6 +16,7 @@ dogma_free_capacitor_list
 dogma_free_context
 dogma_free_fleet_context
 dogma_get_affectors
+dogma_get_area_beacon_attribute
 dogma_get_capacitor
 dogma_get_capacitor_all
 dogma_get_chance_based_effect_chance
