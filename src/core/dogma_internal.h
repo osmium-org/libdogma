@@ -50,7 +50,13 @@
 		(envptr)->targeted_by = NULL; \
 	} while(0)
 
+/* Index 0 is for char */
+#define DOGMA_SAFE_AREA_INDEXES 1
+
+/* Any skill typeid is an index */
 #define DOGMA_SAFE_CHAR_INDEXES 50000
+
+/* Nothing needs a reserved index in ships */
 #define DOGMA_SAFE_SHIP_INDEXES 0
 
 

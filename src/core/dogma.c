@@ -381,7 +381,7 @@ int dogma_remove_implant(dogma_context_t* ctx, dogma_key_t index) {
 
 
 int dogma_add_area_beacon(dogma_context_t* ctx, dogma_typeid_t id, dogma_key_t* index) {
-	*index = 1;
+	*index = DOGMA_SAFE_AREA_INDEXES;
 	/* State -1 is 0b1111…1111, so ALL effects (regardless of
 	 * their category) will be applied. */
 	return dogma_add_env_generic(
