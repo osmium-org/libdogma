@@ -13,7 +13,7 @@ libdogma_la_SOURCES=src/core/dogma.c include/dogma.h			\
 	src/libdogma.sym src/operands.h src/tables-data.h test/test.h	\
 	tools/bootstrap_from_json
 
-libdogma_la_LDFLAGS=-export-symbols src/libdogma.sym -version-info 1:0:1
+libdogma_la_LDFLAGS=-export-symbols src/libdogma.sym -version-info 2:0:2
 include_HEADERS=include/dogma.h include/dogma-names.h	\
 	include/dogma-extra.h
 
