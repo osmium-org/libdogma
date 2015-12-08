@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2013, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -71,10 +71,10 @@ int main(void) {
 	dogma_target(ctx[1], MOD(7), ctx[2]);
 	dogma_target(ctx[1], MOD(8), ctx[3]);
 
-	dogma_add_module_s(ctx[2], TYPE_SmallNosferatuII, slots + 12, DOGMA_STATE_Active);
-	dogma_add_module_s(ctx[2], TYPE_SmallNosferatuII, slots + 13, DOGMA_STATE_Active);
-	dogma_add_module_s(ctx[3], TYPE_SmallNosferatuII, slots + 17, DOGMA_STATE_Active);
-	dogma_add_module_s(ctx[3], TYPE_SmallNosferatuII, slots + 18, DOGMA_STATE_Active);
+	dogma_add_module_s(ctx[2], TYPE_SmallEnergyNosferatuII, slots + 12, DOGMA_STATE_Active);
+	dogma_add_module_s(ctx[2], TYPE_SmallEnergyNosferatuII, slots + 13, DOGMA_STATE_Active);
+	dogma_add_module_s(ctx[3], TYPE_SmallEnergyNosferatuII, slots + 17, DOGMA_STATE_Active);
+	dogma_add_module_s(ctx[3], TYPE_SmallEnergyNosferatuII, slots + 18, DOGMA_STATE_Active);
 	dogma_target(ctx[2], MOD(12), ctx[0]);
 	dogma_target(ctx[2], MOD(13), ctx[1]);
 	dogma_target(ctx[3], MOD(17), ctx[0]);
@@ -132,7 +132,7 @@ int main(void) {
 	dogma_set_ship(ctx[1], TYPE_Dominix);
 
 	dogma_add_module_s(ctx[0], TYPE_HeavyEnergyNeutralizerII, &slots[0], DOGMA_STATE_Active);
-	dogma_add_module_s(ctx[0], TYPE_HeavyNosferatuII, &slots[1], DOGMA_STATE_Active);
+	dogma_add_module_s(ctx[0], TYPE_HeavyEnergyNosferatuII, &slots[1], DOGMA_STATE_Active);
 	dogma_target(ctx[0], MOD(0), ctx[1]);
 	dogma_target(ctx[0], MOD(1), ctx[1]);
 

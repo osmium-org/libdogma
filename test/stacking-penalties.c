@@ -76,9 +76,9 @@ int main(void) {
 	dogma_set_module_state(ctx, slot6, DOGMA_STATE_Online);
 	expect_thermal_resistance(89.21);
 
-	dogma_add_module(ctx, TYPE_LargeAntiThermicPumpII, &slot7);
-	dogma_add_module(ctx, TYPE_LargeAntiThermicPumpII, &slot8);
-	dogma_add_module(ctx, TYPE_LargeAntiThermicPumpII, &slot9);
+	dogma_add_module(ctx, TYPE_LargeAntiThermalPumpII, &slot7);
+	dogma_add_module(ctx, TYPE_LargeAntiThermalPumpII, &slot8);
+	dogma_add_module(ctx, TYPE_LargeAntiThermalPumpII, &slot9);
 
 	dogma_set_module_state(ctx, slot7, DOGMA_STATE_Online);
 	expect_thermal_resistance(89.32);

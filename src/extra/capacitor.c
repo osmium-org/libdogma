@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2013, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -50,12 +50,12 @@
 	(e)->id == EFFECT_PowerBooster \
 	|| (e)->id == EFFECT_EnergyTransfer \
 	|| (e)->id == EFFECT_EnergyDestabilizationNew \
-	|| (e)->id == EFFECT_Leech \
+	|| (e)->id == EFFECT_EnergyNosferatuFalloff \
 	|| ((e)->dischargeattributeid != 0 && (e)->durationattributeid != 0) \
 )
 
 #define EFFECT_AFFECTED_BY_TARGET_CAPACITOR(e) (	  \
-	(e)->id == EFFECT_Leech \
+	(e)->id == EFFECT_EnergyNosferatuFalloff \
 )
 
 
@@ -208,7 +208,7 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 		ent->location->delta += (ent->amount_used + ent->usage_penalty) / skewed_cycle_time;
 		break;
 
-	case EFFECT_Leech:
+	case EFFECT_EnergyNosferatuFalloff:
 		DOGMA_ASSUME_OK(dogma_get_module_attribute(
 			ctx, source->index, ATT_PowerTransferAmount, &(ent->other_amount)
 		));

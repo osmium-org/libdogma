@@ -56,7 +56,7 @@ int main(void) {
 	assert(projectable == true);
 	assert(dogma_type_has_projectable_effects(TYPE_DamageControlII, &projectable) == DOGMA_OK);
 	assert(projectable == false);
-	assert(dogma_type_has_projectable_effects(TYPE_SmallNosferatuI, &projectable) == DOGMA_OK);
+	assert(dogma_type_has_projectable_effects(TYPE_SmallEnergyNosferatuI, &projectable) == DOGMA_OK);
 	assert(projectable == true);
 
 	dogma_init_context(&ctx);

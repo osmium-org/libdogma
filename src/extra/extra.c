@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2013, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -342,7 +342,7 @@ int dogma_type_has_projectable_effects(dogma_typeid_t id, bool* out) {
 		 * and have to be hardcoded here. :-( */
 		/* XXX this is probably incomplete */
 		if(e->id == EFFECT_EnergyDestabilizationNew
-		   || e->id == EFFECT_Leech
+		   || e->id == EFFECT_EnergyNosferatuFalloff
 		   || e->id == EFFECT_TargetArmorRepair
 		   || e->id == EFFECT_ShieldTransfer
 		   || e->id == EFFECT_RemoteHullRepair

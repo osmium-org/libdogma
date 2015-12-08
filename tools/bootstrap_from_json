@@ -20,6 +20,8 @@
 
 ini_set('memory_limit', '-1');
 
+const LOCALE_SUFFIX = '_en-us';
+
 function fatal($message) {
 	global $argv;
 
@@ -65,6 +67,15 @@ function load_json($jsonpath) {
 
 		$json[$idx] = json_decode($jsontext, true);
 		if(json_last_error() !== JSON_ERROR_NONE) fatal('could not parse JSON in '.$file);
+
+		foreach($json[$idx] as &$row) {
+			foreach($row as $k => $v) {
+				if(substr($k, -strlen(LOCALE_SUFFIX)) === LOCALE_SUFFIX
+				   && !isset($row[$attr = substr($k, 0, -strlen(LOCALE_SUFFIX))])) {
+					$row[$attr] = $v;
+				}
+			}
+		}
 	}
 
 	return $json;
@@ -225,19 +236,30 @@ function strip_index_expressions(&$json) {
 }
 
 function query_or_insert_expression(&$json, array $exprfilter) {
-    $lowestid = -1;
+	/* Obvious space/time tradeoff */
+	static $cache = [];
+	
+    static $lowestid = -1;
+
+    if($lowestid === null) {
+	    foreach($json['expressions'] as $expr) {
+		    if($expr['expressionID'] < $lowestid) {
+			    $lowestid = $expr['expressionID'];
+		    }
+	    }
+    }
+
+    $efstr = json_encode($exprfilter);
+    if(isset($cache[$efstr])) return $cache[$efstr];
     
     foreach($json['expressions'] as $expr) {
         foreach($exprfilter as $k => $v) {            
-            if(!isset($expr[$k]) || $expr[$k] !== $v) {
-                if($lowestid > $expr['expressionID'])
-                    $lowestid = $expr['expressionID'];
-                
+            if(!isset($expr[$k]) || $expr[$k] !== $v) {                
                 continue 2;
             }
         }
 
-        return $expr['expressionID'];
+        return $cache[$efstr] = $expr['expressionID'];
     }
 
     /* Insert expression */
@@ -254,7 +276,7 @@ function query_or_insert_expression(&$json, array $exprfilter) {
     $exprfilter['expressionID'] = $lowestid;
     $json['expressions'][$lowestid] = $exprfilter;
 
-    return $lowestid;
+    return $cache[$efstr] = $lowestid;
 }
 
 function combine_expressions(&$json, array $expressionids) {
@@ -388,8 +410,23 @@ foreach($json['effects'] as &$effect) {
                 'expressionValue' => 'Ship',
             ]);
             break;
+            
+        case null:
+            $domain = query_or_insert_expression($json, [
+                'operandID' => 24, /* DEFENVIDX */
+                'expressionValue' => 'Self',
+            ]);
+            break;
+            
+        case 'targetID':
+            $domain = query_or_insert_expression($json, [
+                'operandID' => 24, /* DEFENVIDX */
+                'expressionValue' => 'Target',
+            ]);
+            break;
 
         default:
+	        var_dump($effect);
             fatal("modifierInfo has unknown domain: ".$modifier['domain']);
             
         }
@@ -438,6 +475,7 @@ foreach($json['effects'] as &$effect) {
             break;
             
         default:
+	        var_dump($effect);
             fatal("modifierInfo has unknown func: ".$modifier['func']);
 
         }
@@ -456,6 +494,11 @@ foreach($json['effects'] as &$effect) {
         /* XXX: this is guesswork */
         switch($modifier['operator']) {
 
+        case 0:
+	        /* XXX: this is REALLY guesswork */
+            $assocstring = 'PreMul';
+            break;
+	        
         case 2:
             $assocstring = 'ModAdd';
             break;
@@ -467,8 +510,14 @@ foreach($json['effects'] as &$effect) {
         case 6:
 	        $assocstring = 'PostPercent';
 	        break;
+
+        case 7:
+	        /* XXX: this is REALLY guesswork */
+	        $assocstring = 'PostAssignment'; /* Or is it Post? Or anything else? */
+	        break;
             
         default:
+	        var_dump($effect);
             fatal("modifierInfo has unknown operator: ".$modifier['operator']);
             
         }
