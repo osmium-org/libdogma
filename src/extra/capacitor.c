@@ -50,6 +50,7 @@
 	(e)->id == EFFECT_PowerBooster \
 	|| (e)->id == EFFECT_EnergyTransfer \
 	|| (e)->id == EFFECT_EnergyDestabilizationNew \
+	|| (e)->id == EFFECT_EnergyNeutralizerFalloff \
 	|| (e)->id == EFFECT_EnergyNosferatuFalloff \
 	|| ((e)->dischargeattributeid != 0 && (e)->durationattributeid != 0) \
 )

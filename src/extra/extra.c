@@ -342,10 +342,14 @@ int dogma_type_has_projectable_effects(dogma_typeid_t id, bool* out) {
 		 * and have to be hardcoded here. :-( */
 		/* XXX this is probably incomplete */
 		if(e->id == EFFECT_EnergyDestabilizationNew
+		   || e->id == EFFECT_EnergyNeutralizerFalloff
 		   || e->id == EFFECT_EnergyNosferatuFalloff
 		   || e->id == EFFECT_TargetArmorRepair
+		   || e->id == EFFECT_RemoteArmorRepairFalloff
 		   || e->id == EFFECT_ShieldTransfer
+		   || e->id == EFFECT_RemoteShieldTransferFalloff
 		   || e->id == EFFECT_RemoteHullRepair
+		   || e->id == EFFECT_RemoteHullRepairFalloff
 		   || e->id == EFFECT_EnergyTransfer
 		   || dogma_expression_has_currenttarget(e->preexpressionid)) {
 			*out = true;

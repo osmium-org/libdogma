@@ -239,7 +239,7 @@ function query_or_insert_expression(&$json, array $exprfilter) {
 	/* Obvious space/time tradeoff */
 	static $cache = [];
 	
-    static $lowestid = -1;
+    static $lowestid = -1000;
 
     if($lowestid === null) {
 	    foreach($json['expressions'] as $expr) {
@@ -756,6 +756,14 @@ $json['effects'][31]['postExpression'] = -1;
 /* targetArmorRepair: ignore effect, not useful here */
 $json['effects'][592]['preExpression'] = -1;
 $json['effects'][592]['postExpression'] = -1;
+
+/* microJumpDrive: apply sigradius penalty */
+$json['effects'][4921]['preExpression'] = 7501;
+$json['effects'][4921]['postExpression'] = 7502;
+
+/* microJumpPortalDrive: apply sigradius penalty */
+$json['effects'][6208]['preExpression'] = 7501;
+$json['effects'][6208]['postExpression'] = 7502;
 
 fwrite($c, "static const dogma_effect_t dogma_table_effects[] = {\n");
 foreach($json['effects'] as $e) {
