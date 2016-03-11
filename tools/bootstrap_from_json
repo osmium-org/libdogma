@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /* libdogma
- * Copyright (C) 2012, 2013, 2014, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2014, 2015, 2016 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -411,22 +411,30 @@ foreach($json['effects'] as &$effect) {
             ]);
             break;
             
-        case null:
-            $domain = query_or_insert_expression($json, [
-                'operandID' => 24, /* DEFENVIDX */
-                'expressionValue' => 'Self',
-            ]);
-            break;
-            
         case 'targetID':
             $domain = query_or_insert_expression($json, [
                 'operandID' => 24, /* DEFENVIDX */
                 'expressionValue' => 'Target',
             ]);
             break;
+            
+        case 'otherID':
+            $domain = query_or_insert_expression($json, [
+                'operandID' => 24, /* DEFENVIDX */
+                'expressionValue' => 'Other',
+            ]);
+            break;
+
+        case 'itemID':
+        case null:
+            $domain = query_or_insert_expression($json, [
+                'operandID' => 24, /* DEFENVIDX */
+                'expressionValue' => 'Self',
+            ]);
+            break;
 
         default:
-	        var_dump($effect);
+	        echo $effect['modifierInfo']."\n";
             fatal("modifierInfo has unknown domain: ".$modifier['domain']);
             
         }
@@ -475,7 +483,7 @@ foreach($json['effects'] as &$effect) {
             break;
             
         default:
-	        var_dump($effect);
+	        echo $effect['modifierInfo']."\n";
             fatal("modifierInfo has unknown func: ".$modifier['func']);
 
         }
@@ -503,6 +511,11 @@ foreach($json['effects'] as &$effect) {
             $assocstring = 'ModAdd';
             break;
 
+        case 4:
+	        /* XXX: this is REALLY guesswork */
+            $assocstring = 'PostMul';
+            break;
+
         case 5:
             $assocstring = 'PostDiv';
             break;
@@ -517,7 +530,7 @@ foreach($json['effects'] as &$effect) {
 	        break;
             
         default:
-	        var_dump($effect);
+	        echo $effect['modifierInfo']."\n";
             fatal("modifierInfo has unknown operator: ".$modifier['operator']);
             
         }
