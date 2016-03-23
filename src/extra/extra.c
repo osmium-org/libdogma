@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2013, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2013, 2015, 2016 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -338,20 +338,7 @@ int dogma_type_has_projectable_effects(dogma_typeid_t id, bool* out) {
 	while(te != NULL) {
 		DOGMA_ASSUME_OK(dogma_get_effect((*te)->effectid, &e));
 
-		/* Sadly some projectable effects have no client expression
-		 * and have to be hardcoded here. :-( */
-		/* XXX this is probably incomplete */
-		if(e->id == EFFECT_EnergyDestabilizationNew
-		   || e->id == EFFECT_EnergyNeutralizerFalloff
-		   || e->id == EFFECT_EnergyNosferatuFalloff
-		   || e->id == EFFECT_TargetArmorRepair
-		   || e->id == EFFECT_RemoteArmorRepairFalloff
-		   || e->id == EFFECT_ShieldTransfer
-		   || e->id == EFFECT_RemoteShieldTransferFalloff
-		   || e->id == EFFECT_RemoteHullRepair
-		   || e->id == EFFECT_RemoteHullRepairFalloff
-		   || e->id == EFFECT_EnergyTransfer
-		   || dogma_expression_has_currenttarget(e->preexpressionid)) {
+		if(e->category == 2 || dogma_expression_has_currenttarget(e->preexpressionid)) {
 			*out = true;
 			return DOGMA_OK;
 		}
