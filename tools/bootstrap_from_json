@@ -302,17 +302,12 @@ if($argc !== 2) {
 
 $json = load_json(rtrim($argv[1], '/'));
 
-
 $targetsource = __DIR__.'/../src/tables-data.h';
-if(file_exists($targetsource)) fatal('cowardly refusing to overwrite '.$targetsource);
-
-$c = fopen($targetsource, 'xb');
+$c = fopen($targetsource, 'wb');
 if($c === false) fatal('could not open '.$targetsource.' for writing');
 
 $targetheader = __DIR__.'/../src/operands.h';
-if(file_exists($targetheader)) fatal('cowardly refusing to overwrite '.$targetheader);
-
-$h = fopen($targetheader, 'xb');
+$h = fopen($targetheader, 'wb');
 if($h === false) fatal('could not open '.$targetheader.' for writing');
 
 
@@ -980,9 +975,7 @@ fclose($c);
 fclose($h);
 
 $targetsource = __DIR__.'/../include/dogma-names.h';
-if(file_exists($targetsource)) fatal('cowardly refusing to overwrite '.$targetsource);
-
-$c = fopen($targetsource, 'xb');
+$c = fopen($targetsource, 'wb');
 if($c === false) fatal('could not open '.$targetsource.' for writing');
 
 fwrite(
@@ -1027,3 +1020,5 @@ write_defines('CAT_', $json['categories'], 'categoryName', 'categoryID');
 
 fwrite($c, "\n\n#endif\n");
 fclose($c);
+
+info(' ~~~ all done! ~~~ ');
