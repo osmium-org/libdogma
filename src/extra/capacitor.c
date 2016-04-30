@@ -48,8 +48,7 @@
 
 #define EFFECT_TOUCHES_ENERGY(e) (	  \
 	(e)->id == EFFECT_PowerBooster \
-	|| (e)->id == EFFECT_EnergyTransfer \
-	|| (e)->id == EFFECT_EnergyDestabilizationNew \
+	|| (e)->id == EFFECT_RemoteEnergyTransferFalloff \
 	|| (e)->id == EFFECT_EnergyNeutralizerFalloff \
 	|| (e)->id == EFFECT_EnergyNosferatuFalloff \
 	|| ((e)->dischargeattributeid != 0 && (e)->durationattributeid != 0) \
@@ -167,7 +166,7 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 		ent->location->delta -= ent->other_amount / skewed_cycle_time;
 		break;
 
-	case EFFECT_EnergyTransfer:
+	case EFFECT_RemoteEnergyTransferFalloff:
 		DOGMA_ASSUME_OK(dogma_get_module_attribute(
 			ctx, source->index, e->dischargeattributeid, &(ent->amount_used)
 		));
@@ -184,7 +183,7 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 		}
 		break;
 
-	case EFFECT_EnergyDestabilizationNew:
+	case EFFECT_EnergyNeutralizerFalloff:
 		DOGMA_ASSUME_OK(dogma_get_module_attribute(
 			ctx, source->index, e->dischargeattributeid, &(ent->amount_used)
 		));

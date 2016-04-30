@@ -37,7 +37,7 @@ int main(void) {
 		dogma_set_ship(ctx[i], TYPE_Rifter);
 		dogma_add_module_s(ctx[i], TYPE_SmallRemoteCapacitorTransmitterII, slots + 5 * i, DOGMA_STATE_Active);
 		dogma_add_module_s(ctx[i], TYPE_SmallRemoteCapacitorTransmitterII, slots + 5 * i + 1, DOGMA_STATE_Active);
-		dogma_add_module_s(ctx[i], TYPE_SmallCapacitorBatteryII, slots + 5 * i + 4, DOGMA_STATE_Online);
+		dogma_add_module_s(ctx[i], TYPE_SmallCapBatteryII, slots + 5 * i + 4, DOGMA_STATE_Online);
 	}
 
 	dogma_target(ctx[0], MOD(0), ctx[1]);

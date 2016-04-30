@@ -757,10 +757,6 @@ $json['effects'][27]['postExpression'] = -1;
 $json['effects'][26]['preExpression'] = -1;
 $json['effects'][26]['postExpression'] = -1;
 
-/* energyTransfer: ignore effect, not useful here */
-$json['effects'][31]['preExpression'] = -1;
-$json['effects'][31]['postExpression'] = -1;
-
 /* targetArmorRepair: ignore effect, not useful here */
 $json['effects'][592]['preExpression'] = -1;
 $json['effects'][592]['postExpression'] = -1;
@@ -774,12 +770,17 @@ $json['effects'][6208]['preExpression'] = 7501;
 $json['effects'][6208]['postExpression'] = 7502;
 
 fwrite($c, "static const dogma_effect_t dogma_table_effects[] = {\n");
-foreach($json['effects'] as $e) {
+foreach($json['effects'] as $id => $e) {
+	if(!array_key_exists('effectName', $e)) {
+		warn("effect {$id} is stale, ignoring");
+		continue;
+	}
+	
 	fwrite($c, "\t{ "
 	       .$e['effectID']
-	       .", ".$e['effectCategory'].'U'
-	       .", ".$e['preExpression'].'U'
-	       .", ".$e['postExpression'].'U'
+	       .", ".(int)$e['effectCategory'].'U'
+	       .", ".(int)$e['preExpression'].'U'
+	       .", ".(int)$e['postExpression'].'U'
 	       .", ".(int)$e['durationAttributeID'].'U'
 	       .", ".(int)$e['trackingSpeedAttributeID'].'U'
 	       .", ".(int)$e['dischargeAttributeID'].'U'

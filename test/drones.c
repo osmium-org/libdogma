@@ -76,7 +76,7 @@ int main(void) {
 	dogma_set_ship(ctx, TYPE_Scorpion);
 	dogma_add_drone(ctx, TYPE_HornetEC300, 1);
 	dogma_add_module(ctx, TYPE_SignalDistortionAmplifierII, &slot0);
-	dogma_add_module(ctx, TYPE_ECMPhaseInverterII, &slot1);
+	dogma_add_module(ctx, TYPE_LadarECMII, &slot1);
 	dogma_set_module_state(ctx, slot0, DOGMA_STATE_Online);
 	dogma_set_module_state(ctx, slot1, DOGMA_STATE_Active);
 
