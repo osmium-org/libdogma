@@ -237,33 +237,17 @@ function strip_index_expressions(&$json) {
 
 function query_or_insert_expression(&$json, array $exprfilter) {
 	/* Obvious space/time tradeoff */
-	static $cache = [];
+	static $cache = null;
 	
     static $lowestid = -1000;
 
-    if($lowestid === null) {
+    if($cache === null) {
 	    foreach($json['expressions'] as $expr) {
-		    if($expr['expressionID'] < $lowestid) {
-			    $lowestid = $expr['expressionID'];
-		    }
+		    ksort($expr);
+		    $cache[json_encode($expr)] = $expr['expressionID'];
 	    }
     }
-
-    $efstr = json_encode($exprfilter);
-    if(isset($cache[$efstr])) return $cache[$efstr];
     
-    foreach($json['expressions'] as $expr) {
-        foreach($exprfilter as $k => $v) {            
-            if(!isset($expr[$k]) || $expr[$k] !== $v) {                
-                continue 2;
-            }
-        }
-
-        return $cache[$efstr] = $expr['expressionID'];
-    }
-
-    /* Insert expression */
-    $lowestid--;
     $exprfilter += [
         'operandID' => -1,
         'expressionValue' => null,
@@ -273,9 +257,15 @@ function query_or_insert_expression(&$json, array $exprfilter) {
         'arg1' => null,
         'arg2' => null,
     ];
+    ksort($exprfilter);
+    
+    $efstr = json_encode($exprfilter);
+    if(isset($cache[$efstr])) return $cache[$efstr];
+    
+    /* Insert expression */
+    $lowestid--;
     $exprfilter['expressionID'] = $lowestid;
     $json['expressions'][$lowestid] = $exprfilter;
-
     return $cache[$efstr] = $lowestid;
 }
 
