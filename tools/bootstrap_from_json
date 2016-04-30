@@ -243,13 +243,14 @@ function query_or_insert_expression(&$json, array $exprfilter) {
 
     if($cache === null) {
 	    foreach($json['expressions'] as $expr) {
+		    $id = $expr['expressionID'];
+		    unset($expr['expressionID']);
 		    ksort($expr);
-		    $cache[json_encode($expr)] = $expr['expressionID'];
+		    $cache[json_encode($expr)] = $id;
 	    }
     }
     
     $exprfilter += [
-        'operandID' => -1,
         'expressionValue' => null,
         'expressionAttributeID' => null,
         'expressionGroupID' => null,
@@ -376,10 +377,31 @@ foreach($json['effects'] as &$effect) {
            For ItemModifiers:
            (($domain->$modifiedAttributeID).($operator)).$func($modifyingAttributeID)
 
-           For LocationRequiredSkillModifiers:
+           For LocationRequiredSkillModifiers / OwnerRequiredSkillModifiers:
            (($domain[$skillTypeID]->$modifiedAttributeID).($operator)).$func($modifyingAttributeID)
+
+           For LocationGroupModifiers:
+           (($domain..$groupID->$modifiedAttributeID).($operator)).$func($modifyingAttributeID)
+
+           For GangItemModifiers:
+           [($modifiedAttributeID).($operator)].$func($modifyingAttributeID)
+
+           For GangRequiredSkillModifiers:
+           [($skillTypeID.$modifiedAttributeID).($operator)].$func($modifyingAttributeID)
          */
 
+        $modifiedattribute = query_or_insert_expression($json, [
+            'operandID' => 22, /* DEFATTRIBUTE */
+            'expressionAttributeID' => $modifier['modifiedAttributeID'],
+        ]);
+
+        $modifyingattribute = query_or_insert_expression($json, [
+            'operandID' => 22, /* DEFATTRIBUTE */
+            'expressionAttributeID' => $modifier['modifyingAttributeID'],
+        ]);
+
+	    if(!array_key_exists('domain', $modifier)) $modifier['domain'] = '___none___';
+	    
         switch($modifier['domain']) {
             
         case 'charID':
@@ -390,6 +412,7 @@ foreach($json['effects'] as &$effect) {
             break;
             
         case 'shipID':
+        case 'structureID': /* XXX */
             $domain = query_or_insert_expression($json, [
                 'operandID' => 24, /* DEFENVIDX */
                 'expressionValue' => 'Ship',
@@ -419,6 +442,11 @@ foreach($json['effects'] as &$effect) {
             break;
 
         default:
+	        if($modifier['func'] === 'GangItemModifier'
+	           || $modifier['func'] === 'GangRequiredSkillModifier') {
+		        break;
+	        }
+	        
 	        echo $effect['modifierInfo']."\n";
             fatal("modifierInfo has unknown domain: ".$modifier['domain']);
             
@@ -429,6 +457,13 @@ foreach($json['effects'] as &$effect) {
         case 'ItemModifier':
             $add = 6; /* AIM */
             $remove = 58; /* RIM */
+
+	        $att = query_or_insert_expression($json, [
+		        'operandID' => 12, /* ATT */
+		        'arg1' => $domain,
+		        'arg2' => $modifiedattribute,
+	        ]);
+	        
             break;
 
         case 'LocationGroupModifier':
@@ -443,6 +478,12 @@ foreach($json['effects'] as &$effect) {
                     'expressionGroupID' => $modifier['groupID'],
                 ]),
             ]);
+            
+	        $att = query_or_insert_expression($json, [
+		        'operandID' => 12, /* ATT */
+		        'arg1' => $domain,
+		        'arg2' => $modifiedattribute,
+	        ]);
             
 	        break;
 
@@ -465,6 +506,35 @@ foreach($json['effects'] as &$effect) {
                 ]),
             ]);
             
+	        $att = query_or_insert_expression($json, [
+		        'operandID' => 12, /* ATT */
+		        'arg1' => $domain,
+		        'arg2' => $modifiedattribute,
+	        ]);
+            
+            break;
+
+        case 'GangItemModifier':
+	        $add = 3; /* AGIM */
+	        $remove = 55; /* RGIM */
+	        $att = $modifiedattribute;
+	        break;
+
+        case 'GangRequiredSkillModifier':
+	        $add = 5; /* AGRSM */
+	        $remove = 57; /* RGRSM */
+
+	        $domain = query_or_insert_expression($json, [
+	            'operandID' => 29, /* DEFTYPEID */
+	            'expressionTypeID' => $modifier['skillTypeID'],
+            ]);
+
+	        $att = query_or_insert_expression($json, [
+		        'operandID' => 64, /* RSA */
+		        'arg1' => $domain,
+		        'arg2' => $modifiedattribute,
+	        ]);
+            
             break;
             
         default:
@@ -473,16 +543,9 @@ foreach($json['effects'] as &$effect) {
 
         }
 
-        $modifiedattribute = query_or_insert_expression($json, [
-            'operandID' => 22, /* DEFATTRIBUTE */
-            'expressionAttributeID' => $modifier['modifiedAttributeID'],
-        ]);
-
-        $att = query_or_insert_expression($json, [
-            'operandID' => 12, /* ATT */
-            'arg1' => $domain,
-            'arg2' => $modifiedattribute,
-        ]);
+        if(!isset($att)) {
+	        fatal("no att to build expression");
+        }
 
         /* XXX: this is guesswork */
         switch($modifier['operator']) {
@@ -529,11 +592,6 @@ foreach($json['effects'] as &$effect) {
             'operandID' => 31, /* EFF */
             'arg1' => $association,
             'arg2' => $att,
-        ]);
-
-        $modifyingattribute = query_or_insert_expression($json, [
-            'operandID' => 22, /* DEFATTRIBUTE */
-            'expressionAttributeID' => $modifier['modifyingAttributeID'],
         ]);
 
         $modifier['preExpression'] = query_or_insert_expression($json, [

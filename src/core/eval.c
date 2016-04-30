@@ -329,7 +329,13 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		dogma_eval_expression(ctx, self, exp->arg1, &resarg1);
 		dogma_eval_expression(ctx, self, exp->arg2, &resarg2);
 		assert(resarg1.type == DOGMA_CTXTYPE_ASSOCIATION);
-		assert(resarg2.type == DOGMA_CTXTYPE_MODIFIER);
+		assert(resarg2.type == DOGMA_CTXTYPE_MODIFIER || resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID);
+		if(resarg2.type == DOGMA_CTXTYPE_ATTRIBUTEID) {
+			resarg2.type = DOGMA_CTXTYPE_MODIFIER;
+			resarg2.modifier_value.targetattribute = resarg2.attributeid_value;
+			resarg2.modifier_value.sourceenv = self;
+			resarg2.modifier_value.filter.type = DOGMA_FILTERTYPE_PASS;
+		}
 		*result = resarg2;
 		result->modifier_value.assoctype = resarg1.assoc_value;
 		break;
