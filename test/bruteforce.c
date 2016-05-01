@@ -17,11 +17,7 @@
  */
 
 #include "test.h"
-
-/* This is dirty, but we need the data. Don't do this in real
- * applications! */
-#include "../src/core/tables.h"
-#include "../src/core/tables.c"
+#include "bruteforce-data.h"
 
 #include <stdio.h>
 
@@ -48,90 +44,67 @@ int main(void) {
 	/* To be perfectly thorough, some of these for loops should be
 	 * nested in one another. Try it if you have spare time! */
 
-	for(i = 0; dogma_table_types[i].id != 0; ++i) {
-		if(dogma_table_types[i].categoryid != CAT_Implant) continue;
-
-		dogma_add_implant(ctx, dogma_table_types[i].id, &implant_slot);
+	for(i = 0; bf_implants[i] != 0; ++i) {
+		printf("implant %i\n", bf_implants[i]);
+		dogma_add_implant(ctx, bf_implants[i], &implant_slot);
 		try_all_char_attribs();
 		try_all_implant_attribs();
 		dogma_remove_implant(ctx, implant_slot);
 	}
 
-	for(i = 0; dogma_table_types[i].id != 0; ++i) {
-		if(dogma_table_types[i].categoryid != CAT_Implant
-		|| dogma_table_types[i].groupid != GROUP_Booster) continue;
-
-		dogma_add_implant(ctx, dogma_table_types[i].id, &implant_slot);
+	for(i = 0; bf_boosters[i] != 0; ++i) {
+		printf("booster %i\n", bf_boosters[i]);
+		dogma_add_implant(ctx, bf_boosters[i], &implant_slot);
 		try_all_char_attribs();
 		try_all_implant_attribs();
-
-		/* Try all chance-based attributes (booster side effects) */
-		const dogma_type_effect_t** te;
-		const dogma_effect_t* e;
-		dogma_array_t effects;
-		dogma_key_t index = 0;
-
-		dogma_get_type_effects(dogma_table_types[i].id, &effects);
-		JLF(te, effects, index);
-		while(te != NULL) {
-			const dogma_location_t loc = {
-				.type = DOGMA_LOC_Implant,
-				.implant_index = implant_slot,
-			};
-			double out;
-
-			dogma_get_effect((*te)->effectid, &e);
-			if(e->fittingusagechanceattributeid == 0) continue;
-
-			dogma_get_chance_based_effect_chance(ctx, loc, e->id, &out);
-			dogma_toggle_chance_based_effect(ctx, loc, e->id, true);
-			dogma_toggle_chance_based_effect(ctx, loc, e->id, false);
-
-			JLN(te, effects, index);
-		}
-
 		dogma_remove_implant(ctx, implant_slot);
 	}
 
-	for(i = 0; dogma_table_types[i].id != 0; ++i) {
-		if(dogma_table_types[i].categoryid != CAT_Drone) continue;
-
-		dogma_add_drone(ctx, dogma_table_types[i].id, 1);
-		try_all_drone_attribs(dogma_table_types[i].id);
-		dogma_remove_drone(ctx, dogma_table_types[i].id);
+	for(i = 0; bf_drones[i] != 0; ++i) {
+		printf("drone %i\n", bf_drones[i]);
+		dogma_add_drone(ctx, bf_drones[i], 1);
+		try_all_drone_attribs(bf_drones[i]);
+		dogma_remove_drone(ctx, bf_drones[i]);
 	}
 
-	dogma_add_drone(ctx, TYPE_WarriorII, 1);
+	dogma_add_drone(ctx, bf_drones[0], 1);
 
-	for(i = 0; dogma_table_types[i].id != 0; ++i) {
-		if(dogma_table_types[i].categoryid != CAT_Ship) continue;
-
-		dogma_set_ship(ctx, dogma_table_types[i].id);
+	for(i = 0; bf_ships[i] != 0; ++i) {
+		printf("ship %i\n", bf_ships[i]);
+		dogma_set_ship(ctx, bf_ships[i]);
 		try_all_char_attribs();
 		try_all_ship_attribs();
 	}
 
-	dogma_set_ship(ctx, 587);
+	dogma_set_ship(ctx, bf_ships[0]);
 
-	for(i = 0; dogma_table_types[i].id != 0; ++i) {
-		if(dogma_table_types[i].categoryid != CAT_Module
-		   && dogma_table_types[i].categoryid != CAT_Subsystem) continue;
-
-		dogma_add_module(ctx, dogma_table_types[i].id, &module_slot);
+	for(i = 0; bf_modules[i] != 0; ++i) {
+		printf("module %i\n", bf_modules[i]);
+		dogma_add_module(ctx, bf_modules[i], &module_slot);
 		dogma_set_module_state(ctx, module_slot, DOGMA_STATE_Overloaded);
 		try_all_char_attribs();
 		try_all_ship_attribs();
-		try_all_drone_attribs(TYPE_WarriorII);
+		try_all_drone_attribs(bf_drones[0]);
 		try_all_module_attribs();
 		dogma_remove_module(ctx, module_slot);
 	}
 
-	dogma_add_module(ctx, 2873, &module_slot);
+	for(i = 0; bf_subsystems[i] != 0; ++i) {
+		printf("subsystems %i\n", bf_subsystems[i]);
+		dogma_add_module(ctx, bf_subsystems[i], &module_slot);
+		dogma_set_module_state(ctx, module_slot, DOGMA_STATE_Overloaded);
+		try_all_char_attribs();
+		try_all_ship_attribs();
+		try_all_drone_attribs(bf_drones[0]);
+		try_all_module_attribs();
+		dogma_remove_module(ctx, module_slot);
+	}
 
-	for(i = 0; dogma_table_types[i].id != 0; ++i) {
-		if(dogma_table_types[i].categoryid != CAT_Charge) continue;
+	dogma_add_module(ctx, bf_modules[0], &module_slot);
 
-		dogma_add_charge(ctx, module_slot, dogma_table_types[i].id);
+	for(i = 0; bf_charges[i] != 0; ++i) {
+		printf("charge %i\n", bf_charges[i]);
+		dogma_add_charge(ctx, module_slot, bf_charges[i]);
 		try_all_char_attribs();
 		try_all_ship_attribs();
 		try_all_module_attribs();
@@ -147,8 +120,8 @@ static void try_all_char_attribs(void) {
 	int i;
 	double v;
 
-	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
-		dogma_get_character_attribute(ctx, dogma_table_attributes[i].id, &v);
+	for(i = 0; bf_attributes[i] != 0; ++i) {
+		dogma_get_character_attribute(ctx, bf_attributes[i], &v);
 	}
 }
 
@@ -156,8 +129,8 @@ static void try_all_implant_attribs(void) {
 	int i;
 	double v;
 
-	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
-		dogma_get_implant_attribute(ctx, implant_slot, dogma_table_attributes[i].id, &v);
+	for(i = 0; bf_attributes[i] != 0; ++i) {
+		dogma_get_implant_attribute(ctx, implant_slot, bf_attributes[i], &v);
 	}
 }
 
@@ -165,8 +138,8 @@ static void try_all_skill_attribs(dogma_typeid_t id) {
 	int i;
 	double v;
 
-	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
-		dogma_get_skill_attribute(ctx, id, dogma_table_attributes[i].id, &v);
+	for(i = 0; bf_attributes[i] != 0; ++i) {
+		dogma_get_skill_attribute(ctx, id, bf_attributes[i], &v);
 	}
 }
 
@@ -175,8 +148,8 @@ static void try_all_ship_attribs(void) {
 	int i;
 	double v;
 
-	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
-		dogma_get_ship_attribute(ctx, dogma_table_attributes[i].id, &v);
+	for(i = 0; bf_attributes[i] != 0; ++i) {
+		dogma_get_ship_attribute(ctx, bf_attributes[i], &v);
 	}
 }
 
@@ -184,8 +157,8 @@ static void try_all_module_attribs(void) {
 	int i;
 	double v;
 
-	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
-		dogma_get_module_attribute(ctx, module_slot, dogma_table_attributes[i].id, &v);
+	for(i = 0; bf_attributes[i] != 0; ++i) {
+		dogma_get_module_attribute(ctx, module_slot, bf_attributes[i], &v);
 	}
 }
 
@@ -193,8 +166,8 @@ static void try_all_charge_attribs(void) {
 	int i;
 	double v;
 
-	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
-		dogma_get_charge_attribute(ctx, module_slot, dogma_table_attributes[i].id, &v);
+	for(i = 0; bf_attributes[i] != 0; ++i) {
+		dogma_get_charge_attribute(ctx, module_slot, bf_attributes[i], &v);
 	}
 }
 
@@ -202,7 +175,7 @@ static void try_all_drone_attribs(dogma_typeid_t drone) {
 	int i;
 	double v;
 
-	for(i = 0; dogma_table_attributes[i].id != 0; ++i) {
-		dogma_get_drone_attribute(ctx, drone, dogma_table_attributes[i].id, &v);
+	for(i = 0; bf_attributes[i] != 0; ++i) {
+		dogma_get_drone_attribute(ctx, drone, bf_attributes[i], &v);
 	}
 }

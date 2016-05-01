@@ -30,3 +30,4 @@ libdogma-*.tar.xz
 libdogma.pc
 core.*
 libdogmactl
+test/bruteforce-data.h
