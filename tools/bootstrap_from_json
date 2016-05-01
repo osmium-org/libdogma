@@ -235,36 +235,174 @@ function strip_index_expressions(&$json) {
 	}
 }
 
+function normalize_expressions(&$json) {
+	foreach($json['expressions'] as &$e) {
+		switch($e['operandID']) {
+			
+		case 21: /* Assoc */
+		case 23: /* Float */
+		case 24: /* Env Index */
+		case 25: /* Bool */
+		case 27: /* Int */
+		case 28: /* String */
+			$e['expressionAttributeID'] = null;
+			$e['expressionGroupID'] = null;
+			$e['expressionTypeID'] = null;
+			if($e['expressionValue'] === null) {
+				fatal("expression {$e['expressionID']} has no value");
+			}
+			break;
+
+		case 22: /* Attribute */
+			if($e['expressionAttributeID'] === null) {
+				fatal("expression {$e['expressionID']} has no attribute ID");
+			}
+			
+			$e['expressionValue'] = null;
+			$e['expressionGroupID'] = null;
+			$e['expressionTypeID'] = null;
+			break;
+
+		case 26: /* Group */
+			if($e['expressionGroupID'] === null) {
+				/* Assume the value is a groupName */
+				$mangledname = preg_replace('%(.)([A-Z])%', '$1 $2', $e['expressionValue']);
+				foreach($json['groups'] as $g) {
+					if($g['groupName'] === $mangledname) {
+						$e['expressionGroupID'] = $g['groupID'];
+						warn('expression '.$e['expressionID'].' with operand DEFGROUP has no groupID, using '
+						     .$g['groupID'].' assuming "'.$e['expressionValue'].'" is a group name');
+						break;
+					}
+				}
+
+				if($e['expressionValue'] === '    None') {
+					warn('expression '.$e['expressionID'].' with operand DEFGROUP has no groupID'
+					     .' and has hardcoded value: "'.$e['expressionValue'].'", using groupID 0');
+
+					$e['expressionGroupID'] = 0;
+				}
+
+				if($e['expressionGroupID'] === null) {
+					fatal("expression {$e['expressionID']} has no group ID");
+				}
+			}
+			
+			$e['expressionValue'] = null;
+			$e['expressionAttributeID'] = null;
+			$e['expressionTypeID'] = null;
+			break;
+
+		case 29: /* Type */
+			if($e['expressionTypeID'] === null) {
+				fatal("expression {$e['expressionID']} has no type ID");
+			}
+			
+			$e['expressionValue'] = null;
+			$e['expressionAttributeID'] = null;
+			$e['expressionGroupID'] = null;
+			break;
+
+		default:
+			$e['expressionValue'] = null;
+			$e['expressionAttributeID'] = null;
+			$e['expressionGroupID'] = null;
+			$e['expressionValue'] = null;
+			break;
+			
+		}
+	}
+}
+
+function combine_canonical_form(&$json, array $expr, array &$combined) {
+	if($expr['operandID'] !== 17) {
+		$combined[] = $expr['expressionID'];
+		return;
+	}
+
+	combine_canonical_form($json, $json['expressions'][$expr['arg1']], $combined);
+	combine_canonical_form($json, $json['expressions'][$expr['arg2']], $combined);
+}
+
+function expression_canonical_form(&$json, array $expr) {
+	static $keys = [
+		'arg1',
+		'arg2',
+		'expressionAttributeID',
+		'expressionGroupID',
+        'expressionTypeID',
+        'expressionValue',
+		'operandID',
+	];
+
+	if($expr['operandID'] === 17) {
+		/* COMBINE */
+		$combined = [];
+		combine_canonical_form($json, $expr, $combined);
+		sort($combined);
+		return json_encode($combined);
+	}
+
+	$stdexp = [];
+	foreach($keys as $k) {
+		$stdexp[$k] = isset($expr[$k]) ? $expr[$k] : null;
+	}
+
+	return json_encode($stdexp);
+}
+
 function query_or_insert_expression(&$json, array $exprfilter) {
-	/* Obvious space/time tradeoff */
 	static $cache = null;
-	
     static $lowestid = -1000;
 
-    if($cache === null) {
+    while($cache === null) {
 	    foreach($json['expressions'] as $expr) {
 		    $id = $expr['expressionID'];
-		    unset($expr['expressionID']);
-		    ksort($expr);
-		    $cache[json_encode($expr)] = $id;
+		    $k = expression_canonical_form($json, $expr);
+		    if(isset($cache[$k])) {
+			    $newid = $cache[$k];
+			    info("replacing dupe expression {$id} ~~~> {$newid}");
+
+			    foreach($json['effects'] as &$e) {
+				    if($e['preExpression'] === $id) $e['preExpression'] = $newid;
+				    if($e['postExpression'] === $id) $e['postExpression'] = $newid;
+			    }
+
+			    foreach($json['expressions'] as &$e) {
+				    if($e['arg1'] === $id) $e['arg1'] = $newid;
+				    if($e['arg2'] === $id) $e['arg2'] = $newid;
+			    }
+
+			    unset($json['expressions'][$id]);
+
+			    $cache = null;
+			    $lowestid = -1000;
+			    continue 2;
+		    } else {
+			    $cache[$k] = $id;
+		    }
 	    }
     }
     
     $exprfilter += [
-        'expressionValue' => null,
-        'expressionAttributeID' => null,
-        'expressionGroupID' => null,
-        'expressionTypeID' => null,
-        'arg1' => null,
-        'arg2' => null,
+	    'arg1' => null,
+	    'arg2' => null,
+	    'expressionAttributeID' => null,
+	    'expressionGroupID' => null,
+	    'expressionTypeID' => null,
+	    'expressionValue' => null,
+	    'operandID' => null,
     ];
-    ksort($exprfilter);
     
-    $efstr = json_encode($exprfilter);
-    if(isset($cache[$efstr])) return $cache[$efstr];
+    $efstr = expression_canonical_form($json, $exprfilter);
+    if(isset($cache[$efstr])) {
+	    info("cache hit for {$efstr} => {$cache[$efstr]}");
+	    return $cache[$efstr];
+    }
     
     /* Insert expression */
     $lowestid--;
+    info("inserted {$efstr} => {$lowestid}");
     $exprfilter['expressionID'] = $lowestid;
     $json['expressions'][$lowestid] = $exprfilter;
     return $cache[$efstr] = $lowestid;
@@ -364,6 +502,9 @@ fwrite($c, "};\n");
 /* -------- Effects -------- */
 
 strip_index_effects($json);
+strip_index_operands($json);
+strip_index_expressions($json);
+normalize_expressions($json);
 
 foreach($json['effects'] as &$effect) {
     if(!$effect['modifierInfo']) continue;
@@ -914,19 +1055,9 @@ foreach($json['expressions'] as $e) {
 		$dataname = 'assoctype';
 		$data = "DOGMA_ASSOC_".$e['expressionValue'];
 	} else if($e['operandID'] === 22) { /* DEFATTRIBUTE */
-		if($e['expressionAttributeID'] === null) {
-			fatal('expression '.$e['expressionID'].' with operand DEFATTRIBUTE has no attributeID (value: "'
-			      .$e['expressionValue'].'").');
-		}
-
 		$dataname = 'attributeid';
 		$data = $e['expressionAttributeID'].'U';		
 	} else if($e['operandID'] === 23) { /* DEFBOOL */
-		if(!in_array($e['expressionValue'], array("0", "1"), true)) {
-			fatal('expression '.$e['expressionID'].' with operand DEFBOOL has invalid value "'
-			      .$e['expressionValue'].'".');
-		}
-
 		$dataname = 'boolv';
 		$data = ($e['expressionValue'] === '1') ? 'true' : 'false';
 	} else if($e['operandID'] === 24) { /* DEFENVIDX */
@@ -938,81 +1069,18 @@ foreach($json['expressions'] as $e) {
 		$dataname = 'floatv';
 		$data = $e['expressionValue'];
 	} else if($e['operandID'] === 26) { /* DEFGROUP */
-		if($e['expressionGroupID'] === null) {
-			/* Assume the value is a groupName */
-			$mangledname = preg_replace('%(.)([A-Z])%', '$1 $2', $e['expressionValue']);
-			foreach($json['groups'] as $g) {
-				if($g['groupName'] === $mangledname) {
-					$e['expressionGroupID'] = $g['groupID'];
-					warn('expression '.$e['expressionID'].' with operand DEFGROUP has no groupID, using '
-					     .$g['groupID'].' assuming "'.$e['expressionValue'].'" is a group name');
-					break;
-				}
-			}
-		}
-
-		if($e['expressionGroupID'] === null && in_array($e['expressionValue'], array('    None'), true)) {
-			warn('expression '.$e['expressionID'].' with operand DEFGROUP has no groupID'
-			     .' and has hardcoded value: "'.$e['expressionValue'].'", using groupID 0');
-
-			$e['expressionGroupID'] = 0;
-		}
-
-		if($e['expressionGroupID'] === null) {
-			fatal('expression '.$e['expressionID'].' with operand DEFGROUP has no groupID (value: "'
-			      .$e['expressionValue'].'").');
-		}
-
 		$dataname = 'groupid';
 		$data = $e['expressionGroupID'].'U';	
 	} else if($e['operandID'] === 27) { /* DEFINT */
-		if((int)$e['expressionValue'] != $e['expressionValue']) {
-			fatal('expression '.$e['expressionID'].' with operand DEFINT has invalid value "'
-			      .$e['expressionValue'].'".');
-		}
-
 		$dataname = 'intv';
 		$data = $e['expressionValue'];
 	} else if($e['operandID'] === 28) { /* DEFSTRING */
-		if($e['expressionValue'] === null) {
-			fatal('expression '.$e['expressionID'].' with operand DEFSTRING has no value.');
-		}
-
 		$dataname = 'value';
 		$data = escape_c_string($e['expressionValue']);
 	} else if($e['operandID'] === 29) { /* DEFTYPEID */
-		if($e['expressionTypeID'] === null) {
-			foreach($json['types'] as $t) {
-				if($t['typeName'] === $e['expressionValue']) {
-					$e['expressionTypeID'] = $t['typeID'];
-					warn('expression '.$e['expressionID'].' with operand DEFTYPEID has no typeID, using '
-					     .$t['typeID'].' assuming "'.$e['expressionValue'].'" is a type name');
-					break;
-
-				}
-			}
-		}
-
-		if($e['expressionTypeID'] === null) {
-			fatal('expression '.$e['expressionID'].' with operand DEFTYPEID has no typeID (value: "'.
-			      $e['expressionValue'].'").');
-		}
-
 		$dataname = 'typeid';
 		$data = $e['expressionTypeID'].'U';
 	} else {
-		if($e['expressionValue'] !== null)
-			warn('expression '.$e['expressionID'].' has dangling value "'.$e['expressionValue'].'"');
-
-		if($e['expressionAttributeID'] !== null)
-			warn('expression '.$e['expressionID'].' has dangling attributeID '.$e['expressionAttributeID']);
-
-		if($e['expressionGroupID'] !== null)
-			warn('expression '.$e['expressionID'].' has dangling groupID '.$e['expressionGroupID']);
-
-		if($e['expressionTypeID'] !== null)
-			warn('expression '.$e['expressionID'].' has dangling typeID '.$e['expressionTypeID']);
-
 		$dataname = 'value';
 		$data = 'NULL';
 	}
