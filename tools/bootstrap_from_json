@@ -272,8 +272,8 @@ function query_or_insert_expression(&$json, array $exprfilter) {
 
 function combine_expressions(&$json, array $expressionids) {
     while(count($expressionids) > 1) {
-        $a = array_pop($expressionids);
-        $b = array_pop($expressionids);
+        $a = array_shift($expressionids);
+        $b = array_shift($expressionids);
         $expressionids[] = query_or_insert_expression($json, [
             'operandID' => 17, /* COMBINE */
             'arg1' => $a,
