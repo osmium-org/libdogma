@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012, 2013, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2015, 2016 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -64,10 +64,6 @@
 
 
 /* -------- Data types -------- */
-
-typedef uint16_t dogma_groupid_t;
-typedef uint8_t  dogma_categoryid_t;
-typedef int32_t dogma_expressionid_t;
 
 _Static_assert(sizeof(dogma_key_t) >= sizeof(dogma_attributeid_t), "Must be able to use an attributeid as an array index");
 _Static_assert(sizeof(dogma_key_t) >= sizeof(dogma_effectid_t), "Must be able to use an effectid as an array index");
@@ -161,11 +157,17 @@ enum dogma_env_index_e {
 };
 typedef enum dogma_env_index_e dogma_env_index_t;
 
-
+struct dogma_operand_s {
+	dogma_operandid_t id;
+	const char* key;
+	const char* description;
+	const char* format;
+};
+typedef struct dogma_operand_s dogma_operand_t;
 
 struct dogma_expression_s {
 	dogma_expressionid_t id;
-	dogma_operand_t operand;
+	dogma_operandid_t operandid;
 	dogma_expressionid_t arg1;
 	dogma_expressionid_t arg2;
 

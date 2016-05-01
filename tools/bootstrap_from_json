@@ -867,8 +867,16 @@ fwrite($c, "};\n");
 
 strip_index_operands($json);
 
-fwrite($h, "enum dogma_operand_e {\n");
+fwrite($h, "enum dogma_operandid_e {\n");
+fwrite($c, "static const dogma_operand_t dogma_table_operands[] = {\n");
 foreach($json['operands'] as $op) {
+	fwrite($c, "\t{ "
+	       .$op['operandID']
+	       .", ".escape_c_string($op['operandKey'])
+	       .", ".escape_c_string($op['description'])
+	       .", ".escape_c_string($op['format'])
+	       ." },\n");
+	
 	fwrite($h, "\t/* ".$op['description']."\n"
 	       ."\t * ".$op['format']." */\n"
 	       ."\tDOGMA_".$op['operandKey']."=".$op['operandID'].",\n\n");
@@ -876,9 +884,11 @@ foreach($json['operands'] as $op) {
 fwrite(
 	$h,
 	"};\n"
-	."typedef enum dogma_operand_e dogma_operand_t;\n");
+	."typedef enum dogma_operandid_e dogma_operandid_t;\n");
 
 fwrite($h, "\n#endif\n");
+fwrite($c, "\t{ 0, NULL, NULL, NULL }\n");
+fwrite($c, "};\n");
 
 /* -------- Expressions -------- */
 
@@ -1008,14 +1018,14 @@ foreach($json['expressions'] as $e) {
 	}
 
 	fwrite($c, "\t{ "
-	       .".id = ".$e['expressionID'].'U'
-	       .", .operand = DOGMA_".$json['operands'][$e['operandID']]['operandKey']
+	       .".id = ".$e['expressionID']
+	       .", .operandid = DOGMA_".$json['operands'][$e['operandID']]['operandKey']
 	       .", .arg1 = ".(int)$e['arg1']
 	       .", .arg2 = ".(int)$e['arg2']
 	       .", .".$dataname." = ".$data
 	       ." },\n");
 }
-fwrite($c, "\t{ .id = 0U, .operand = 0, .arg1 = 0, .arg2 = 0, .value = NULL }\n");
+fwrite($c, "\t{ .id = 0U, .operandid = 0, .arg1 = 0, .arg2 = 0, .value = NULL }\n");
 fwrite($c, "};\n");
 
 /* -------- dogma-names.h -------- */

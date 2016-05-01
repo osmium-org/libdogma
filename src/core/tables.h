@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2016 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -49,6 +49,9 @@ int dogma_get_attribute(dogma_attributeid_t, const dogma_attribute_t**);
 
 /* Get an effect by its effectid. */
 int dogma_get_effect(dogma_effectid_t, const dogma_effect_t**);
+
+/* Get an operand by its operandid. */
+int dogma_get_operand(dogma_operandid_t, const dogma_operand_t**);
 
 /* Get an expression by its expressionid. */
 int dogma_get_expression(dogma_expressionid_t, const dogma_expression_t**);

@@ -90,7 +90,7 @@ int main(void) {
 		for(size_t j = 0; j < len; ++j) {
 			printf(
 				"context:%p\tstable:%i\tcapacity:%f\tdelta:%f\ts:%f\n",
-				list[j].context,
+				(void*)(list[j].context),
 				list[j].stable,
 				list[j].capacity,
 				list[j].delta,

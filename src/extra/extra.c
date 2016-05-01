@@ -315,7 +315,7 @@ bool dogma_expression_has_currenttarget(dogma_expressionid_t id) {
 	const dogma_expression_t* exp;
 
 	if(dogma_get_expression(id, &exp) == DOGMA_OK) {
-		if(exp->operand == DOGMA_DEFENVIDX && exp->envidx == DOGMA_ENVIDX_Target) {
+		if(exp->operandid == DOGMA_DEFENVIDX && exp->envidx == DOGMA_ENVIDX_Target) {
 			/* Found our target */
 			return true;
 		}

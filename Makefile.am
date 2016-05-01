@@ -17,6 +17,9 @@ libdogma_la_LDFLAGS=-export-symbols src/libdogma.sym -version-info 2:0:2
 include_HEADERS=include/dogma.h include/dogma-names.h	\
 	include/dogma-extra.h
 
+bin_PROGRAMS=libdogmactl
+libdogmactl_SOURCES=src/ctl/main.c
+
 check_PROGRAMS=test/trivial test/basic-attributes			\
 	test/basic-skill-levels test/basic-charges test/basic-fleet	\
 	test/basic-area test/stacking-penalties				\

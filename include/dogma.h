@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012, 2013, 2015 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2015, 2016 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -77,6 +77,9 @@ typedef Word_t dogma_key_t;
 typedef uint32_t dogma_typeid_t;
 typedef uint16_t dogma_attributeid_t;
 typedef int32_t dogma_effectid_t;
+typedef uint16_t dogma_groupid_t;
+typedef uint8_t  dogma_categoryid_t;
+typedef int32_t dogma_expressionid_t;
 
 
 

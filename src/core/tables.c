@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2016 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -26,6 +26,7 @@
 dogma_array_t types_by_id = NULL;
 dogma_array_t attributes_by_id = NULL;
 dogma_array_t effects_by_id = NULL;
+dogma_array_t operands_by_id = NULL;
 dogma_array_t expressions_by_id = NULL;
 dogma_array_t type_attributes_by_typeid = NULL;
 dogma_array_t type_effects_by_typeid = NULL;
@@ -42,6 +43,7 @@ dogma_array_t type_effects_by_typeid = NULL;
 DOGMA_INIT_GENERIC(types, dogma_type_t, dogma_table_types, id, types_by_id)
 DOGMA_INIT_GENERIC(attributes, dogma_attribute_t, dogma_table_attributes, id, attributes_by_id)
 DOGMA_INIT_GENERIC(effects, dogma_effect_t, dogma_table_effects, id, effects_by_id)
+DOGMA_INIT_GENERIC(operands, dogma_operand_t, dogma_table_operands, id, operands_by_id)
 DOGMA_INIT_GENERIC(expressions, dogma_expression_t, dogma_table_expressions, id, expressions_by_id)
 
 #define DOGMA_INIT_GENERIC_2D(NAME, TYPE, KEYTYPE1, TABLE, INDEX1, INDEX2, ARRAY) \
@@ -69,6 +71,7 @@ void dogma_init_tables(void) {
 	dogma_init_types();
 	dogma_init_attributes();
 	dogma_init_effects();
+	dogma_init_operands();
 	dogma_init_expressions();
 	dogma_init_type_attributes();
 	dogma_init_type_effects();
@@ -86,6 +89,7 @@ void dogma_init_tables(void) {
 DOGMA_GET_GENERIC(type, dogma_typeid_t, dogma_type_t, types_by_id)
 DOGMA_GET_GENERIC(attribute, dogma_attributeid_t, dogma_attribute_t, attributes_by_id)
 DOGMA_GET_GENERIC(effect, dogma_effectid_t, dogma_effect_t, effects_by_id)
+DOGMA_GET_GENERIC(operand, dogma_operandid_t, dogma_operand_t, operands_by_id)
 DOGMA_GET_GENERIC(expression, dogma_expressionid_t, dogma_expression_t, expressions_by_id)
 
 int dogma_get_type_attributes(dogma_typeid_t id, dogma_array_t* out) {

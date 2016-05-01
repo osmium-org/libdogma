@@ -1,5 +1,5 @@
 /* libdogma
- * Copyright (C) 2012, 2013 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2016 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -31,7 +31,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 	result->type = DOGMA_CTXTYPE_UNDEFINED;
 	assert(dogma_get_expression(id, &exp) == DOGMA_OK);
 
-	switch(exp->operand) {
+	switch(exp->operandid) {
 
 		/* Language constructs */
 
@@ -232,7 +232,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		 * the change (which makes sense in a game, because once your
 		 * shield is repaired, the end of the cycle dosen't take it
 		 * back! unfortunately in this context it's bad). */
-		DOGMA_WARN("Unsupported operand %i used on expression %i by type %i", exp->operand, exp->id, self->id);
+		DOGMA_WARN("Unsupported operand %i used on expression %i by type %i", exp->operandid, exp->id, self->id);
 		break;
 
 	case DOGMA_INCN:
@@ -242,7 +242,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 		/* XXX: no idea how these work, throw an error if they are
 		 * encountered. The bruteforce test should fail if these are
 		 * used. */
-		DOGMA_WARN("Unsupported operand %i used on expression %i by type %i", exp->operand, exp->id, self->id);
+		DOGMA_WARN("Unsupported operand %i used on expression %i by type %i", exp->operandid, exp->id, self->id);
 		break;
 
 		/* Filters */
@@ -363,7 +363,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 			resarg1.modifier_value.sourceenv = resarg2.modifier_value.targetenv;
 		}
 
-		switch(exp->operand) {
+		switch(exp->operandid) {
 
 		case DOGMA_AIM:
 			resarg1.modifier_value.scope = DOGMA_SCOPE_Item;
@@ -421,7 +421,7 @@ int dogma_eval_expression(dogma_context_t* ctx,
 			resarg1.modifier_value.sourceenv = resarg2.modifier_value.targetenv;
 		}
 
-		switch(exp->operand) {
+		switch(exp->operandid) {
 
 		case DOGMA_RIM:
 			resarg1.modifier_value.scope = DOGMA_SCOPE_Item;
