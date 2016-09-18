@@ -189,7 +189,7 @@ static inline int dogma_fill_entity(dogma_context_t* ctx, dogma_env_t* source,
 		));
 
 		DOGMA_ASSUME_OK(dogma_get_module_attribute(
-			ctx, source->index, ATT_EnergyDestabilizationAmount, &(ent->other_amount)
+			ctx, source->index, ATT_EnergyNeutralizerAmount, &(ent->other_amount)
 		));
 
 		ent->type = DOGMA_EENT_Neutralization;

@@ -512,7 +512,7 @@ foreach($json['effects'] as &$effect) {
     info("overwriting expressions of effect ".$effect['effectName']." using modifierInfo");
     $info = yaml_parse($effect['modifierInfo']);
 
-    foreach($info as &$modifier) {
+    foreach($info as $k => &$modifier) {
         /* Lots of code to create, tediously, an expression that looks like:
 
            For ItemModifiers:
@@ -530,6 +530,13 @@ foreach($json['effects'] as &$effect) {
            For GangRequiredSkillModifiers:
            [($skillTypeID.$modifiedAttributeID).($operator)].$func($modifyingAttributeID)
          */
+
+	    if($modifier['func'] === 'EffectStopper') {
+		    /* XXX: properly implement this */
+	        warn("ignoring EffectStopper for effect ".$effect['effectID']);
+	        unset($info[$k]);
+	        continue;
+	    }
 
         $modifiedattribute = query_or_insert_expression($json, [
             'operandID' => 22, /* DEFATTRIBUTE */
@@ -561,6 +568,7 @@ foreach($json['effects'] as &$effect) {
             break;
             
         case 'targetID':
+        case 'target': /* XXX? */
             $domain = query_or_insert_expression($json, [
                 'operandID' => 24, /* DEFENVIDX */
                 'expressionValue' => 'Target',
