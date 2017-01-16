@@ -22,7 +22,7 @@ libdogmactl_SOURCES=src/ctl/main.c
 
 check_PROGRAMS=test/trivial test/basic-attributes			\
 	test/basic-skill-levels test/basic-charges test/basic-fleet	\
-	test/basic-area test/stacking-penalties				\
+	test/basic-area test/basic-propulsion test/stacking-penalties	\
 	test/ancillary-modules test/drones test/implants		\
 	test/projected-effects test/projected-stacking			\
 	test/fleet-stacking test/self-on-self test/extra-misc		\

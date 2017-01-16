@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /* libdogma
- * Copyright (C) 2012, 2013, 2014, 2015, 2016 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
+ * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017 Romain "Artefact2" Dalmaso <artefact2@gmail.com>
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -422,6 +422,93 @@ function combine_expressions(&$json, array $expressionids) {
     return array_pop($expressionids);
 }
 
+/* DEFASSOCIATION($assoc) */
+function mkexpr_association(&$json, $assoc) {
+	return query_or_insert_expression($json, [
+		'operandID' => 21,
+		'expressionValue' => $assoc,
+	]);
+}
+
+/* DEFENVIDX($env) */
+function mkexpr_envidx(&$json, $env) {
+	return query_or_insert_expression($json, [
+		'operandID' => 24,
+		'expressionValue' => $env,
+	]);
+}
+
+/* DEFATTRIBUTE($attr) */
+function mkexpr_attribute(&$json, $attr) {
+	return query_or_insert_expression($json, [
+		'operandID' => 22,
+		'expressionAttributeID' => $attr,
+	]);
+}
+
+/* $env->$attr */
+function mkexpr_att(&$json, $env, $attr) {
+	return query_or_insert_expression($json, [
+		'operandID' => 12, /* ATT */
+		'arg1' => mkexpr_envidx($json, $env),
+		'arg2' => mkexpr_attribute($json, $attr),
+	]);
+}
+
+/* ($env->$attr).($assoc) */
+function mkexpr_eff(&$json, $assoc, $env, $attr) {
+	return query_or_insert_expression($json, [
+		'operandID' => 31,
+		'arg1' => mkexpr_association($json, $assoc),
+		'arg2' => mkexpr_att($json, $env, $attr),
+	]);
+}
+
+/* (($destenv->$destattr).($assoc)).AddItemModifier($srcattr) */
+function mkexpr_aim(&$json, $assoc, $destenv, $destattr, $srcattr, $customsrc = false) {
+	return query_or_insert_expression($json, [
+		'operandID' => 6,
+		'arg1' => mkexpr_eff($json, $assoc, $destenv, $destattr),
+		'arg2' => $customsrc ? $srcattr : mkexpr_attribute($json, $srcattr),
+	]);
+}
+
+/* Turns AIM into RIM, etc. Returns new exprID */
+function flip_modifiers(&$json, $id) {
+	static $mods = null;
+
+	if($mods === null) {
+		$mods = [
+			2 => 54, /* GangGroupModifier */
+			3 => 55, /* GangItemModifier */
+			4 => 56, /* GangOwnerRequiredSkillModifier */
+			5 => 57, /* GangRequiredSkillModifier */
+			6 => 58, /* ItemModifier */
+			7 => 59, /* LocationGroupModifier */
+			8 => 60, /* LocationModifier */
+			9 => 61, /* LocationRequiredSkillModifier */
+			11 => 62, /* OwnerRequiredSkillModifier */
+		];
+		foreach($mods as $a => $r) $mods[$r] = $a;
+	}
+	
+	assert(isset($json['expressions'][$id]));
+	$exp = $json['expressions'][$id];
+
+	if(isset($exp['arg1'])) {
+		$exp['arg1'] = flip_modifiers($json, $exp['arg1']);
+	}
+	if(isset($exp['arg2'])) {
+		$exp['arg2'] = flip_modifiers($json, $exp['arg2']);
+	}
+
+	if(isset($mods[$exp['operandID']])) {
+		$exp['operandID'] = $mods[$exp['operandID']];
+	}
+
+	return query_or_insert_expression($json, $exp);
+}
+
 /* ---------------- */
 
 if($argc !== 2) {
@@ -732,10 +819,7 @@ foreach($json['effects'] as &$effect) {
             
         }
 
-        $association = query_or_insert_expression($json, [
-            'operandID' => 21, /* DEFASSOCIATION */
-            'expressionValue' => $assocstring,
-        ]);
+        $association = mkexpr_association($json, $assocstring);
 
         $eff = query_or_insert_expression($json, [
             'operandID' => 31, /* EFF */
@@ -766,54 +850,16 @@ foreach($json['effects'] as &$effect) {
 
 /* Expression for the AAR charge:
  * ((CurrentOther->armorDamageAmount).(PreMul)).AddItemModifier (CurrentOther->chargedArmorDamageMultiplier)
+ * Real dogma wouldn't accept this.
  */
-
-$source = query_or_insert_expression($json, [
-    'operandID' => 31, /* EFF */
-    'arg1' => query_or_insert_expression($json, [
-        'operandID' => 21, /* DEFASSOCIATION */
-        'expressionValue' => 'PreMul',
-    ]),
-    'arg2' => query_or_insert_expression($json, [
-        'operandID' => 12, /* ATT */
-        'arg1' => query_or_insert_expression($json, [
-            'operandID' => 24, /* DEFENVIDX */
-            'expressionValue' => 'Other',
-        ]),
-        'arg2' => query_or_insert_expression($json, [
-            'operandID' => 22, /* DEFATTRIBUTE */
-            'expressionAttributeID' => 84, /* armorDamageAmount */
-        ]),
-    ]),
-]);
-
-$target = query_or_insert_expression($json, [
-    'operandID' => 12, /* ATT */
-    'arg1' => query_or_insert_expression($json, [
-        'operandID' => 24, /* DEFENVIDX */
-        'expressionValue' => 'Other',
-    ]),
-    'arg2' => query_or_insert_expression($json, [
-        'operandID' => 22, /* DEFATTRIBUTE */
-        'expressionAttributeID' => 1886, /* chargedArmorDamageMultiplier */
-    ]),
-]);
 
 /* Effect for the Nanite Repair Paste when used in an Ancillary Armor Repairer */
 $json['effects'][-10] = array(
 	'effectName' => 'internalAAREffect',
 	'effectID' => -10,
 	'effectCategory' => 0,
-	'preExpression' => query_or_insert_expression($json, [
-        'operandID' => 6, /* AIM */
-        'arg1' => $source,
-        'arg2' => $target,
-    ]),
-	'postExpression' => query_or_insert_expression($json, [
-        'operandID' => 58, /* RIM */
-        'arg1' => $source,
-        'arg2' => $target,
-    ]),
+	'preExpression' => $id = mkexpr_aim($json, 'PreMul', 'Other', 84, mkexpr_att($json, 'Other', 1886), true),
+	'postExpression' => flip_modifiers($json, $id),
 	'durationAttributeID' => null,
 	'trackingSpeedAttributeID' => null,
 	'dischargeAttributeID' => null,
@@ -905,6 +951,28 @@ $json['effects'][3380]['postExpression'] = combine_expressions($json, [
     $makeWDSGroupModifier(59 /* RLGM */, 46, 567, 1270), /* AB and MWD Thrust */
     $makeWDSGroupModifier(59 /* RLGM */, 46, 20, 1164), /* AB and MWD Max velocity */
 ]);
+
+/* moduleBonusAfterburner:
+ * ship mass += massAddition
+ * speedFactor *= speedBoostFactor (thrust)
+ * speedFactor /= ship mass
+ * ship maxVelocity PostPercent speedFactor */
+$json['effects'][6731]['preExpression'] = combine_expressions($json, [
+	mkexpr_aim($json, 'ModAdd', 'Ship', 4, 796),
+	mkexpr_aim($json, 'PostMul', 'Self', 20, 567),
+	mkexpr_aim($json, 'PostDiv', 'Self', 20, mkexpr_att($json, 'Ship', 4), true),
+	mkexpr_aim($json, 'PostPercent', 'Ship', 37, 20),
+]);
+$json['effects'][6731]['postExpression'] = flip_modifiers($json, $json['effects'][6731]['preExpression']);
+
+/* moduleBonusMicrowarpdrive:
+ * same as afterburner
+ * ship signatureRadius PostPercent signatureRadiusBonus */
+$json['effects'][6730]['preExpression'] = combine_expressions($json, [
+	$json['effects'][6731]['preExpression'],
+	mkexpr_aim($json, 'PostPercent', 'Ship', 552, 554),
+]);
+$json['effects'][6730]['postExpression'] = flip_modifiers($json, $json['effects'][6730]['preExpression']);
 
 /* skillEffect: bogus/unknown DEFASSOCIATION, skills are handled
  * correctly without it anyway */
